@@ -24,7 +24,7 @@ Here's a brief description of current modules:
 3. __python__ 3
 
 #### Hardware Requirements:  
-1. cuddnn compatible GPU >=1.
+1. CUDA compatible GPU >=1.
 
 
  
