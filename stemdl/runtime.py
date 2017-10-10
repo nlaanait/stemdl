@@ -261,10 +261,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # Track the moving averages of all trainable variables.
         variable_averages = tf.train.ExponentialMovingAverage(
             hyper_params['moving_average_decay'], global_step)
-        variables_averages_op = variable_averages.apply(tf.trainable_variables())
+        variable_averages_op = variable_averages.apply(tf.trainable_variables())
 
         # Gather all training related ops into a single one.
-        train_op = tf.group(apply_gradient_op, variable_averages, tf.group(*worker_ops))
+        train_op = tf.group(apply_gradient_op, variable_averages_op, tf.group(*worker_ops))
         # with tf.control_dependencies([apply_gradient_op, variables_averages_op, tf.group(*worker_ops)]):
         #     train_op = tf.no_op(name='train')
 
