@@ -131,8 +131,8 @@ class DatasetTFRecords(object):
         # Apply random global affine transformations
         if geometric:
             # Setting bounds and generating random values for scaling and rotations
-            scale_X = np.random.normal(1.0, 0.05, size=1)
-            scale_Y = np.random.normal(1.0, 0.05, size=1)
+            scale_X = np.random.normal(1.0, 0.02, size=1)
+            scale_Y = np.random.normal(1.0, 0.02, size=1)
             theta_angle = np.random.normal(0., 0.2, size=1)
             nu_angle = np.random.normal(0., 0.2, size=1)
 
@@ -155,6 +155,9 @@ class DatasetTFRecords(object):
         alpha = tf.random_uniform([1], minval=noise_min, maxval=noise_max)
         noise = tf.random_uniform(image.shape, dtype=tf.float32)
         image = (1 - alpha[0]) * image + alpha[0] * noise
+
+        # normalize
+        image = tf.image.per_image_standardization(image)
 
         return image
 
