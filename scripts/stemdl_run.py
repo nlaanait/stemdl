@@ -49,11 +49,12 @@ def main(argv):  # pylint: disable=unused-argument
                         required=True)
     parser.add_argument('--hyper_params', type=str, help='path to .json file with hyper-parameters', nargs=1,
                         required=True)
-    parser.add_argument('--mode', type=str, help="operation mode, must be 'train' or 'eval' ", nargs='*',
+    parser.add_argument('--mode', type=str, help="operation mode, must be 'train' or 'eval'. Default 'train' ", nargs='*',
                         default='train')
-    parser.add_argument('--num_gpus', type=int, help='number of gpus to use during training', nargs='?', default=1)
-    parser.add_argument('--batch_size', type=int, help='number of images to propagate through the network.'+\
-                        '\nPowers of 2 are processed more efficiently', nargs='?', default=64)
+    parser.add_argument('--num_gpus', type=int, help='number of gpus to use during training. Default 1.',
+                        nargs='?', default=1)
+    parser.add_argument('--batch_size', type=int, help='number of images per batch to propagate through the network.'+\
+                        '\nPowers of 2 are processed more efficiently. Default 64.', nargs='?', default=64)
     args = parser.parse_args()
 
     # Create the checkpoint directory

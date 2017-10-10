@@ -64,8 +64,8 @@ hyper_params_regression = {'network_type': 'regressor', #'network_type': 'classi
 #TODO
 
 if __name__ == '__main__':
-   io_utils.write_json_network_config('network_regressor.json', layer_params_list, layer_keys_list)
-   _ = io_utils.load_json_network_config('network_regressor.json')
-   io_utils.write_json_hyper_params('hyper_params_regressor.json', hyper_params_regression)
-   _ = io_utils.load_json_hyper_params('hyper_params_regressor.json')
+    io_utils.write_json_network_config('network_regressor.json', layer_keys_list, layer_params_list)
+    _ = io_utils.load_json_network_config('network_regressor.json')
+    io_utils.write_json_hyper_params('hyper_params_regressor.json', hyper_params_regression)
+    _ = io_utils.load_json_hyper_params('hyper_params_regressor.json')
 

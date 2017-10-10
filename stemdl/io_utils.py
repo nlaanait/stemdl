@@ -7,6 +7,8 @@ from collections import OrderedDict
 import json
 
 # JSON utility functions
+
+
 def write_json_network_config(file, layer_keys, layer_params):
     """
     Constructs and OrderedDict object and writes it .json file
