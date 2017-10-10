@@ -1,0 +1,264 @@
+{
+	"conv1": {
+		"type": "convolutional",
+		"kernel": [
+			6,
+			6
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 64,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"conv2": {
+		"type": "convolutional",
+		"kernel": [
+			6,
+			6
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 64,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"conv3": {
+		"type": "convolutional",
+		"kernel": [
+			6,
+			6
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 64,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"conv4": {
+		"type": "convolutional",
+		"kernel": [
+			6,
+			6
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 64,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"conv5": {
+		"type": "convolutional",
+		"kernel": [
+			6,
+			6
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 64,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"pool1": {
+		"type": "pooling",
+		"kernel": [
+			2,
+			2
+		],
+		"stride": [
+			2,
+			2
+		],
+		"pool_type": "avg",
+		"padding": "SAME"
+	},
+	"conv6": {
+		"type": "convolutional",
+		"kernel": [
+			4,
+			4
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 128,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"conv7": {
+		"type": "convolutional",
+		"kernel": [
+			4,
+			4
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 128,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"conv8": {
+		"type": "convolutional",
+		"kernel": [
+			4,
+			4
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 128,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"conv9": {
+		"type": "convolutional",
+		"kernel": [
+			4,
+			4
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 128,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"conv10": {
+		"type": "convolutional",
+		"kernel": [
+			4,
+			4
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 128,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"pool2": {
+		"type": "pooling",
+		"kernel": [
+			2,
+			2
+		],
+		"stride": [
+			2,
+			2
+		],
+		"pool_type": "avg",
+		"padding": "SAME"
+	},
+	"conv11": {
+		"type": "convolutional",
+		"kernel": [
+			3,
+			3
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 256,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"conv12": {
+		"type": "convolutional",
+		"kernel": [
+			3,
+			3
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 256,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"conv13": {
+		"type": "convolutional",
+		"kernel": [
+			3,
+			3
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 256,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"conv14": {
+		"type": "convolutional",
+		"kernel": [
+			3,
+			3
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 256,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"conv15": {
+		"type": "convolutional",
+		"kernel": [
+			3,
+			3
+		],
+		"stride": [
+			1,
+			1
+		],
+		"features": 256,
+		"activation": "relu",
+		"padding": "SAME"
+	},
+	"pool3": {
+		"type": "pooling",
+		"kernel": [
+			2,
+			2
+		],
+		"stride": [
+			2,
+			2
+		],
+		"pool_type": "avg",
+		"padding": "SAME"
+	},
+	"fc_1": {
+		"type": "fully_connected",
+		"bias": 1024,
+		"weights": 1024,
+		"regularize": false,
+		"activation": "tanh"
+	},
+	"linear_output": {
+		"type": "linear_output",
+		"bias": 3,
+		"weights": 3,
+		"regularize": false
+	}
+}
