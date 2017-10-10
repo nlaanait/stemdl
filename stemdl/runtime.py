@@ -126,26 +126,22 @@ def get_optimizer(flags, hyper_params, global_step):
     # Decay the learning rate exponentially based on the number of steps.
     def ramp():
         # lr = INITIAL_LEARNING_RATE*LEARNING_RATE_DECAY_FACTOR**(-global_step/ramp_steps)
-        lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE,
-                                        global_step,
-                                        ramp_steps,
-                                        LEARNING_RATE_DECAY_FACTOR,
+        lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step, ramp_steps, LEARNING_RATE_DECAY_FACTOR,
                                         staircase=True)
         lr = INITIAL_LEARNING_RATE ** 2 * tf.pow(lr, tf.constant(-1.))
         return tf.cast(lr, tf.float32)
 
     def decay():
-        lr = tf.train.exponential_decay(WARM_UP_LEARNING_RATE_MAX,
-                                        global_step,
-                                        decay_steps,
-                                        LEARNING_RATE_DECAY_FACTOR,
+        lr = tf.train.exponential_decay(WARM_UP_LEARNING_RATE_MAX, global_step, decay_steps, LEARNING_RATE_DECAY_FACTOR,
                                         staircase=True)
         return lr
 
-    LEARNING_RATE = tf.cond(global_step < ramp_up_steps, ramp, decay)
-    LEARNING_RATE = tf.cond(LEARNING_RATE <= WARM_UP_LEARNING_RATE_MAX,
-                            lambda: LEARNING_RATE,
-                            decay)
+    if hyper_params['warm_up']:
+        LEARNING_RATE = tf.cond(global_step < ramp_up_steps, ramp, decay)
+        LEARNING_RATE = tf.cond(LEARNING_RATE <= WARM_UP_LEARNING_RATE_MAX, lambda: LEARNING_RATE, decay)
+    else:
+        LEARNING_RATE = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step, decay_steps,
+                                        LEARNING_RATE_DECAY_FACTOR, staircase=True)
 
     # Summarize learning rate
     tf.summary.scalar('learning_rate', LEARNING_RATE)
@@ -154,6 +150,7 @@ def get_optimizer(flags, hyper_params, global_step):
     if hyper_params['optimization'] == 'SGD':
         opt = tf.train.GradientDescentOptimizer(LEARNING_RATE)
         return opt
+
     # Default is ADAM
     opt = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE)
     return opt
