@@ -40,6 +40,8 @@ layer_params_list = [conv_layer_1]*5 + [pool] + [conv_layer_2]*5 + [pool] + [con
 #################################
 # templates for hyper-parameters #
 #################################
+
+# Regression
 hyper_params_regression = {'network_type': 'regressor', #'network_type': 'classifier'
                            'optimization': 'ADAM', #'optimization': 'SGD'
                            'warm_up': True,
@@ -58,6 +60,8 @@ hyper_params_regression = {'network_type': 'regressor', #'network_type': 'classi
                                              'residual_decay_factor': 0.75},
                            }
 
+# Classification
+#TODO
 
 if __name__ == '__main__':
    io_utils.write_json_network_config('network_regressor.json', layer_params_list, layer_keys_list)
