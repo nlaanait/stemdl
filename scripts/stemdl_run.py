@@ -23,7 +23,7 @@ tf.app.flags.DEFINE_boolean('allow_soft_placement', True, """Whether to allow va
 tf.app.flags.DEFINE_integer('log_frequency', 10, """How often to log results to the console.""")
 tf.app.flags.DEFINE_integer('max_steps', 1000000,"""Number of batches to run.""")
 tf.app.flags.DEFINE_integer('num_epochs', 1000000,"""Number of Data Epochs to do training""")
-tf.app.flags.DEFINE_integer('NUM_EXAMPLES_PER_EPOCH', 50000,"""Number of classes in training/evaluation data.""")
+tf.app.flags.DEFINE_integer('NUM_EXAMPLES_PER_EPOCH', 729000,"""Number of examples in training data.""")
 tf.app.flags.DEFINE_string('worker_name', 'worker', """Name of gpu worker to append to each device ops, scope, etc...""")
 
 # Basic parameters describing the data set.
