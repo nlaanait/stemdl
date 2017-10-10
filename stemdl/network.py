@@ -174,12 +174,9 @@ class ConvNet(object):
         stride_shape = [1,1]+list(params['stride'])
         features = params['features']
         kernel_shape = list(params['kernel']) + [input.shape[1].value, features]
-        # init_val = np.sqrt(2.0/(kernel_shape[0]*kernel_shape[1]*kernel_shape[-1]))
-        # # print('kernel_shape %s' % format(kernel_shape))
-        # kernel = self._cpu_variable_init('weights', shape=kernel_shape,
-        #                                  initializer=tf.truncated_normal_initializer(stddev=init_val))
+        init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
         kernel = self._cpu_variable_init('weights', shape=kernel_shape,
-                                         initializer=tf.uniform_unit_scaling_initializer(factor=1.43))
+                                         initializer=tf.random_normal_initializer(stddev=init_val))
         output = tf.nn.conv2d(input, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
 
         # Keep tabs on the number of weights

@@ -247,7 +247,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         avg_gradients = _average_gradients(worker_grads)
 
         # Add histograms for gradients.
-        for grad, var in grads:
+        for grad, var in avg_gradients:
             if grad is not None:
                 summaries.append(tf.summary.histogram(var.op.name + '/gradients', grad))
 
