@@ -174,7 +174,7 @@ class ConvNet(object):
         stride_shape = [1,1]+list(params['stride'])
         features = params['features']
         kernel_shape = list(params['kernel']) + [input.shape[1].value, features]
-        init_val = np.sqrt(2/(kernel_shape[0]*kernel_shape[1]*input.shape[0].value))
+        init_val = np.sqrt(2.0/(kernel_shape[0]*kernel_shape[1]*kernel_shape[-1]))
         # print('kernel_shape %s' % format(kernel_shape))
         kernel = self._cpu_variable_init('weights', shape=kernel_shape,
                                          initializer=tf.truncated_normal_initializer(stddev=init_val))
@@ -199,7 +199,7 @@ class ConvNet(object):
             moving_mean = self._cpu_variable_init('moving_mean', shape=[input.shape[-1].value],
                                                   initializer=tf.zeros_initializer(), trainable=False)
             moving_variance = self._cpu_variable_init('moving_variance', shape=[input.shape[-1].value],
-                                                      initializer=tf.zeros_initializer(), trainable=False)
+                                                      initializer=tf.ones_initializer(), trainable=False)
             self.misc_ops.append(moving_averages.assign_moving_average(
                 moving_mean, mean, 0.9))
             self.misc_ops.append(moving_averages.assign_moving_average(
@@ -228,10 +228,18 @@ class ConvNet(object):
         # print(dim_input,list(params['weights']))
         weights_shape = [dim_input, params['weights']]
         bias_shape = [params['bias']]
-        init_val = np.sqrt(2/(weights_shape[0]*weights_shape[1]))
-        weights = self._cpu_variable_init('weights', shape=weights_shape,
-                                          initializer=tf.truncated_normal_initializer(stddev=init_val),
-                                          regularize=params['regularize'])
+        if params['type'] == 'fully_connected' and params['activation'] == 'tanh':
+            weights = self._cpu_variable_init('weights', shape=weights_shape,
+                                              initializer=tf.uniform_unit_scaling_initializer(factor=1.15),
+                                              regularize=params['regularize'])
+        if params['type'] == 'fully_connected' and params['activation'] == 'relu':
+            weights = self._cpu_variable_init('weights', shape=weights_shape,
+                                              initializer=tf.uniform_unit_scaling_initializer(factor=1.43),
+                                              regularize=params['regularize'])
+        if params['type'] == 'linear_output':
+            weights = self._cpu_variable_init('weights', shape=weights_shape,
+                                              initializer=tf.uniform_unit_scaling_initializer(factor=1.0))
+
         bias = self._cpu_variable_init('bias', bias_shape, initializer=tf.constant_initializer(0.0))
         output = tf.nn.bias_add(tf.matmul(input_reshape, weights), bias, name=name)
 
