@@ -39,22 +39,22 @@ FLAGS = tf.app.flags.FLAGS
 
 
 def main(argv):  # pylint: disable=unused-argument
-    parser = argparse.ArgumentParser(description='Setup and Run a Convolutional Neural Network')
-    parser.add_argument('--data_path', type=str, help='path to tfrecords file with images + labels', nargs=1,
+    parser = argparse.ArgumentParser(description='Setup and Run a Deep Neural Network.')
+    parser.add_argument('--data_path', type=str, help='path to tfrecords file with images + labels.', nargs=1,
                         required=True)
     parser.add_argument('--checkpt_dir', type=str, help='path where to save directory with training data,'+\
                                                         'visualization, and TensorBoard events.', nargs=1,
                         required=True)
-    parser.add_argument('--network_config', type=str, help='path to .json file with neural net architecture', nargs=1,
+    parser.add_argument('--network_config', type=str, help='path to .json file with neural net architecture.', nargs=1,
                         required=True)
-    parser.add_argument('--hyper_params', type=str, help='path to .json file with hyper-parameters', nargs=1,
+    parser.add_argument('--hyper_params', type=str, help='path to .json file with hyper-parameters.', nargs=1,
                         required=True)
-    parser.add_argument('--mode', type=str, help="operation mode, must be 'train' or 'eval'. Default 'train' ", nargs='*',
-                        default='train')
-    parser.add_argument('--num_gpus', type=int, help='number of gpus to use during training. Default 1.',
+    parser.add_argument('--mode', type=str, help="operation mode, must be 'train' or 'eval'.\nDefault 'train'. ",
+                        nargs='*', default='train')
+    parser.add_argument('--num_gpus', type=int, help='number of gpus to use during training.\nDefault 1.',
                         nargs='?', default=1)
     parser.add_argument('--batch_size', type=int, help='number of images per batch to propagate through the network.'+\
-                        '\nPowers of 2 are processed more efficiently. Default 64.', nargs='?', default=64)
+                        '\nPowers of 2 are processed more efficiently.\nDefault 64.', nargs='?', default=64)
     args = parser.parse_args()
 
     # Create the checkpoint directory
