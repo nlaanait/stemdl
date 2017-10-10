@@ -105,14 +105,14 @@ class ConvNet(object):
         # reference the output
         self.model_output = out
 
-    def get_loss(self, scope):
+    def get_loss(self):
         if self.net_type == 'regressor':
             self._calculate_loss_regressor(self.hyper_params['loss_function'])
         if self.net_type == 'classifier':
             self._calculate_loss_classifier(self.hyper_params['loss_function'])
-        losses = tf.get_collection('losses', scope)
-        total_loss = tf.add_n(losses, name='total_loss')
-        return losses, total_loss
+        # losses = tf.get_collection('losses', scope)
+        # total_loss = tf.add_n(losses, name='total_loss')
+        # return losses, total_loss
 
     def get_misc_ops(self):
         ops = tf.group(*self.misc_ops)
