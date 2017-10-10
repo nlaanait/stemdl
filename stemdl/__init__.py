@@ -9,7 +9,3 @@ from . import runtime
 from .runtime import *
 
 __all__ = ['inputs', 'io_utils', 'network', 'runtime']
-__all__ += inputs.__all__
-__all__ += io_utils.__all__
-__all__ += network.__all__
-__all__ += runtime.__all__
