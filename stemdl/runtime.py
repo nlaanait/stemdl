@@ -3,9 +3,12 @@ Created on 10/9/17.
 @author: Numan Laanait.
 email: laanaitn@ornl.gov
 """
+
+import time
+from datetime import datetime
 import tensorflow as tf
-import network
-import inputs
+from . import network
+from . import inputs
 
 
 def _add_loss_summaries(total_loss, losses):
@@ -152,7 +155,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
 
             # pass the filename_queue to the inputs classes to decode
-            dset = inputs.DatasetTFRecords(filename_queue, FLAGS)
+            dset = inputs.DatasetTFRecords(filename_queue, flags)
             image, label = dset.decode_image_label()
 
             # Process images and generate examples batch
@@ -238,14 +241,14 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 return tf.train.SessionRunArgs(total_loss)  # Asks for loss value.
 
             def after_run(self, run_context, run_values):
-                if self._step % FLAGS.log_frequency == 0:
+                if self._step % flags.log_frequency == 0:
                     current_time = time.time()
                     duration = current_time - self._start_time
                     self._start_time = current_time
 
                     loss_value = run_values.results
-                    examples_per_sec = FLAGS.log_frequency * FLAGS.batch_size * num_GPUS / duration
-                    sec_per_batch = float(duration / FLAGS.log_frequency)
+                    examples_per_sec = flags.log_frequency * flags.batch_size * num_GPUS / duration
+                    sec_per_batch = float(duration / flags.log_frequency)
 
                     format_str = ('%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
                                 'sec/batch)')
@@ -253,13 +256,13 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                                        examples_per_sec, sec_per_batch))
 
         # Config file for tf.Session()
-        config = tf.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement,
-                                log_device_placement=FLAGS.log_device_placement)
+        config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
+                                log_device_placement=flags.log_device_placement)
 
         # Start Training Session
         with tf.train.MonitoredTrainingSession(
-            checkpoint_dir=FLAGS.train_dir,
-            hooks=[tf.train.StopAtStepHook(last_step=FLAGS.max_steps), tf.train.NanTensorHook(total_loss),_LoggerHook()],
+            checkpoint_dir=flags.train_dir,
+            hooks=[tf.train.StopAtStepHook(last_step=flags.max_steps), tf.train.NanTensorHook(total_loss),_LoggerHook()],
                 config=config) as mon_sess:
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
@@ -276,4 +279,4 @@ def set_flags(checkpt_dir, batch_size=64, data_dir=None):
     tf.app.flags.DEFINE_string('train_dir', checkpt_dir, """Directory where to write event logs and checkpoint.""")
     tf.app.flags.DEFINE_integer('batch_size', batch_size, """Number of images to process in a batch.""")
     tf.app.flags.DEFINE_string('data_dir', data_dir,"""Directory where data tfrecords is located""")
-    # return tf.app.flags.FLAGS
+    # return tf.app.flags.flags

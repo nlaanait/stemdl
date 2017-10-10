@@ -7,7 +7,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.md')) as f:
     long_description = f.read()
 
-requirements = ['numpy>=1.13.0', 'tensorflow>=1.2']
+requirements = ['numpy>=1.13.0', 'tensorflow-gpu>=1.2']
 
 setup(
     name='stemdl',
