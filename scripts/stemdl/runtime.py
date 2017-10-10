@@ -249,8 +249,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                     loss_value = run_values.results
                     examples_per_sec = flags.log_frequency * flags.batch_size * num_GPUS / duration
                     sec_per_batch = float(duration / flags.log_frequency)
-                    elapsed_epochs = flags.NUM_EXAMPLES_PER_EPOCH/min(flags.log_frequency * num_GPUS * self._step * \
-                                                                   flags.batch_size, 1)
+                    elapsed_epochs = flags.NUM_EXAMPLES_PER_EPOCH/(flags.log_frequency * num_GPUS * max(self._step, 1) * \
+                                                                   flags.batch_size)
                     format_str = ('%s: step %d, epoch %2.3e, loss = %.2f (%.1f examples/sec; %.3f '
                                 'sec/batch)')
                     print (format_str % (datetime.now(), self._step, elapsed_epochs, loss_value,
