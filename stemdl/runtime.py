@@ -279,4 +279,3 @@ def set_flags(checkpt_dir, batch_size=64, data_dir=None):
     tf.app.flags.DEFINE_string('train_dir', checkpt_dir, """Directory where to write event logs and checkpoint.""")
     tf.app.flags.DEFINE_integer('batch_size', batch_size, """Number of images to process in a batch.""")
     tf.app.flags.DEFINE_string('data_dir', data_dir,"""Directory where data tfrecords is located""")
-    # return tf.app.flags.flags

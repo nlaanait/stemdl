@@ -15,11 +15,11 @@ from tensorflow.python.training import moving_averages
 worker_name = 'worker'
 
 # This should be a superclass
-# TODO implement Net superclass
+# TODO: implement Net superclass
 class Net(object):
     pass
 
-# TODO ConvNet should inherit Net
+# TODO: ConvNet should inherit Net
 class ConvNet(object):
     """
     Vanilla Convolutional Neural Network (Feed-Forward).
@@ -174,10 +174,12 @@ class ConvNet(object):
         stride_shape = [1,1]+list(params['stride'])
         features = params['features']
         kernel_shape = list(params['kernel']) + [input.shape[1].value, features]
-        init_val = np.sqrt(2.0/(kernel_shape[0]*kernel_shape[1]*kernel_shape[-1]))
-        # print('kernel_shape %s' % format(kernel_shape))
+        # init_val = np.sqrt(2.0/(kernel_shape[0]*kernel_shape[1]*kernel_shape[-1]))
+        # # print('kernel_shape %s' % format(kernel_shape))
+        # kernel = self._cpu_variable_init('weights', shape=kernel_shape,
+        #                                  initializer=tf.truncated_normal_initializer(stddev=init_val))
         kernel = self._cpu_variable_init('weights', shape=kernel_shape,
-                                         initializer=tf.truncated_normal_initializer(stddev=init_val))
+                                         initializer=tf.uniform_unit_scaling_initializer(factor=1.43))
         output = tf.nn.conv2d(input, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
 
         # Keep tabs on the number of weights
@@ -396,8 +398,8 @@ class ConvNet(object):
                 tf.add_to_collection('losses', weight_decay)
         return var
 
-# TODO implement ResNet
-# TODO ResNet should inherit Net
+# TODO: implement ResNet
+# TODO: ResNet should inherit Net
 class ResNet(object):
     pass
 
