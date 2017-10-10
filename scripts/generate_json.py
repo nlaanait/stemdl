@@ -23,15 +23,16 @@ layer_keys_list = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5',
                    'linear_output']
 
 # parameters dictionary
-conv_layer_1 = {'type': 'convolutional', 'stride': [1, 1], 'kernel': [6, 6], 'features': 64, 'activation':'relu',
-                      'padding':'SAME'}
-conv_layer_2 = {'type': 'convolutional', 'stride': [1, 1], 'kernel': [4, 4], 'features': 128, 'activation':'relu',
-                      'padding':'SAME'}
-pool =  {'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'avg','padding':'SAME'}
-conv_layer_3 = {'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 256, 'activation':'relu',
-                      'padding':'SAME'}
-fully_connected=  {'type': 'fully_connected','weights': 1024,'bias': 1024, 'activation': 'tanh','regularize': False}
-linear_ouput = {'type': 'linear_output','weights': 3,'bias': 3,'regularize': False}
+conv_layer_1 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [6, 6], 'features': 64,
+                            'activation':'relu', 'padding':'SAME'})
+conv_layer_2 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [4, 4], 'features': 128,
+                            'activation':'relu', 'padding':'SAME'})
+pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'avg','padding':'SAME'})
+conv_layer_3 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 256,
+                            'activation':'relu', 'padding':'SAME'})
+fully_connected = OrderedDict({'type': 'fully_connected','weights': 1024,'bias': 1024, 'activation': 'tanh',
+                               'regularize': False})
+linear_ouput = OrderedDict({'type': 'linear_output','weights': 3,'bias': 3,'regularize': False})
 
 layer_params_list = [conv_layer_1]*5 + [pool] + [conv_layer_2]*5 + [pool] + [conv_layer_3]*5 + [pool] + \
                     [fully_connected] + [linear_ouput]
