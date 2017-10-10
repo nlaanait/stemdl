@@ -292,9 +292,8 @@ class ConvNet(object):
          Returns:
            nothing
         """
-        # Remove 'worker_[0-9]/' from the name in case this is a multi-GPU training
-        # session. This helps the clarity of presentation on tensorboard.
-        tensor_name = re.sub('%s_[0-9]*/' % worker_name, '', x.op.name)
+        # Remove 'worker_[0-9]/' from the name in Tensorboard.
+        tensor_name = re.sub('%s_[0-9]*/' % worker_name, '', x.name)
         tf.summary.histogram(tensor_name + '/activations', x)
         tf.summary.scalar(tensor_name + '/sparsity', tf.nn.zero_fraction(x))
 
@@ -311,12 +310,13 @@ class ConvNet(object):
 
         # Transpose to NHWC
         image_stack = tf.transpose(image_stack, perm=[0, 2, 3, 1])
+        #
+        tensor_name = re.sub('%s_[0-9]*/' % worker_name, '', image_stack.name)
         # taking only first 3 images from batch
         if n_features is None:
             # nFeatures = int(pool.shape[-1].value /2)
             n_features = -1
-        tensor_name = re.sub('%s_[0-9]*/' % worker_name, '', image_stack.op.name)
-        for ind in range(3):
+        for ind in range(2):
             map = tf.slice(image_stack, (ind, 0, 0, 0), (1, -1, -1, n_features))
             # print('activation map shape: %s' %(format(map.shape)))
             map = tf.reshape(map, (map.shape[1].value, map.shape[2].value, map.shape[-1].value))
@@ -351,10 +351,10 @@ class ConvNet(object):
         Returns:
             Nothing
         """
-
+        # Remove 'worker_[0-9]/' from the name in Tensorboard.
+        tensor_name = re.sub('%s_[0-9]*/' % worker_name, '', image_stack.name)
         if n_features is None:
             n_features = -1
-        tensor_name = re.sub('%s_[0-9]*/' % worker_name, '', image_stack.op.name)
         map = tf.slice(image_stack, (0, 0, 0, 0), (-1, -1, -1, n_features))
         # print('activation map shape: %s' %(format(map.shape)))
         map = tf.reshape(map, (map.shape[0].value, map.shape[1].value, map.shape[-2].value*map.shape[-1].value))
