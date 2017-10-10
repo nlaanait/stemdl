@@ -264,35 +264,9 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         variables_averages_op = variable_averages.apply(tf.trainable_variables())
 
         # Gather all training related ops into a single one.
-        with tf.control_dependencies([apply_gradient_op, variables_averages_op, tf.group(*worker_ops)]):
-            train_op = tf.no_op(name='train')
-
-        # class _LoggerHook(tf.train.SessionRunHook):
-        #     """Logs loss and runtime."""
-        #
-        #     def begin(self):
-        #         self._step = -1
-        #         self._start_time = time.time()
-        #
-        #     def before_run(self, run_context):
-        #         self._step += 1
-        #         return tf.train.SessionRunArgs(total_loss)  # Asks for loss value.
-        #
-        #     def after_run(self, run_context, run_values):
-        #         if self._step % flags.log_frequency == 0:
-        #             current_time = time.time()
-        #             duration = current_time - self._start_time
-        #             self._start_time = current_time
-        #
-        #             loss_value = run_values.results
-        #             examples_per_sec = flags.log_frequency * flags.batch_size * num_GPUS / duration
-        #             sec_per_batch = float(duration / flags.log_frequency)
-        #             elapsed_epochs = num_GPUS * self._step * flags.batch_size / flags.NUM_EXAMPLES_PER_EPOCH
-        #             format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
-        #                         'sec/batch)')
-        #             print (format_str % (datetime.now(), self._step, elapsed_epochs, loss_value,
-        #                                examples_per_sec, sec_per_batch))
-
+        train_op = tf.group(apply_gradient_op, variable_averages, tf.group(*worker_ops))
+        # with tf.control_dependencies([apply_gradient_op, variables_averages_op, tf.group(*worker_ops)]):
+        #     train_op = tf.no_op(name='train')
 
         # Config file for tf.Session()
         config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
