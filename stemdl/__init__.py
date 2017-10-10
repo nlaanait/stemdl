@@ -8,10 +8,7 @@ from .network import *
 from . import runtime
 from .runtime import *
 
-from .__version__ import version as __version__
-from .__version__ import date as __date__
-
-__all__ = ['inputs', 'io_utils', 'network', 'runtime', '__date__', '__version__']
+__all__ = ['inputs', 'io_utils', 'network', 'runtime']
 __all__ += inputs.__all__
 __all__ += io_utils.__all__
 __all__ += network.__all__

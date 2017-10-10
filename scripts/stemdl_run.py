@@ -14,12 +14,12 @@ import sys
 
 """
 These FLAGS define variables for a particular TF workflow and are not expected to change.
-See runtime.set_flags() for flags that should be set at the CLI.
+
 """
 # Basic parameters describing the training run
 tf.app.flags.DEFINE_boolean('log_device_placement', False, """Whether to log device placement.""")
 tf.app.flags.DEFINE_boolean('allow_soft_placement', True, """Whether to allow variable soft placement on the device-""" +\
-                     """ multi-gpu runs.""")
+                     """ This is needed for multi-gpu runs.""")
 tf.app.flags.DEFINE_integer('log_frequency', 10, """How often to log results to the console.""")
 tf.app.flags.DEFINE_integer('max_steps', 1000000,"""Number of batches to run.""")
 tf.app.flags.DEFINE_integer('num_epochs', 1000000,"""Number of Data Epochs to do training""")

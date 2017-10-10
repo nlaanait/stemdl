@@ -16,7 +16,7 @@ def write_json_network_config(file, layer_keys, layer_params):
     :return: None
     """
     assert len(layer_keys) == len(layer_params), '# of layer names and # of layer parameter dictionaries do not match!'
-    network_config = OrderedDict(zip(layer_keys_list, layer_params_list))
+    network_config = OrderedDict(zip(layer_keys, layer_params))
     with open(file, mode='w') as f:
         json.dump(network_config, f, indent="\t")
     print('Wrote %d NN layers to %s' % (len(network_config.keys()), file))
