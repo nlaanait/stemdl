@@ -34,9 +34,9 @@ class _LoggerHook(tf.train.SessionRunHook):
             self._start_time = current_time
 
             loss_value = run_values.results
-            examples_per_sec = self.flags.log_frequency * self.flags.batch_size * self.num_GPUS / duration
+            examples_per_sec = self.flags.log_frequency * self.flags.batch_size * self.num_gpus / duration
             sec_per_batch = float(duration / self.flags.log_frequency)
-            elapsed_epochs = self.num_GPUS * self._step * self.flags.batch_size / self.flags.NUM_EXAMPLES_PER_EPOCH
+            elapsed_epochs = self.num_gpus * self._step * self.flags.batch_size / self.flags.NUM_EXAMPLES_PER_EPOCH
             format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
                           'sec/batch)')
             print(format_str % (datetime.now(), self._step, elapsed_epochs, loss_value,
