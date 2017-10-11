@@ -43,7 +43,7 @@ class _LoggerHook(tf.train.SessionRunHook):
                                 examples_per_sec, sec_per_batch))
 
 
-def _add_loss_summaries(scope, total_loss, losses, flags):
+def _add_loss_summaries(total_loss, losses, flags):
     """
     Add summaries for losses in model.
     Generates moving average for all losses and associated summaries for
@@ -54,18 +54,17 @@ def _add_loss_summaries(scope, total_loss, losses, flags):
     :return: loss_averages_op
     """
     # Compute the moving average of all individual losses and the total loss.
-    with tf.variable_scope(scope, reuse=None) as _:
-        loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
-        loss_averages_op = loss_averages.apply(losses + [total_loss])
+    loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
+    loss_averages_op = loss_averages.apply(losses + [total_loss])
 
-        # Attach a scalar summary to all individual losses and the total loss; do the
-        # same for the averaged version of the losses.
-        for l in losses + [total_loss]:
-            # Name each loss as '(raw)' and name the moving average version of the loss
-            # as the original loss name.
-            loss_name = re.sub('%s_[0-9]*/' % flags.worker_name, '', l.op.name)
-            tf.summary.scalar(l.op.name + ' (raw)', l)
-            tf.summary.scalar(l.op.name, loss_averages.average(l))
+    # Attach a scalar summary to all individual losses and the total loss; do the
+    # same for the averaged version of the losses.
+    for l in losses + [total_loss]:
+        # Name each loss as '(raw)' and name the moving average version of the loss
+        # as the original loss name.
+        loss_name = re.sub('%s_[0-9]*/' % flags.worker_name, '', l.op.name)
+        tf.summary.scalar(l.op.name + ' (raw)', l)
+        tf.summary.scalar(l.op.name, loss_averages.average(l))
 
     return loss_averages_op
 
@@ -207,7 +206,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # Build model, forward propagate, and calculate loss for each worker.
         worker_grads = []
         worker_ops = []
-        with tf.variable_scope(tf.get_variable_scope()):
+        with tf.variable_scope(tf.get_variable_scope(), reuse=None):
             for i in range(num_GPUS):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
@@ -232,7 +231,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         total_loss = tf.add_n(losses, name='total_loss')
 
                         # Generate summaries for the losses and get corresponding op
-                        loss_averages_op = _add_loss_summaries(scope, total_loss, losses, flags)
+                        loss_averages_op = _add_loss_summaries(total_loss, losses, flags)
 
                         # Reuse variables for the next worker.
                         # try:
