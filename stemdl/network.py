@@ -73,7 +73,7 @@ class ConvNet(object):
 
         # Initiate the remaining layers
         for layer_name, layer_params in list(self.network.items())[1:]:
-            with tf.variable_scope(layer_name) as scope:
+            with tf.variable_scope(layer_name, reuse=True) as scope:
                 in_shape = out.get_shape()
                 if layer_params['type'] == 'convolutional':
                     out, _ = self._conv(input=out, params=layer_params)
@@ -400,14 +400,16 @@ class ConvNet(object):
           Variable Tensor
         """
         with tf.device('/cpu:0'):
-            var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
+            # var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
             if regularize:
                 var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable,
                                       regularizer=self._weight_decay)
+                return var
                 # weight_decay = tf.get_variable(name='weight_decay', shape=[1], initializer=tf.ones_initializer(),
                 #                                trainable=False) * self.hyper_params['weight_decay']
                 # weight_loss = tf.multiply(tf.nn.l2_loss(var), weight_decay, name='weight_loss')
                 # tf.add_to_collection('losses', weight_loss)
+            var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
         return var
 
     def _weight_decay(self, tensor, params):
