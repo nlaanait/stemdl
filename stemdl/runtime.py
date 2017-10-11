@@ -221,7 +221,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         n_net.get_loss()
 
                         # Assemble all of the losses.
-                        losses = tf.get_collection('REGULARIZATION_LOSSES', scope)
+                        losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES, scope)
+                        # tf.group()
                         # losses = tf.get_collection('losses', scope)
 
                         print(losses)
