@@ -22,6 +22,7 @@ class _LoggerHook(tf.train.SessionRunHook):
     def begin(self):
         self._step = -1
         self._start_time = time.time()
+        self.epoch = 0.
 
     def before_run(self, run_context):
         self._step += 1
@@ -36,7 +37,8 @@ class _LoggerHook(tf.train.SessionRunHook):
             loss_value = run_values.results
             examples_per_sec = self.flags.log_frequency * self.flags.batch_size * self.num_gpus / duration
             sec_per_batch = float(duration / self.flags.log_frequency)
-            elapsed_epochs = self.num_gpus * self._step * self.flags.batch_size / self.flags.NUM_EXAMPLES_PER_EPOCH
+            elapsed_epochs = self.num_gpus * self._step * self.flags.batch_size * 1.0 / self.flags.NUM_EXAMPLES_PER_EPOCH
+            self.epoch += elapsed_epochs
             format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
                           'sec/batch)')
             print(format_str % (datetime.now(), self._step, elapsed_epochs, loss_value,
@@ -271,8 +273,9 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         variable_averages_op = variable_averages.apply(tf.trainable_variables())
 
         # Gather all training related ops into a single one.
-        with tf.control_dependencies([apply_gradient_op, variable_averages_op, tf.group(*worker_ops)]):
-            train_op = tf.no_op(name='train')
+        # with tf.control_dependencies([apply_gradient_op, variable_averages_op, tf.group(*worker_ops)]):
+        #     train_op = tf.no_op(name='train')
+        train_op = tf.group(apply_gradient_op, variable_averages_op, tf.group(*worker_ops))
 
         # Config file for tf.Session()
         config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
