@@ -50,7 +50,7 @@ class ConvNet(object):
             "'operation' must be 'train' or 'eval'"
         self.num_weights = 0
         self.misc_ops = []
-        if int(self.scope.split('_')[-1]) == 0:
+        if self.scope == self.flags.worker_name+'_0/':
             self.reuse = None
         else:
             self.reuse = True
