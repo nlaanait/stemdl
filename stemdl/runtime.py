@@ -221,7 +221,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         n_net.get_loss()
 
                         # Assemble all of the losses.
-                        losses = tf.get_collection('losses', scope)
+                        losses = tf.get_collection('REGULARIZATION_LOSSES', scope)
+                        # losses = tf.get_collection('losses', scope)
+
+                        # print(losses)
 
                         # Calculate the total loss for the current worker
                         total_loss = tf.add_n(losses, name='total_loss')

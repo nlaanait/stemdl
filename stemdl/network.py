@@ -402,13 +402,16 @@ class ConvNet(object):
         with tf.device('/cpu:0'):
             var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
             if regularize:
-                weight_decay = tf.get_variable(name='weight_var', shape=[1], initializer=tf.ones_initializer(),
-                                               trainable=False)
-                weight_decay = weight_decay * self.hyper_params['weight_decay']
-                weight_loss = tf.multiply(tf.nn.l2_loss(var), weight_decay, name='weight_loss')
-                tf.add_to_collection('losses', weight_loss)
+                var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable,
+                                      regularizer=self._weight_decay)
+                # weight_decay = tf.get_variable(name='weight_decay', shape=[1], initializer=tf.ones_initializer(),
+                #                                trainable=False) * self.hyper_params['weight_decay']
+                # weight_loss = tf.multiply(tf.nn.l2_loss(var), weight_decay, name='weight_loss')
+                # tf.add_to_collection('losses', weight_loss)
         return var
 
+    def _weight_decay(self, tensor, params):
+        return tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay'])
 # TODO: implement ResNet
 # TODO: ResNet should inherit Net
 class ResNet(object):
