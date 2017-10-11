@@ -81,7 +81,7 @@ def _average_gradients(worker_grads):
      across all workers.
     """
     if len(worker_grads) == 1:
-        return worker_grads
+        return worker_grads[0]
 
     average_grads = []
     for grad_and_vars in zip(*worker_grads):
