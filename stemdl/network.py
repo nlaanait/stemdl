@@ -412,7 +412,7 @@ class ConvNet(object):
             var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
         return var
 
-    def _weight_decay(self, tensor, params):
+    def _weight_decay(self, tensor):
         return tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay'])
 # TODO: implement ResNet
 # TODO: ResNet should inherit Net
