@@ -225,18 +225,12 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Assemble all of the losses.
                         losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
 
-
                         # Calculate the total loss for the current worker
                         total_loss = tf.add_n(losses, name='total_loss')
 
                         # Generate summaries for the losses and get corresponding op
                         loss_averages_op = _add_loss_summaries(total_loss, losses, flags)
 
-                        # Reuse variables for the next worker.
-                        # try:
-                        # tf.get_variable_scope().reuse_variables()
-                        # except ValueError:
-                        #     print('skipping non-shared variables.')
 
                         # get summaries
                         summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
@@ -252,6 +246,9 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         worker_ops.append(n_net.get_misc_ops())
 
         print("length of worker_grads list %d" %len(worker_grads))
+        print("grads from worker_0 %s" % worker_grads[0][10])
+        print("grads from worker_0 %s" % worker_grads[1][10])
+
         # Average gradients over workers.
         avg_gradients = _average_gradients(worker_grads)
 
