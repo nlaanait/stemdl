@@ -24,7 +24,7 @@ class ConvNet(object):
     """
     Vanilla Convolutional Neural Network (Feed-Forward).
     """
-    def __init__(self, flags, global_step, hyper_params, network, images, labels, operation='train'):
+    def __init__(self, scope, flags, global_step, hyper_params, network, images, labels, operation='train'):
         """
         :param flags: tf.app.flags
         :param global_step: as it says
@@ -35,6 +35,7 @@ class ConvNet(object):
         :param operation: string, 'train' or 'eval'
         :return:
         """
+        self.scope = scope
         self.flags = flags
         self.global_step = global_step
         self.hyper_params = hyper_params
@@ -106,10 +107,11 @@ class ConvNet(object):
         self.model_output = out
 
     def get_loss(self):
-        if self.net_type == 'regressor':
-            self._calculate_loss_regressor(self.hyper_params['loss_function'])
-        if self.net_type == 'classifier':
-            self._calculate_loss_classifier(self.hyper_params['loss_function'])
+        with tf.variable_scope(self.scope, reuse=None) as scope:
+            if self.net_type == 'regressor':
+                self._calculate_loss_regressor(self.hyper_params['loss_function'])
+            if self.net_type == 'classifier':
+                self._calculate_loss_classifier(self.hyper_params['loss_function'])
         # losses = tf.get_collection('losses', scope)
         # total_loss = tf.add_n(losses, name='total_loss')
         # return losses, total_loss

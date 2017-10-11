@@ -212,7 +212,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                     with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
 
                         # Setup Neural Net
-                        n_net = network.ConvNet(flags, global_step, hyper_params, network_config, images, labels,
+                        n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
                                              operation='train')
                         # Build it
                         n_net.build_model()
@@ -221,7 +221,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         n_net.get_loss()
 
                         # Assemble all of the losses.
-                        losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES, scope)
+                        losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
                         # tf.group()
                         # losses = tf.get_collection('losses', scope)
 
