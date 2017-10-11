@@ -97,7 +97,7 @@ class ConvNet(object):
 
 
                 # print layer specs and generate Tensorboard summaries
-                self._print_layer_specs(layer_params, scope, in_shape, out.get)
+                self._print_layer_specs(layer_params, scope, in_shape, out.get_shape())
 
                 self._activation_summary(out)
 
