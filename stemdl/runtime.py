@@ -249,6 +249,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Accumulate extra non-standard operations across workers
                         worker_ops.append(n_net.get_misc_ops())
 
+        print("length of worker_grads list %d" %len(worker_grads))
         # Average gradients over workers.
         avg_gradients = _average_gradients(worker_grads)
 

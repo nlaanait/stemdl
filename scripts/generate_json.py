@@ -45,7 +45,7 @@ hyper_params_regression = {'network_type': 'regressor', #'network_type': 'classi
                            'warm_up': False,
                            'num_epochs_per_decay':30,
                            'learning_rate_decay_factor': 0.5,
-                           'initial_learning_rate': 1.e-2,
+                           'initial_learning_rate': 1.e-4,
                            'num_epochs_per_ramp': 10,
                            'num_epochs_in_warm_up': 100,
                            'warm_up_max_learning_rate': 1e-3,
