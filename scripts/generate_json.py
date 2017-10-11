@@ -53,8 +53,8 @@ hyper_params_regression = {'network_type': 'regressor', #'network_type': 'classi
                            'moving_average_decay': 0.9999,
                            'loss_function': {'type': 'Huber',
                                              'residual_num_epochs_decay': 30,
-                                             'residual_initial': 15.,
-                                             'residual_minimum': 1.,
+                                             'residual_initial': 5.0,
+                                             'residual_minimum': 1.0,
                                              'residual_decay_factor': 0.75},
                            }
 
