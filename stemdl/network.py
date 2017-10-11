@@ -58,7 +58,7 @@ class ConvNet(object):
         # Initiate 1st layer
         print('Built Neural Net...')
         layer_name, layer_params = list(self.network.items())[0]
-        with tf.variable_scope(layer_name) as scope:
+        with tf.variable_scope(layer_name, reuse=True) as scope:
             out, kernel = self._conv(input=self.images, params=layer_params)
             out = self._batch_norm(input=out)
             out = self._activate(input=out, name=scope.name, params=layer_params)
@@ -74,7 +74,7 @@ class ConvNet(object):
 
         # Initiate the remaining layers
         for layer_name, layer_params in list(self.network.items())[1:]:
-            with tf.variable_scope(layer_name) as scope:
+            with tf.variable_scope(layer_name, reuse=True) as scope:
                 in_shape = out.get_shape()
                 if layer_params['type'] == 'convolutional':
                     out, _ = self._conv(input=out, params=layer_params)
