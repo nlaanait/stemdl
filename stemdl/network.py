@@ -402,7 +402,7 @@ class ConvNet(object):
         with tf.device('/cpu:0'):
             var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
             if regularize:
-                weight_decay = tf.get_variable(name='weight_decay', shape=[1], initializer=tf.ones_initializer(),
+                weight_decay = tf.get_variable(name='weight_var', shape=[1], initializer=tf.ones_initializer(),
                                                trainable=False)
                 weight_decay = weight_decay * self.hyper_params['weight_decay']
                 weight_loss = tf.multiply(tf.nn.l2_loss(var), weight_decay, name='weight_loss')
