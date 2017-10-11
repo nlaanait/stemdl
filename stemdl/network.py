@@ -67,24 +67,25 @@ class ConvNet(object):
             self._activation_image_summary(out)
             self._kernel_image_summary(kernel)
             in_shape = self.images.get_shape()
-            print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
-                  (scope.name, format(in_shape), format(out.shape), format(layer_params['kernel']),
-                   format(layer_params['stride']) ))
+            print('%s --- input dim : %s, output dim: %s ' % (scope.name, format(in_shape), format(out.shape)))
 
         # Initiate the remaining layers
         for layer_name, layer_params in list(self.network.items())[1:]:
             with tf.variable_scope(layer_name) as scope:
-                in_shape = out.get_shape()
                 if layer_params['type'] == 'convolutional':
+                    in_shape = out.get_shape()
                     out, _ = self._conv(input=out, params=layer_params)
                     out = self._batch_norm(input=out)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
                     self._activation_image_summary(out)
 
                 if layer_params['type'] == 'pooling':
+                    in_shape = out.get_shape()
                     out = self._pool(input=out, name=scope.name, params=layer_params)
+                    self._activation_image_summary(out)
 
                 if layer_params['type'] == 'fully_connected':
+                    in_shape = out.get_shape()
                     out = self._linear(input=out, name=scope.name+'_preactiv', params=layer_params)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
 
@@ -94,10 +95,9 @@ class ConvNet(object):
                     assert out.get_shape()[-1] == self.flags.OUTPUT_DIM, 'Dimensions of the linear output layer' + \
                                                                          'do not match the expected output set in' + \
                                                                          'tf.app.flags. Check flags or network_config.json'
+                print('%s --- input dim : %s, output dim: %s ' % (scope.name, format(in_shape), format(out.shape)))
 
-                # print layer specs and generate Tensorboard summaries
-                out_shape = out.get_shape()
-                self._print_layer_specs(layer_params, scope, in_shape, out_shape)
+                # Generate Summaries
                 self._activation_summary(out)
 
         print('Total # of layers & weights: %d, %2.1e\n' % (len(self.network), self.num_weights))
@@ -105,14 +105,14 @@ class ConvNet(object):
         # reference the output
         self.model_output = out
 
-    def get_loss(self):
+    def get_loss(self, scope):
         if self.net_type == 'regressor':
             self._calculate_loss_regressor(self.hyper_params['loss_function'])
         if self.net_type == 'classifier':
             self._calculate_loss_classifier(self.hyper_params['loss_function'])
-        # losses = tf.get_collection('losses', scope)
-        # total_loss = tf.add_n(losses, name='total_loss')
-        # return losses, total_loss
+        losses = tf.get_collection('losses', scope)
+        total_loss = tf.add_n(losses, name='total_loss')
+        return losses, total_loss
 
     def get_misc_ops(self):
         ops = tf.group(*self.misc_ops)
@@ -174,9 +174,12 @@ class ConvNet(object):
         stride_shape = [1,1]+list(params['stride'])
         features = params['features']
         kernel_shape = list(params['kernel']) + [input.shape[1].value, features]
-        init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
+        # init_val = np.sqrt(2.0/(kernel_shape[0]*kernel_shape[1]*kernel_shape[-1]))
+        # # print('kernel_shape %s' % format(kernel_shape))
+        # kernel = self._cpu_variable_init('weights', shape=kernel_shape,
+        #                                  initializer=tf.truncated_normal_initializer(stddev=init_val))
         kernel = self._cpu_variable_init('weights', shape=kernel_shape,
-                                         initializer=tf.random_normal_initializer(stddev=init_val))
+                                         initializer=tf.uniform_unit_scaling_initializer(factor=1.43))
         output = tf.nn.conv2d(input, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
 
         # Keep tabs on the number of weights
@@ -313,7 +316,7 @@ class ConvNet(object):
         if n_features is None:
             # nFeatures = int(pool.shape[-1].value /2)
             n_features = -1
-        for ind in range(1):
+        for ind in range(2):
             map = tf.slice(image_stack, (ind, 0, 0, 0), (1, -1, -1, n_features))
             # print('activation map shape: %s' %(format(map.shape)))
             map = tf.reshape(map, (map.shape[1].value, map.shape[2].value, map.shape[-1].value))
@@ -376,17 +379,6 @@ class ConvNet(object):
         # Display feature maps
         tf.summary.image(tensor_name + '/kernels' , map_tile)
 
-    @staticmethod
-    def _print_layer_specs(params, scope, input_shape, output_shape):
-        if params['type'] == 'convolutional' or params['type'] == 'pooling':
-            print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
-                  (scope.name, format(input_shape), format(output_shape), format(params['kernel']),
-                   format(params['stride'])))
-        if params['type'] == 'fully_connected' or params['type'] == 'linear_output':
-            print('%s --- input: %s, output: %s, weights: %s, bias: %s'
-                  % (scope.name, format(input_shape), format(output_shape), format(params['weights']),
-                     format(params['bias'])))
-
     # Variable placement, initialization, regularization
     def _cpu_variable_init(self, name, shape, initializer, trainable=True, regularize=False):
         """Helper to create a Variable stored on CPU memory.
@@ -402,11 +394,8 @@ class ConvNet(object):
         with tf.device('/cpu:0'):
             var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
             if regularize:
-                weight_decay = tf.get_variable(name='weight_var', shape=[1], initializer=tf.ones_initializer(),
-                                               trainable=False)
-                weight_decay = weight_decay * self.hyper_params['weight_decay']
-                weight_loss = tf.multiply(tf.nn.l2_loss(var), weight_decay, name='weight_loss')
-                tf.add_to_collection('losses', weight_loss)
+                weight_decay = tf.multiply(tf.nn.l2_loss(var), self.hyper_params['weight_decay'], name='weight_decay')
+                tf.add_to_collection('losses', weight_decay)
         return var
 
 # TODO: implement ResNet
