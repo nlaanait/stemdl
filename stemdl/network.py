@@ -197,10 +197,10 @@ class ConvNet(object):
         :return:
         """
         # Initializing hyper_parameters
-        beta = self._cpu_variable_init('beta', shape=[input.shape[-1].value], initializer=tf.zeros_initializer())
-        gamma = self._cpu_variable_init('gamma', shape=[input.shape[-1].value],initializer=tf.ones_initializer())
+        beta = self._cpu_variable_init('beta', shape=[input.shape[1].value], initializer=tf.zeros_initializer())
+        gamma = self._cpu_variable_init('gamma', shape=[input.shape[1].value],initializer=tf.ones_initializer())
         if self.operation == 'train':
-            mean, variance = tf.nn.moments(input, axes=[0, 1, 2])
+            mean, variance = tf.nn.moments(input, axes=[0, 2, 3])
             moving_mean = self._cpu_variable_init('moving_mean', shape=[input.shape[-1].value],
                                                   initializer=tf.zeros_initializer(), trainable=False)
             moving_variance = self._cpu_variable_init('moving_variance', shape=[input.shape[-1].value],
