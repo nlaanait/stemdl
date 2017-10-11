@@ -51,9 +51,9 @@ class ConvNet(object):
         self.num_weights = 0
         self.misc_ops = []
         if self.scope == flags.worker_name+'_0':
-            self.reuse = True
-        else:
             self.reuse = None
+        else:
+            self.reuse = True
 
     def build_model(self):
         """
@@ -111,7 +111,7 @@ class ConvNet(object):
         self.model_output = out
 
     def get_loss(self):
-        with tf.variable_scope(self.scope, reuse=None) as scope:
+        with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
             if self.net_type == 'regressor':
                 self._calculate_loss_regressor(self.hyper_params['loss_function'])
             if self.net_type == 'classifier':
