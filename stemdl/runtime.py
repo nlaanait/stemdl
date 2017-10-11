@@ -246,8 +246,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         worker_ops.append(n_net.get_misc_ops())
 
         print("length of worker_grads list %d" %len(worker_grads))
-        print("grads from worker_0 %s" % worker_grads[0][10])
-        print("grads from worker_0 %s" % worker_grads[1][10])
+        print("grads from worker_0 %s" % format(worker_grads[0][10]))
+        print("grads from worker_0 %s" % format(worker_grads[1][10]))
 
         # Average gradients over workers.
         avg_gradients = _average_gradients(worker_grads)
