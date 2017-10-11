@@ -60,7 +60,7 @@ class ConvNet(object):
         Here we build the model.
         """
         # Initiate 1st layer
-        print('Built Neural Net...')
+        print('Building Neural Net on %s...' % self.scope)
         layer_name, layer_params = list(self.network.items())[0]
         with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
             out, kernel = self._conv(input=self.images, params=layer_params)

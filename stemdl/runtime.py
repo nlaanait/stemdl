@@ -206,7 +206,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # Build model, forward propagate, and calculate loss for each worker.
         worker_grads = []
         worker_ops = []
-        with tf.variable_scope(tf.get_variable_scope(), reuse=None):
+        with tf.variable_scope(tf.get_variable_scope()):
             for i in range(num_GPUS):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
@@ -222,10 +222,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
                         # Assemble all of the losses.
                         losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
-                        # tf.group()
-                        # losses = tf.get_collection('losses', scope)
 
-                        print(losses)
 
                         # Calculate the total loss for the current worker
                         total_loss = tf.add_n(losses, name='total_loss')
@@ -235,7 +232,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
                         # Reuse variables for the next worker.
                         # try:
-                        # tf.get_variable_scope().reuse_variables()
+                        tf.get_variable_scope().reuse_variables()
                         # except ValueError:
                         #     print('skipping non-shared variables.')
 
