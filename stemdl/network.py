@@ -67,25 +67,24 @@ class ConvNet(object):
             self._activation_image_summary(out)
             self._kernel_image_summary(kernel)
             in_shape = self.images.get_shape()
-            print('%s --- input dim : %s, output dim: %s ' % (scope.name, format(in_shape), format(out.shape)))
+            print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
+                  (scope.name, format(in_shape), format(out.shape), format(layer_params['kernel']),
+                   format(layer_params['stride']) ))
 
         # Initiate the remaining layers
         for layer_name, layer_params in list(self.network.items())[1:]:
             with tf.variable_scope(layer_name) as scope:
+                in_shape = out.get_shape()
                 if layer_params['type'] == 'convolutional':
-                    in_shape = out.get_shape()
                     out, _ = self._conv(input=out, params=layer_params)
                     out = self._batch_norm(input=out)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
                     self._activation_image_summary(out)
 
                 if layer_params['type'] == 'pooling':
-                    in_shape = out.get_shape()
                     out = self._pool(input=out, name=scope.name, params=layer_params)
-                    self._activation_image_summary(out)
 
                 if layer_params['type'] == 'fully_connected':
-                    in_shape = out.get_shape()
                     out = self._linear(input=out, name=scope.name+'_preactiv', params=layer_params)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
 
@@ -95,9 +94,11 @@ class ConvNet(object):
                     assert out.get_shape()[-1] == self.flags.OUTPUT_DIM, 'Dimensions of the linear output layer' + \
                                                                          'do not match the expected output set in' + \
                                                                          'tf.app.flags. Check flags or network_config.json'
-                print('%s --- input dim : %s, output dim: %s ' % (scope.name, format(in_shape), format(out.shape)))
 
-                # Generate Summaries
+
+                # print layer specs and generate Tensorboard summaries
+                self._print_layer_specs(layer_params, scope, in_shape, out.get)
+
                 self._activation_summary(out)
 
         print('Total # of layers & weights: %d, %2.1e\n' % (len(self.network), self.num_weights))
@@ -375,6 +376,17 @@ class ConvNet(object):
         map_tile = tf.log1p(map_tile)
         # Display feature maps
         tf.summary.image(tensor_name + '/kernels' , map_tile)
+
+    @staticmethod
+    def _print_layer_specs(self, params, scope, input_shape, output_shape):
+        if params['type'] == 'convolutional' or params['type'] == 'pooling':
+            print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
+                  (scope.name, format(input_shape), format(output_shape), format(params['kernel']),
+                   format(params['stride'])))
+        if params['type'] == 'fully_connected' or params['type'] == 'linear_output':
+            print('%s --- input: %s, output: %s, weights: %s, bias: %s'
+                  % (scope.name, format(input_shape), format(output_shape), format(params['weights']),
+                     format(params['bias'])))
 
     # Variable placement, initialization, regularization
     def _cpu_variable_init(self, name, shape, initializer, trainable=True, regularize=False):

@@ -80,6 +80,9 @@ def _average_gradients(worker_grads):
      List of pairs of (gradient, variable) where the gradient has been averaged
      across all workers.
     """
+    if len(worker_grads) == 1:
+        return worker_grads
+
     average_grads = []
     for grad_and_vars in zip(*worker_grads):
         # Note that each grad_and_vars looks like the following:
@@ -181,26 +184,21 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         global_step = tf.contrib.framework.get_or_create_global_step()
 
         # Setup data stream
-        # Add queue runner to the graph
-        filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
-        # pass the filename_queue to the inputs classes to decode
-        dset = inputs.DatasetTFRecords(filename_queue, flags)
+        with tf.variable_scope('Input') as scope:
+            # Add queue runner to the graph
+            filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
 
-        # with tf.variable_scope('Input') as scope:
-        #     # Add queue runner to the graph
-        #     filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
-        #
-        #     # pass the filename_queue to the inputs classes to decode
-        #     dset = inputs.DatasetTFRecords(filename_queue, flags)
-        #     image, label = dset.decode_image_label()
-        #
-        #     # Process images and generate examples batch
-        #     images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
-        #                                                     noise_max=0.15,
-        #                                                     random_glimpses='normal', geometric=True)
-        #
-        #     print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
-        #                                                         format(labels.get_shape())))
+            # pass the filename_queue to the inputs classes to decode
+            dset = inputs.DatasetTFRecords(filename_queue, flags)
+            image, label = dset.decode_image_label()
+
+            # Process images and generate examples batch
+            images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
+                                                            noise_max=0.15,
+                                                            random_glimpses='normal', geometric=True)
+
+            print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
+                                                                format(labels.get_shape())))
 
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
@@ -212,15 +210,6 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             for i in range(num_GPUS):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
-
-                        # Get Training Batch
-                        with tf.name_scope('Input') as scope_name:
-                            image, label = dset.decode_image_label()
-
-                            # Process images and generate examples batch
-                            images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
-                                                                            noise_max=0.15,
-                                                                            random_glimpses='normal', geometric=True)
 
                         # Setup Neural Net
                         n_net = network.ConvNet(flags, global_step, hyper_params, network_config, images, labels,
@@ -257,10 +246,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         worker_ops.append(n_net.get_misc_ops())
 
         # Average gradients over workers.
-        if num_GPUS == 1:
-            avg_gradients = worker_grads[0]
-        else:
-            avg_gradients = _average_gradients(worker_grads)
+        avg_gradients = _average_gradients(worker_grads)
 
         # Add histograms for gradients.
         for grad, var in avg_gradients:
