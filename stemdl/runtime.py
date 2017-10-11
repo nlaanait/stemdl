@@ -210,7 +210,6 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             for i in range(num_GPUS):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
-                        tf.get_variable_scope().reuse_variables()
 
                         # Setup Neural Net
                         n_net = network.ConvNet(flags, global_step, hyper_params, network_config, images, labels,
