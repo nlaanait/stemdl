@@ -377,7 +377,7 @@ class ConvNet(object):
         tf.summary.image(tensor_name + '/kernels' , map_tile)
 
     @staticmethod
-    def _print_layer_specs(self, params, scope, input_shape, output_shape):
+    def _print_layer_specs(params, scope, input_shape, output_shape):
         if params['type'] == 'convolutional' or params['type'] == 'pooling':
             print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
                   (scope.name, format(input_shape), format(output_shape), format(params['kernel']),
