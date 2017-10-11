@@ -95,10 +95,9 @@ class ConvNet(object):
                                                                          'do not match the expected output set in' + \
                                                                          'tf.app.flags. Check flags or network_config.json'
 
-
                 # print layer specs and generate Tensorboard summaries
-                self._print_layer_specs(layer_params, scope, in_shape, out.get_shape())
-
+                out_shape = out.get_shape()
+                self._print_layer_specs(layer_params, scope, in_shape, out_shape)
                 self._activation_summary(out)
 
         print('Total # of layers & weights: %d, %2.1e\n' % (len(self.network), self.num_weights))
