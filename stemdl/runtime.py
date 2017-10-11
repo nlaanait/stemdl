@@ -231,10 +231,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         loss_averages_op = _add_loss_summaries(total_loss, losses, flags)
 
                         # Reuse variables for the next worker.
-                        try:
-                            tf.get_variable_scope().reuse_variables()
-                        except ValueError:
-                            print('skipping non-shared variables.')
+                        # try:
+                        tf.get_variable_scope().reuse_variables()
+                        # except ValueError:
+                        #     print('skipping non-shared variables.')
 
                         # get summaries
                         summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
