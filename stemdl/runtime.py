@@ -235,7 +235,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
                         # Reuse variables for the next worker.
                         # try:
-                        tf.get_variable_scope().reuse_variables()
+                        # tf.get_variable_scope().reuse_variables()
                         # except ValueError:
                         #     print('skipping non-shared variables.')
 
