@@ -197,23 +197,24 @@ class ConvNet(object):
         :return:
         """
         # Initializing hyper_parameters
-        beta = self._cpu_variable_init('beta', shape=[input.shape[1].value], initializer=tf.zeros_initializer())
-        gamma = self._cpu_variable_init('gamma', shape=[input.shape[1].value],initializer=tf.ones_initializer())
+        shape = [1, input.shape[1].value, 1, 1]
+        beta = self._cpu_variable_init('beta', shape=shape, initializer=tf.zeros_initializer())
+        gamma = self._cpu_variable_init('gamma', shape=shape,initializer=tf.ones_initializer())
         if self.operation == 'train':
-            mean, variance = tf.nn.moments(input, axes=[0, 2, 3])
-            moving_mean = self._cpu_variable_init('moving_mean', shape=[input.shape[1].value],
+            mean, variance = tf.nn.moments(input, axes=[0, 2, 3], keep_dims=True)
+            moving_mean = self._cpu_variable_init('moving_mean', shape=shape,
                                                   initializer=tf.zeros_initializer(), trainable=False)
-            moving_variance = self._cpu_variable_init('moving_variance', shape=[input.shape[1].value],
+            moving_variance = self._cpu_variable_init('moving_variance', shape=shape,
                                                       initializer=tf.ones_initializer(), trainable=False)
             self.misc_ops.append(moving_averages.assign_moving_average(
                 moving_mean, mean, 0.9))
             self.misc_ops.append(moving_averages.assign_moving_average(
                 moving_variance, variance, 0.9))
         if self.operation == 'eval':
-            mean = self._cpu_variable_init('moving_mean', shape=[input.shape[1].value], \
+            mean = self._cpu_variable_init('moving_mean', shape=shape, \
                                            initializer=tf.zeros_initializer(), trainable=False)
-            variance = self._cpu_variable_init('moving_variance', shape=[input.shape[1].value], \
-                                               initializer=tf.zeros_initializer(), trainable=False)
+            variance = self._cpu_variable_init('moving_variance', shape=shape, \
+                                               initializer=tf.ones_initializer(), trainable=False)
 
         output = tf.nn.batch_normalization(input, mean, variance, beta, gamma, 1.e-3)
         # Keep tabs on the number of weights
