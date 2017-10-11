@@ -313,7 +313,7 @@ class ConvNet(object):
         if n_features is None:
             # nFeatures = int(pool.shape[-1].value /2)
             n_features = -1
-        for ind in range(2):
+        for ind in range(1):
             map = tf.slice(image_stack, (ind, 0, 0, 0), (1, -1, -1, n_features))
             # print('activation map shape: %s' %(format(map.shape)))
             map = tf.reshape(map, (map.shape[1].value, map.shape[2].value, map.shape[-1].value))

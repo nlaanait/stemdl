@@ -181,21 +181,26 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         global_step = tf.contrib.framework.get_or_create_global_step()
 
         # Setup data stream
-        with tf.variable_scope('Input') as scope:
-            # Add queue runner to the graph
-            filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
+        # Add queue runner to the graph
+        filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
+        # pass the filename_queue to the inputs classes to decode
+        dset = inputs.DatasetTFRecords(filename_queue, flags)
 
-            # pass the filename_queue to the inputs classes to decode
-            dset = inputs.DatasetTFRecords(filename_queue, flags)
-            image, label = dset.decode_image_label()
-
-            # Process images and generate examples batch
-            images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
-                                                            noise_max=0.15,
-                                                            random_glimpses='normal', geometric=True)
-
-            print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
-                                                                format(labels.get_shape())))
+        # with tf.variable_scope('Input') as scope:
+        #     # Add queue runner to the graph
+        #     filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
+        #
+        #     # pass the filename_queue to the inputs classes to decode
+        #     dset = inputs.DatasetTFRecords(filename_queue, flags)
+        #     image, label = dset.decode_image_label()
+        #
+        #     # Process images and generate examples batch
+        #     images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
+        #                                                     noise_max=0.15,
+        #                                                     random_glimpses='normal', geometric=True)
+        #
+        #     print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
+        #                                                         format(labels.get_shape())))
 
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
@@ -208,6 +213,15 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
 
+                        # Get Training Batch
+                        with tf.name_scope('Input') as scope_name:
+                            image, label = dset.decode_image_label()
+
+                            # Process images and generate examples batch
+                            images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
+                                                                            noise_max=0.15,
+                                                                            random_glimpses='normal', geometric=True)
+
                         # Setup Neural Net
                         n_net = network.ConvNet(flags, global_step, hyper_params, network_config, images, labels,
                                              operation='train')
@@ -215,7 +229,6 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         n_net.build_model()
 
                         # calculate the loss
-                        # losses, total_loss = n_net.get_loss(scope)
                         n_net.get_loss()
 
                         # Assemble all of the losses.
@@ -244,7 +257,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         worker_ops.append(n_net.get_misc_ops())
 
         # Average gradients over workers.
-        avg_gradients = _average_gradients(worker_grads)
+        if num_GPUS == 1:
+            avg_gradients = worker_grads[0]
+        else:
+            avg_gradients = _average_gradients(worker_grads)
 
         # Add histograms for gradients.
         for grad, var in avg_gradients:
@@ -264,9 +280,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         variable_averages_op = variable_averages.apply(tf.trainable_variables())
 
         # Gather all training related ops into a single one.
-        train_op = tf.group(apply_gradient_op, variable_averages_op, tf.group(*worker_ops))
-        # with tf.control_dependencies([apply_gradient_op, variables_averages_op, tf.group(*worker_ops)]):
-        #     train_op = tf.no_op(name='train')
+        with tf.control_dependencies([apply_gradient_op, variable_averages_op, tf.group(*worker_ops)]):
+            train_op = tf.no_op(name='train')
 
         # Config file for tf.Session()
         config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
