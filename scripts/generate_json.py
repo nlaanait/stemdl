@@ -29,7 +29,7 @@ fully_connected = OrderedDict({'type': 'fully_connected','weights': 1024,'bias':
                                'regularize': True})
 linear_ouput = OrderedDict({'type': 'linear_output','weights': 3,'bias': 3,'regularize': False})
 
-layer_params_list = [conv_layer_1]*4 + [pool_max] + [conv_layer_1]*4 + [pool_max] + [conv_layer_2]*4 + [pool_avg] + \
+layer_params_list = [conv_layer_1]*4 + [pool_max] + [conv_layer_2]*4 + [pool_max] + [conv_layer_3]*4 + [pool_avg] + \
                     [fully_connected] + [linear_ouput]
 
 #################################
