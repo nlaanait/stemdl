@@ -227,7 +227,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Setup Neural Net
                         n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
                                              operation='train')
-                        # Build it
+                        # Build it and propagate images through it.
                         n_net.build_model()
 
                         # calculate the loss
@@ -264,10 +264,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # print("grads from worker_0 %s" % format(worker_grads[1][10]))
 
         # Average gradients over workers.
-        avg_gradients = _average_gradients(worker_grads)
+        # avg_gradients = _average_gradients(worker_grads)
         # print("losses shape: %s" %format(losses.shape))
         # print(losses)
-        # avg_gradients = worker_grads[0]
+        avg_gradients = worker_grads[0]
         # Add histograms for gradients.
         for grad, var in avg_gradients:
             summaries.append(tf.summary.histogram(var.op.name + '/gradients', grad))
