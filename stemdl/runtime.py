@@ -256,7 +256,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # avg_gradients = worker_grads[0]
         # Add histograms for gradients.
         for grad, var in avg_gradients:
-            summaries.append(tf.summary.histogram(var.op.name + '/gradients', grad))
+            summaries.append(tf.summary.histogram(var+ '/gradients', grad))
 
         # Apply gradients.
         apply_gradient_op = opt.apply_gradients(avg_gradients, global_step=global_step)
