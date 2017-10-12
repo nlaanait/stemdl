@@ -84,22 +84,18 @@ def _average_gradients(worker_grads):
     if len(worker_grads) == 1:
         return worker_grads[0]
 
-    average_grads = []
-    for grad_and_vars in worker_grads:
+    for itm in worker_grads:
         grads = []
-        for g, _ in grad_and_vars:
-            grads.append(g)
-
+        for g, _ in itm:
+            grads.append(tf.expand_dims(g,0))
 
     # Average over the 'worker' dimension.
-    grad = tf.stack(grads)
-    # grad = tf.concat(axis=0, values=grads)
-    grad = tf.reduce_mean(grad, axis=0, keep_dims=False)
+    grad_tensor = tf.concat(grads, 0)
+    grad_tensor = tf.reduce_mean(grad_tensor, axis=0, keep_dims=False)
 
     # All the variables are shared so just return references from the first worker.
-    v = worker_grads[0][1]
-    grad_and_var = (grad, v)
-    average_grads.append(grad_and_var)
+    variables = worker_grads[0][1]
+    average_grads = (grad_tensor, variables)
     return average_grads
 
 
