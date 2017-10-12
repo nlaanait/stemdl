@@ -184,23 +184,6 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
     with tf.Graph().as_default(), tf.device('/cpu:0'):
         global_step = tf.contrib.framework.get_or_create_global_step()
 
-        # # Setup data stream
-        # with tf.variable_scope('Input') as scope:
-        #     # Add queue runner to the graph
-        #     filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
-        #
-        #     # pass the filename_queue to the inputs classes to decode
-        #     dset = inputs.DatasetTFRecords(filename_queue, flags)
-        #     image, label = dset.decode_image_label()
-        #
-        #     # Process images and generate examples batch
-        #     images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
-        #                                                     noise_max=0.15,
-        #                                                     random_glimpses='normal', geometric=True)
-        #
-        #     print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
-        #                                                         format(labels.get_shape())))
-
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
 
@@ -208,12 +191,11 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         worker_grads = []
         worker_ops = []
         worker_total_loss = []
-        with tf.variable_scope(tf.get_variable_scope()):
+        with tf.variable_scope(tf.get_variable_scope(), reuse=None):
             for i in range(num_GPUS):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
-                        # # Setup data stream
-                        # with tf.variable_scope('Input') as _:
+                        # Setup data stream
                         # Add queue runner to the graph
                         filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
 
