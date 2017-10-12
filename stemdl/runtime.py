@@ -84,12 +84,14 @@ def _average_gradients(worker_grads):
     if len(worker_grads) == 1:
         return worker_grads[0]
     grads_list = []
-    for grads_itm in zip(*worker_grads):
-        grads_list.append(tf.expand_dims(grads_itm,0))
+    for i in range(len(worker_grads[0])):
+        dummy=[]
+        for grad in worker_grads:
+            dummy.append(grad[i][0])
+        grads_list.append(tf.stack(dummy))
 
     # Average over the 'worker' dimension.
-    grad_tensor = tf.concat(grads_list, 0)
-    grad_tensor = tf.reduce_mean(grad_tensor, axis=0, keep_dims=False)
+    grad_tensor = [tf.reduce_mean(grad, axis=0) for grad in grads_list]
 
     # Getting shared variables
     variables = tf.GraphKeys.TRAINABLE_VARIABLES
@@ -231,10 +233,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         with tf.control_dependencies([loss_averages_op]):
                             grads_vars = opt.compute_gradients(total_loss)
 
-                        grads = [grad for grad, _ in grads_vars]
+                        # grads = [grad for grad, _ in grads_vars]
 
                         # Accumulate gradients across all workers.
-                        worker_grads.append(grads)
+                        worker_grads.append(grads_vars)
 
                         # Accumulate extra non-standard operations across workers
                         worker_ops.append(n_net.get_misc_ops())
