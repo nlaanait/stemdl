@@ -83,18 +83,16 @@ def _average_gradients(worker_grads):
     """
     if len(worker_grads) == 1:
         return worker_grads[0]
-
-    for itm in zip(*worker_grads):
-        grads = []
-        for g, _ in itm:
-            grads.append(tf.expand_dims(g,0))
+    grads_list = []
+    for grads_itm in worker_grads:
+        grads_list.append(tf.expand_dims(grads_itm,0))
 
     # Average over the 'worker' dimension.
-    grad_tensor = tf.concat(grads, 0)
+    grad_tensor = tf.concat(grads_list, 0)
     grad_tensor = tf.reduce_mean(grad_tensor, axis=0, keep_dims=False)
 
     # Getting shared variables
-    variables = worker_grads[0][1]
+    variables = tf.GraphKeys.TRAINABLE_VARIABLES
     average_grads = [(grad_tensor, variables)]
     return average_grads
 
@@ -231,7 +229,9 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
                         # Calculate the gradients for the current data batch
                         with tf.control_dependencies([loss_averages_op]):
-                            grads = opt.compute_gradients(total_loss)
+                            grads_vars = opt.compute_gradients(total_loss)
+
+                        grads = [grad for grad, _ in grads_vars]
 
                         # Accumulate gradients across all workers.
                         worker_grads.append(grads)
@@ -247,7 +247,9 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         print(len(worker_grads[0]))
         print("grads: %s" % format(worker_grads[0]))
 
-        avg_gradients = _average_gradients(worker_grads)
+        tf.expand_dims()
+
+        # avg_gradients = _average_gradients(worker_grads)
 
         # print("losses shape: %s" %format(losses.shape))
         # print(losses)
