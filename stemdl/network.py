@@ -210,7 +210,7 @@ class ConvNet(object):
             #     moving_mean, mean, 0.9))
             # self.misc_ops.append(moving_averages.assign_moving_average(
             #     moving_variance, variance, 0.9))
-            output = tf.nn.fused_batch_norm(input, beta, gamma, 1.e-3, data_format='NCHW')
+            output = tf.nn.fused_batch_norm(input, beta, gamma, 1.e-3, mean=None, variance=None, data_format='NCHW')
         if self.operation == 'eval':
             mean = self._cpu_variable_init('moving_mean', shape=shape, \
                                            initializer=tf.zeros_initializer(), trainable=False)
