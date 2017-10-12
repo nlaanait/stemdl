@@ -245,9 +245,9 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Accumulate extra non-standard operations across workers
                         worker_ops.append(n_net.get_misc_ops())
 
-        print("length of worker_grads list %d" %len(worker_grads))
-        print("grads from worker_0 %s" % format(worker_grads[0][10]))
-        print("grads from worker_0 %s" % format(worker_grads[1][10]))
+        # print("length of worker_grads list %d" %len(worker_grads))
+        # print("grads from worker_0 %s" % format(worker_grads[0][10]))
+        # print("grads from worker_0 %s" % format(worker_grads[1][10]))
 
         # Average gradients over workers.
         avg_gradients = _average_gradients(worker_grads)
@@ -287,8 +287,9 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 config=config) as mon_sess:
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
-                    grad_arr = mon_sess.run(avg_gradients[0][0])
-                    print(grad_arr)
+                    grad_arr_0, grad_arr_4 = mon_sess.run([avg_gradients[0][0], avg_gradients[4][0]])
+                    print('worker_0 grads: %s' %format(grad_arr_0))
+                    print('worker_4 grads: %s' % format(grad_arr_4))
 
 
 def set_flags(checkpt_dir, batch_size=64, data_dir=None):
