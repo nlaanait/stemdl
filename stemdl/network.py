@@ -53,7 +53,7 @@ class ConvNet(object):
         if self.scope == self.flags.worker_name+'_0/':
             self.reuse = None
         else:
-            self.reuse = None
+            self.reuse = True
 
     def build_model(self):
         """
