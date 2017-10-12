@@ -85,23 +85,19 @@ def _average_gradients(worker_grads):
         return worker_grads[0]
 
     average_grads = []
-    for grad_and_vars in zip(*worker_grads):
-        # Note that each grad_and_vars looks like the following:
-        #((grad0_gpu0, var0_gpu0), ... , (grad0_gpuN, var0_gpuN))
+    for grad_and_vars in worker_grads:
         grads = []
         for g, _ in grad_and_vars:
-            # Add 0 dimension to the gradients to represent the worker.
-            expanded_g = tf.expand_dims(g, 0)
+            grads.append(g)
 
-            # Append on a 'worker' dimension- to be average over
-            grads.append(expanded_g)
 
     # Average over the 'worker' dimension.
-    grad = tf.concat(axis=0, values=grads)
-    grad = tf.reduce_mean(grad, 0)
+    grad = tf.stack(grads)
+    # grad = tf.concat(axis=0, values=grads)
+    grad = tf.reduce_mean(grad, axis=0, keep_dims=False)
 
     # All the variables are shared so just return references from the first worker.
-    v = grad_and_vars[0][1]
+    v = worker_grads[0][1]
     grad_and_var = (grad, v)
     average_grads.append(grad_and_var)
     return average_grads
@@ -192,11 +188,6 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             dset = inputs.DatasetTFRecords(filename_queue, flags)
             image, label = dset.decode_image_label()
 
-            # Process images and generate examples batch
-            images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
-                                                            noise_max=0.15,
-                                                            random_glimpses='normal', geometric=True)
-
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
 
@@ -208,18 +199,11 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             for i in range(num_GPUS):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
-                        # Setup data stream
-                        # # Add queue runner to the graph
-                        # filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
-                        #
-                        # # pass the filename_queue to the inputs classes to decode
-                        # dset = inputs.DatasetTFRecords(filename_queue, flags)
-                        # image, label = dset.decode_image_label()
 
-                        # # Process images and generate examples batch
-                        # images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
-                        #                                                 noise_max=0.15,
-                        #                                                 random_glimpses='normal', geometric=True)
+                        # Process images and generate examples batch
+                        images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
+                                                                        noise_max=0.15,
+                                                                        random_glimpses='normal', geometric=True)
 
                         print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
                                                                                 format(labels.get_shape())))
@@ -264,10 +248,11 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # print("grads from worker_0 %s" % format(worker_grads[1][10]))
 
         # Average gradients over workers.
-        # avg_gradients = _average_gradients(worker_grads)
+        avg_gradients = _average_gradients(worker_grads)
+        print("grads: %s" % format(avg_gradients))
         # print("losses shape: %s" %format(losses.shape))
         # print(losses)
-        avg_gradients = worker_grads[0]
+        # avg_gradients = worker_grads[0]
         # Add histograms for gradients.
         for grad, var in avg_gradients:
             summaries.append(tf.summary.histogram(var.op.name + '/gradients', grad))
