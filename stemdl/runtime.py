@@ -192,7 +192,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
             # pass the filename_queue to the inputs classes to decode
             dset = inputs.DatasetTFRecords(filename_queue, flags)
-            image, label = dset.decode_image_label()
+            # image, label = dset.decode_image_label()
 
             # # Process images and generate examples batch
             # images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
@@ -213,6 +213,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
                         # Process images and generate examples batch
+                        image, label = dset.decode_image_label()
                         images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
                                                                         noise_max=0.15,
                                                                         random_glimpses='normal', geometric=True)
