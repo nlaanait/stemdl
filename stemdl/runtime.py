@@ -244,8 +244,11 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # print("grads from worker_0 %s" % format(worker_grads[1][10]))
 
         # Average gradients over workers.
+        print(len(worker_grads[0]))
+        print("grads: %s" % format(worker_grads[0]))
+
         avg_gradients = _average_gradients(worker_grads)
-        print("grads: %s" % format(avg_gradients))
+
         # print("losses shape: %s" %format(losses.shape))
         # print(losses)
         # avg_gradients = worker_grads[0]
