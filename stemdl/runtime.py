@@ -287,6 +287,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 config=config) as mon_sess:
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
+                    grad_arr = mon_sess.run(avg_gradients[0][0])
+                    print(grad_arr)
 
 
 def set_flags(checkpt_dir, batch_size=64, data_dir=None):
