@@ -201,7 +201,7 @@ class ConvNet(object):
         beta = self._cpu_variable_init('beta', shape=shape, initializer=tf.zeros_initializer())
         gamma = self._cpu_variable_init('gamma', shape=shape,initializer=tf.ones_initializer())
         if self.operation == 'train':
-            output, mean, variance = tf.nn.fused_batch_norm(input, beta, gamma, None, None, 1.e-3, data_format='NCHW',
+            output, mean, variance = tf.nn.fused_batch_norm(input, gamma, beta, None, None, 1.e-3, data_format='NCHW',
                                                             is_training=True)
             moving_mean = self._cpu_variable_init('moving_mean', shape=shape,
                                                   initializer=tf.zeros_initializer(), trainable=False)
