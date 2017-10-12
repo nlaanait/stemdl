@@ -59,8 +59,7 @@ def _add_loss_summaries(total_loss, losses, flags):
     loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
     loss_averages_op = loss_averages.apply(losses + [total_loss])
 
-    # Attach a scalar summary to all individual losses and the total loss; do the
-    # same for the averaged version of the losses.
+    # Attach a scalar summary to all individual losses and the total loss;
     for l in losses + [total_loss]:
         # Name each loss as '(raw)' and name the moving average version of the loss
         # as the original loss name.
