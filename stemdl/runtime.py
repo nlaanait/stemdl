@@ -212,22 +212,22 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             for i in range(num_GPUS):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
-                        # Setup data stream
-                        with tf.variable_scope('Input') as scope:
-                            # Add queue runner to the graph
-                            filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
+                        # # Setup data stream
+                        # with tf.variable_scope('Input') as _:
+                        # Add queue runner to the graph
+                        filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
 
-                            # pass the filename_queue to the inputs classes to decode
-                            dset = inputs.DatasetTFRecords(filename_queue, flags)
-                            image, label = dset.decode_image_label()
+                        # pass the filename_queue to the inputs classes to decode
+                        dset = inputs.DatasetTFRecords(filename_queue, flags)
+                        image, label = dset.decode_image_label()
 
-                            # Process images and generate examples batch
-                            images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
-                                                                            noise_max=0.15,
-                                                                            random_glimpses='normal', geometric=True)
+                        # Process images and generate examples batch
+                        images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
+                                                                        noise_max=0.15,
+                                                                        random_glimpses='normal', geometric=True)
 
-                            print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
-                                                                                    format(labels.get_shape())))
+                        print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
+                                                                                format(labels.get_shape())))
 
                         # Setup Neural Net
                         n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
