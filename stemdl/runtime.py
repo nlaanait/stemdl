@@ -194,13 +194,13 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             dset = inputs.DatasetTFRecords(filename_queue, flags)
             image, label = dset.decode_image_label()
 
-            # Process images and generate examples batch
-            images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
-                                                            noise_max=0.15,
-                                                            random_glimpses='normal', geometric=True)
+            # # Process images and generate examples batch
+            # images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
+            #                                                 noise_max=0.15,
+            #                                                 random_glimpses='normal', geometric=True)
 
-            print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
-                                                                format(labels.get_shape())))
+            # print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
+            #                                                     format(labels.get_shape())))
 
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
@@ -212,6 +212,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             for i in range(num_GPUS):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
+                        # Process images and generate examples batch
+                        images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
+                                                                        noise_max=0.15,
+                                                                        random_glimpses='normal', geometric=True)
 
                         # Setup Neural Net
                         n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
@@ -287,7 +291,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 config=config) as mon_sess:
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
-                    grad_arr_0, grad_arr_4 = mon_sess.run([worker_grads[0][0], worker_grads[4][0]])
+                    grad_arr_0, grad_arr_4 = mon_sess.run([worker_grads[0][0][0], worker_grads[4][0][0]])
                     print('worker_0 grads: %s' %format(grad_arr_0))
                     print('worker_4 grads: %s' % format(grad_arr_4))
 
