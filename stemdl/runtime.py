@@ -40,7 +40,7 @@ class _LoggerHook(tf.train.SessionRunHook):
             elapsed_epochs = self.num_gpus * self._step * self.flags.batch_size * 1.0 / self.flags.NUM_EXAMPLES_PER_EPOCH
             self.epoch += elapsed_epochs
             format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
-                          'sec/batch)')
+                          'sec/batch/gpu)')
             print(format_str % (datetime.now(), self._step, elapsed_epochs, loss_value,
                                 examples_per_sec, sec_per_batch))
 
@@ -59,8 +59,7 @@ def _add_loss_summaries(total_loss, losses, flags):
     loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
     loss_averages_op = loss_averages.apply(losses + [total_loss])
 
-    # Attach a scalar summary to all individual losses and the total loss; do the
-    # same for the averaged version of the losses.
+    # Attach a scalar summary to all individual losses and the total loss;
     for l in losses + [total_loss]:
         # Name each loss as '(raw)' and name the moving average version of the loss
         # as the original loss name.
@@ -84,27 +83,19 @@ def _average_gradients(worker_grads):
     """
     if len(worker_grads) == 1:
         return worker_grads[0]
-
-    average_grads = []
-    for grad_and_vars in zip(*worker_grads):
-        # Note that each grad_and_vars looks like the following:
-        #((grad0_gpu0, var0_gpu0), ... , (grad0_gpuN, var0_gpuN))
-        grads = []
-        for g, _ in grad_and_vars:
-            # Add 0 dimension to the gradients to represent the worker.
-            expanded_g = tf.expand_dims(g, 0)
-
-            # Append on a 'worker' dimension- to be average over
-            grads.append(expanded_g)
+    grads_list = []
+    for i in range(len(worker_grads[0])):
+        dummy=[]
+        for grad in worker_grads:
+            dummy.append(grad[i][0])
+        grads_list.append(tf.stack(dummy))
 
     # Average over the 'worker' dimension.
-    grad = tf.concat(axis=0, values=grads)
-    grad = tf.reduce_mean(grad, 0)
+    grad_tensor = [tf.reduce_mean(grad, axis=0) for grad in grads_list]
 
-    # All the variables are shared so just return references from the first worker.
-    v = grad_and_vars[0][1]
-    grad_and_var = (grad, v)
-    average_grads.append(grad_and_var)
+    # Getting shared variables
+    variables = [itm[1] for itm in worker_grads[0]]
+    average_grads = [(grad, var) for grad, var in zip(grad_tensor, variables)]
     return average_grads
 
 
@@ -184,23 +175,14 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
     with tf.Graph().as_default(), tf.device('/cpu:0'):
         global_step = tf.contrib.framework.get_or_create_global_step()
+        # Setup data stream
+        with tf.name_scope('Input') as _:
 
-        # # Setup data stream
-        # with tf.variable_scope('Input') as scope:
-        #     # Add queue runner to the graph
-        #     filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
-        #
-        #     # pass the filename_queue to the inputs classes to decode
-        #     dset = inputs.DatasetTFRecords(filename_queue, flags)
-        #     image, label = dset.decode_image_label()
-        #
-        #     # Process images and generate examples batch
-        #     images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
-        #                                                     noise_max=0.15,
-        #                                                     random_glimpses='normal', geometric=True)
-        #
-        #     print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
-        #                                                         format(labels.get_shape())))
+            filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
+
+            # pass the filename_queue to the inputs classes to decode
+            dset = inputs.DatasetTFRecords(filename_queue, flags)
+            image, label = dset.decode_image_label()
 
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
@@ -208,18 +190,11 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # Build model, forward propagate, and calculate loss for each worker.
         worker_grads = []
         worker_ops = []
-        with tf.variable_scope(tf.get_variable_scope()):
+        worker_total_loss = []
+        with tf.variable_scope(tf.get_variable_scope(), reuse=None):
             for i in range(num_GPUS):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
-                        # # Setup data stream
-                        # with tf.variable_scope('Input') as _:
-                        # Add queue runner to the graph
-                        filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
-
-                        # pass the filename_queue to the inputs classes to decode
-                        dset = inputs.DatasetTFRecords(filename_queue, flags)
-                        image, label = dset.decode_image_label()
 
                         # Process images and generate examples batch
                         images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
@@ -232,7 +207,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Setup Neural Net
                         n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
                                              operation='train')
-                        # Build it
+                        # Build it and propagate images through it.
                         n_net.build_model()
 
                         # calculate the loss
@@ -244,6 +219,9 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Calculate the total loss for the current worker
                         total_loss = tf.add_n(losses, name='total_loss')
 
+                        # Accumulate total across all workers
+                        worker_total_loss.append(total_loss)
+
                         # Generate summaries for the losses and get corresponding op
                         loss_averages_op = _add_loss_summaries(total_loss, losses, flags)
                         # tf.get_variable_scope().reuse_variables()
@@ -253,10 +231,12 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
                         # Calculate the gradients for the current data batch
                         with tf.control_dependencies([loss_averages_op]):
-                            grads = opt.compute_gradients(total_loss)
+                            grads_vars = opt.compute_gradients(total_loss)
+
+                        # grads = [grad for grad, _ in grads_vars]
 
                         # Accumulate gradients across all workers.
-                        worker_grads.append(grads)
+                        worker_grads.append(grads_vars)
 
                         # Accumulate extra non-standard operations across workers
                         worker_ops.append(n_net.get_misc_ops())
@@ -266,14 +246,17 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # print("grads from worker_0 %s" % format(worker_grads[1][10]))
 
         # Average gradients over workers.
+        # print(len(worker_grads[0]))
+        # print("grads: %s" % format(worker_grads[0]))
+
         avg_gradients = _average_gradients(worker_grads)
+
         # print("losses shape: %s" %format(losses.shape))
         # print(losses)
         # avg_gradients = worker_grads[0]
         # Add histograms for gradients.
-        for grad, var in avg_gradients:
-            if grad is not None:
-                summaries.append(tf.summary.histogram(var.op.name + '/gradients', grad))
+        # for grad, var in avg_gradients:
+        #     summaries.append(tf.summary.histogram(var+ '/gradients', grad))
 
         # Apply gradients.
         apply_gradient_op = opt.apply_gradients(avg_gradients, global_step=global_step)
@@ -286,17 +269,22 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         variable_averages = tf.train.ExponentialMovingAverage(
             hyper_params['moving_average_decay'], global_step)
         variable_averages_op = variable_averages.apply(tf.trainable_variables())
+        # print('trainable variables:\n')
+        # print(tf.trainable_variables())
+        # print('apply gradient ops:\n')
+        # print(apply_gradient_op)
 
         # Gather all training related ops into a single one.
-        with tf.control_dependencies([apply_gradient_op, variable_averages_op, tf.group(*worker_ops)]):
-            train_op = tf.no_op(name='train')
-        # train_op = tf.group(apply_gradient_op, variable_averages_op, tf.group(*worker_ops))
+        # with tf.control_dependencies([apply_gradient_op, variable_averages_op, tf.group(*worker_ops)]):
+        #     train_op = tf.no_op(name='train')
+        train_op = tf.group(apply_gradient_op, variable_averages_op)
 
         # Config file for tf.Session()
         config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
                                 log_device_placement=flags.log_device_placement)
-
-        logHook = _LoggerHook(flags, total_loss, num_GPUS)
+        # avg_total_loss = tf.constant(worker_total_loss)
+        avg_total_loss = tf.reduce_mean(worker_total_loss)
+        logHook = _LoggerHook(flags, avg_total_loss, num_GPUS)
 
         # Start Training Session
         with tf.train.MonitoredTrainingSession(
@@ -305,6 +293,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 config=config) as mon_sess:
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
+                    # loss_arr = mon_sess.run(worker_total_loss)
+                    # print('total_loss for each worker: %s' %format(loss_arr))
                     # grad_arr_0, grad_arr_4 = mon_sess.run(worker_grads[0][0])#, worker_grads[4][0][0]])
                     # print('worker_0 grads: %s' %format(grad_arr_0))
                     # losses = mon_sess.run(losses[0])
