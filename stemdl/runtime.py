@@ -257,6 +257,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
         # Average gradients over workers.
         # avg_gradients = _average_gradients(worker_grads)
+        print("losses shape: %s" %format(losses.shape))
+        print(losses)
         avg_gradients = worker_grads[0]
         # Add histograms for gradients.
         for grad, var in avg_gradients:
