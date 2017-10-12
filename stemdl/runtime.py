@@ -84,7 +84,7 @@ def _average_gradients(worker_grads):
     if len(worker_grads) == 1:
         return worker_grads[0]
     grads_list = []
-    for grads_itm in worker_grads:
+    for grads_itm in zip(*worker_grads):
         grads_list.append(tf.expand_dims(grads_itm,0))
 
     # Average over the 'worker' dimension.
