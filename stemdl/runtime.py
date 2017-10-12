@@ -236,6 +236,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Generate summaries for the losses and get corresponding op
                         loss_averages_op = _add_loss_summaries(total_loss, losses, flags)
 
+                        tf.get_variable_scope().reuse_variables()
 
                         # get summaries
                         summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
