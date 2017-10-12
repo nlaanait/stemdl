@@ -192,6 +192,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             dset = inputs.DatasetTFRecords(filename_queue, flags)
             image, label = dset.decode_image_label()
 
+            # Process images and generate examples batch
+            images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
+                                                            noise_max=0.15,
+                                                            random_glimpses='normal', geometric=True)
 
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
@@ -212,10 +216,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # dset = inputs.DatasetTFRecords(filename_queue, flags)
                         # image, label = dset.decode_image_label()
 
-                        # Process images and generate examples batch
-                        images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
-                                                                        noise_max=0.15,
-                                                                        random_glimpses='normal', geometric=True)
+                        # # Process images and generate examples batch
+                        # images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
+                        #                                                 noise_max=0.15,
+                        #                                                 random_glimpses='normal', geometric=True)
 
                         print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
                                                                                 format(labels.get_shape())))
