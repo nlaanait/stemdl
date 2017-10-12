@@ -228,13 +228,13 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         n_net.get_loss()
 
                         # Assemble all of the losses.
-                        total_loss = tf.get_collection(tf.GraphKeys.LOSSES, scope)
+                        losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
 
                         # Calculate the total loss for the current worker
-                        # total_loss = tf.add_n(losses, name='total_loss')
+                        total_loss = tf.add_n(losses, name='total_loss')
 
                         # Generate summaries for the losses and get corresponding op
-                        # loss_averages_op = _add_loss_summaries(total_loss, losses, flags)
+                        loss_averages_op = _add_loss_summaries(total_loss, losses, flags)
 
                         tf.get_variable_scope().reuse_variables()
 
@@ -242,8 +242,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
 
                         # Calculate the gradients for the current data batch
-                        # with tf.control_dependencies([loss_averages_op]):
-                        grads = opt.compute_gradients(total_loss)
+                        with tf.control_dependencies([loss_averages_op]):
+                            grads = opt.compute_gradients(total_loss)
 
                         # Accumulate gradients across all workers.
                         worker_grads.append(grads)
@@ -295,8 +295,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 config=config) as mon_sess:
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
-                    grad_arr_0, grad_arr_4 = mon_sess.run(worker_grads[0][0])#, worker_grads[4][0][0]])
-                    print('worker_0 grads: %s' %format(grad_arr_0))
+                    # grad_arr_0, grad_arr_4 = mon_sess.run(worker_grads[0][0])#, worker_grads[4][0][0]])
+                    # print('worker_0 grads: %s' %format(grad_arr_0))
                     # losses = mon_sess.run(losses[0])
                     # print('worker_0 losses: %s' % format(losses))
                     # print('worker_4 grads: %s' % format(grad_arr_4))
