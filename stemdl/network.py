@@ -202,17 +202,16 @@ class ConvNet(object):
         beta = self._cpu_variable_init('beta', shape=shape, initializer=tf.zeros_initializer())
         gamma = self._cpu_variable_init('gamma', shape=shape,initializer=tf.ones_initializer())
         if self.operation == 'train':
-            # mean, variance = tf.nn.moments(input, axes=[0, 2, 3], keep_dims=True)
-            # moving_mean = self._cpu_variable_init('moving_mean', shape=shape,
-            #                                       initializer=tf.zeros_initializer(), trainable=False)
-            # moving_variance = self._cpu_variable_init('moving_variance', shape=shape,
-            #                                           initializer=tf.ones_initializer(), trainable=False)
-            # self.misc_ops.append(moving_averages.assign_moving_average(
-            #     moving_mean, mean, 0.9))
-            # self.misc_ops.append(moving_averages.assign_moving_average(
-            #     moving_variance, variance, 0.9))
             output, mean, variance = tf.nn.fused_batch_norm(input, beta, gamma, None, None, 1.e-3, data_format='NCHW',
                                                             is_training=True)
+            moving_mean = self._cpu_variable_init('moving_mean', shape=shape,
+                                                  initializer=tf.zeros_initializer(), trainable=False)
+            moving_variance = self._cpu_variable_init('moving_variance', shape=shape,
+                                                      initializer=tf.ones_initializer(), trainable=False)
+            self.misc_ops.append(moving_averages.assign_moving_average(
+                moving_mean, mean, 0.9))
+            self.misc_ops.append(moving_averages.assign_moving_average(
+                moving_variance, variance, 0.9))
         if self.operation == 'eval':
             mean = self._cpu_variable_init('moving_mean', shape=shape, \
                                            initializer=tf.zeros_initializer(), trainable=False)
