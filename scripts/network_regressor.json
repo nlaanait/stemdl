@@ -1,181 +1,222 @@
 {
 	"conv1": {
-		"type": "convolutional",
 		"stride": [
 			1,
 			1
 		],
-		"padding": "SAME",
-		"activation": "relu",
+		"features": 64,
+		"type": "convolutional",
 		"kernel": [
-			8,
-			8
+			4,
+			4
 		],
-		"features": 64
+		"padding": "SAME",
+		"activation": "relu"
 	},
 	"conv2": {
-		"type": "convolutional",
 		"stride": [
 			1,
 			1
 		],
-		"padding": "SAME",
-		"activation": "relu",
+		"features": 64,
+		"type": "convolutional",
 		"kernel": [
-			8,
-			8
+			4,
+			4
 		],
-		"features": 64
+		"padding": "SAME",
+		"activation": "relu"
 	},
 	"conv3": {
-		"type": "convolutional",
 		"stride": [
 			1,
 			1
 		],
-		"padding": "SAME",
-		"activation": "relu",
+		"features": 64,
+		"type": "convolutional",
 		"kernel": [
-			8,
-			8
+			4,
+			4
 		],
-		"features": 64
+		"padding": "SAME",
+		"activation": "relu"
 	},
 	"conv4": {
-		"type": "convolutional",
 		"stride": [
 			1,
 			1
 		],
-		"padding": "SAME",
-		"activation": "relu",
-		"kernel": [
-			8,
-			8
-		],
-		"features": 64
-	},
-	"conv5": {
+		"features": 64,
 		"type": "convolutional",
-		"stride": [
-			1,
-			1
+		"kernel": [
+			4,
+			4
 		],
 		"padding": "SAME",
-		"activation": "relu",
-		"kernel": [
-			8,
-			8
-		],
-		"features": 64
+		"activation": "relu"
 	},
 	"pool1": {
-		"type": "pooling",
-		"stride": [
-			2,
-			2
-		],
-		"pool_type": "avg",
 		"kernel": [
 			2,
 			2
 		],
-		"padding": "SAME"
+		"padding": "SAME",
+		"stride": [
+			2,
+			2
+		],
+		"pool_type": "max",
+		"type": "pooling"
+	},
+	"conv5": {
+		"stride": [
+			1,
+			1
+		],
+		"features": 64,
+		"type": "convolutional",
+		"kernel": [
+			4,
+			4
+		],
+		"padding": "SAME",
+		"activation": "relu"
 	},
 	"conv6": {
-		"type": "convolutional",
 		"stride": [
 			1,
 			1
 		],
-		"padding": "SAME",
-		"activation": "relu",
+		"features": 64,
+		"type": "convolutional",
 		"kernel": [
-			8,
-			8
+			4,
+			4
 		],
-		"features": 64
+		"padding": "SAME",
+		"activation": "relu"
 	},
 	"conv7": {
-		"type": "convolutional",
 		"stride": [
 			1,
 			1
 		],
-		"padding": "SAME",
-		"activation": "relu",
+		"features": 64,
+		"type": "convolutional",
 		"kernel": [
-			8,
-			8
+			4,
+			4
 		],
-		"features": 64
+		"padding": "SAME",
+		"activation": "relu"
 	},
 	"conv8": {
-		"type": "convolutional",
 		"stride": [
 			1,
 			1
 		],
-		"padding": "SAME",
-		"activation": "relu",
-		"kernel": [
-			4,
-			4
-		],
-		"features": 64
-	},
-	"conv9": {
+		"features": 64,
 		"type": "convolutional",
-		"stride": [
-			1,
-			1
-		],
-		"padding": "SAME",
-		"activation": "relu",
 		"kernel": [
 			4,
 			4
 		],
-		"features": 64
-	},
-	"conv10": {
-		"type": "convolutional",
-		"stride": [
-			1,
-			1
-		],
 		"padding": "SAME",
-		"activation": "relu",
-		"kernel": [
-			4,
-			4
-		],
-		"features": 64
+		"activation": "relu"
 	},
 	"pool2": {
-		"type": "pooling",
+		"kernel": [
+			2,
+			2
+		],
+		"padding": "SAME",
+		"stride": [
+			2,
+			2
+		],
+		"pool_type": "max",
+		"type": "pooling"
+	},
+	"conv9": {
+		"stride": [
+			1,
+			1
+		],
+		"features": 128,
+		"type": "convolutional",
+		"kernel": [
+			4,
+			4
+		],
+		"padding": "SAME",
+		"activation": "relu"
+	},
+	"conv10": {
+		"stride": [
+			1,
+			1
+		],
+		"features": 128,
+		"type": "convolutional",
+		"kernel": [
+			4,
+			4
+		],
+		"padding": "SAME",
+		"activation": "relu"
+	},
+	"conv11": {
+		"stride": [
+			1,
+			1
+		],
+		"features": 128,
+		"type": "convolutional",
+		"kernel": [
+			4,
+			4
+		],
+		"padding": "SAME",
+		"activation": "relu"
+	},
+	"conv12": {
+		"stride": [
+			1,
+			1
+		],
+		"features": 128,
+		"type": "convolutional",
+		"kernel": [
+			4,
+			4
+		],
+		"padding": "SAME",
+		"activation": "relu"
+	},
+	"pool3": {
+		"kernel": [
+			2,
+			2
+		],
+		"padding": "SAME",
 		"stride": [
 			2,
 			2
 		],
 		"pool_type": "avg",
-		"kernel": [
-			2,
-			2
-		],
-		"padding": "SAME"
+		"type": "pooling"
 	},
 	"fc_1": {
-		"type": "fully_connected",
-		"bias": 512,
-		"weights": 512,
+		"bias": 1024,
+		"activation": "relu",
 		"regularize": true,
-		"activation": "tanh"
+		"type": "fully_connected",
+		"weights": 1024
 	},
 	"linear_output": {
-		"type": "linear_output",
 		"bias": 3,
-		"weights": 3,
-		"regularize": false
+		"regularize": false,
+		"type": "linear_output",
+		"weights": 3
 	}
 }
