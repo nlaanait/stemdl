@@ -93,7 +93,7 @@ def _average_gradients(worker_grads):
     grad_tensor = tf.concat(grads, 0)
     grad_tensor = tf.reduce_mean(grad_tensor, axis=0, keep_dims=False)
 
-    # All the variables are shared so just return references from the first worker.
+    # Getting shared variables
     variables = worker_grads[0][1]
     average_grads = [(grad_tensor, variables)]
     return average_grads
