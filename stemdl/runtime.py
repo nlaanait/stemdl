@@ -84,7 +84,7 @@ def _average_gradients(worker_grads):
     if len(worker_grads) == 1:
         return worker_grads[0]
 
-    for itm in worker_grads:
+    for itm in zip(*worker_grads):
         grads = []
         for g, _ in itm:
             grads.append(tf.expand_dims(g,0))
