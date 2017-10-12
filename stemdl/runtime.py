@@ -287,7 +287,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 config=config) as mon_sess:
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
-                    grad_arr_0, grad_arr_4 = mon_sess.run([avg_gradients[0][0], avg_gradients[4][0]])
+                    grad_arr_0, grad_arr_4 = mon_sess.run([worker_grads[0][0], worker_grads[4][0]])
                     print('worker_0 grads: %s' %format(grad_arr_0))
                     print('worker_4 grads: %s' % format(grad_arr_4))
 
