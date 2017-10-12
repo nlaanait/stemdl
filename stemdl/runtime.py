@@ -183,6 +183,15 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
     with tf.Graph().as_default(), tf.device('/cpu:0'):
         global_step = tf.contrib.framework.get_or_create_global_step()
+        # Setup data stream
+        with tf.name_scope('Input') as _:
+
+            filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
+
+            # pass the filename_queue to the inputs classes to decode
+            dset = inputs.DatasetTFRecords(filename_queue, flags)
+            image, label = dset.decode_image_label()
+
 
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
@@ -196,12 +205,12 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 with tf.device('/gpu:%d' % i):
                     with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
                         # Setup data stream
-                        # Add queue runner to the graph
-                        filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
-
-                        # pass the filename_queue to the inputs classes to decode
-                        dset = inputs.DatasetTFRecords(filename_queue, flags)
-                        image, label = dset.decode_image_label()
+                        # # Add queue runner to the graph
+                        # filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
+                        #
+                        # # pass the filename_queue to the inputs classes to decode
+                        # dset = inputs.DatasetTFRecords(filename_queue, flags)
+                        # image, label = dset.decode_image_label()
 
                         # Process images and generate examples batch
                         images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
