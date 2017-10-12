@@ -94,8 +94,8 @@ def _average_gradients(worker_grads):
     grad_tensor = [tf.reduce_mean(grad, axis=0) for grad in grads_list]
 
     # Getting shared variables
-    variables = tf.GraphKeys.TRAINABLE_VARIABLES
-    average_grads = [(grad_tensor, variables)]
+    variables = [itm[1] for itm in worker_grads[0]]
+    average_grads = [(grad, var) for grad, var in zip(grad_tensor, variables)]
     return average_grads
 
 
