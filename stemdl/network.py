@@ -197,7 +197,8 @@ class ConvNet(object):
         :return:
         """
         # Initializing hyper_parameters
-        shape = [1, input.shape[1].value, 1, 1]
+        # shape = [1, input.shape[1].value, 1, 1]
+        shape = [input.shape[1].value]
         beta = self._cpu_variable_init('beta', shape=shape, initializer=tf.zeros_initializer())
         gamma = self._cpu_variable_init('gamma', shape=shape,initializer=tf.ones_initializer())
         if self.operation == 'train':
