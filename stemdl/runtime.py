@@ -298,8 +298,9 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # Config file for tf.Session()
         config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
                                 log_device_placement=flags.log_device_placement)
-
-        logHook = _LoggerHook(flags, total_loss, num_GPUS)
+        avg_total_loss = tf.constant(worker_total_loss)
+        avg_total_loss = tf.reduce_mean(avg_total_loss)
+        logHook = _LoggerHook(flags, avg_total_loss, num_GPUS)
 
         # Start Training Session
         with tf.train.MonitoredTrainingSession(
