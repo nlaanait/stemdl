@@ -237,13 +237,11 @@ class ConvNet(object):
         bias_shape = [params['bias']]
         if params['type'] == 'fully_connected' and params['activation'] == 'tanh':
             weights = self._cpu_variable_init('weights', shape=weights_shape,
-                                              initializer=tf.truncated_normal_initializer(
-                                                  stddev=np.sqrt(2.0 / (weights_shape[0] * weights_shape[1]))),
+                                              initializer=tf.uniform_unit_scaling_initializer(factor=1.15),
                                               regularize=params['regularize'])
         if params['type'] == 'fully_connected' and params['activation'] == 'relu':
             weights = self._cpu_variable_init('weights', shape=weights_shape,
-                                              initializer=tf.truncated_normal_initializer(
-                                                  stddev=np.sqrt(2.0/(weights_shape[0]*weights_shape[1]))),
+                                              initializer=tf.uniform_unit_scaling_initializer(factor=1.43),
                                               regularize=params['regularize'])
         if params['type'] == 'linear_output':
             weights = self._cpu_variable_init('weights', shape=weights_shape,
