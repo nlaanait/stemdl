@@ -245,7 +245,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Accumulate extra non-standard operations across workers
                         worker_ops.append(n_net.get_misc_ops())
 
-        print(summaries)
+        # print(summaries)
         # average over gradients.
         avg_gradients = _average_gradients(worker_grads)
 
@@ -257,7 +257,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             summaries.append(tf.summary.histogram(var.op.name, var))
             summaries.append(tf.summary.histogram(var.op.name+'/gradients', grad))
 
-        _ = tf.summary.merge_all()
+        # _ = tf.summary.merge_all()
 
         # Track the moving averages of all trainable variables.
         variable_averages = tf.train.ExponentialMovingAverage(
