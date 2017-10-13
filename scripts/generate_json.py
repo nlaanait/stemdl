@@ -17,9 +17,9 @@ layer_keys_list = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5','pool1',
                    'conv6', 'conv7','conv8', 'conv9', 'conv10', 'pool2','fc_1', 'linear_output']
 
 # parameters dictionary
-conv_layer_1 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [8, 8], 'features': 64,
+conv_layer_1 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [4, 4], 'features': 64,
                             'activation':'relu', 'padding':'SAME'})
-conv_layer_2 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [4, 4], 'features': 64,
+conv_layer_2 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [4, 4], 'features': 128,
                             'activation':'relu', 'padding':'SAME'})
 pool_avg = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'avg','padding':'SAME'})
 pool_max = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
