@@ -14,12 +14,14 @@ from tensorflow.python.training import moving_averages
 # to differentiate the operations. But then remove from the summaries
 worker_name = 'worker'
 
+
 # This should be a superclass
-# TODO: implement Net superclass
-class Net(object):
+# TODO: implement Feed-Forward Net superclass
+class FeedFwdNet(object):
     pass
 
-# TODO: ConvNet should inherit Net
+
+# TODO: ConvNet should inherit FeedFwdNet
 class ConvNet(object):
     """
     Vanilla Convolutional Neural Network (Feed-Forward).
@@ -84,7 +86,7 @@ class ConvNet(object):
                     out, _ = self._conv(input=out, params=layer_params)
                     out = self._batch_norm(input=out)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
-                    self._activation_image_summary(out)
+                    # self._activation_image_summary(out)
 
                 if layer_params['type'] == 'pooling':
                     out = self._pool(input=out, name=scope.name, params=layer_params)
@@ -344,7 +346,7 @@ class ConvNet(object):
             map_tile = tf.expand_dims(map_tile,0)
             map_tile = tf.log1p(map_tile)
             # Display feature maps
-            tf.summary.image(tensor_name + '/map_slice_'+ str(ind), map_tile)
+            tf.summary.image(tensor_name + '/activation'+ str(ind), map_tile)
 
     @staticmethod
     def _kernel_image_summary(image_stack, n_features=None):
@@ -422,6 +424,8 @@ class ConvNet(object):
 
     def _weight_decay(self, tensor):
         return tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay'])
+
+
 # TODO: implement ResNet
 # TODO: ResNet should inherit Net
 class ResNet(object):

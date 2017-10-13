@@ -69,7 +69,8 @@ def _add_loss_summaries(total_loss, losses, flags):
 
     return loss_averages_op
 
-
+# TODO: double-for loop in python. Ouch! Needs to go.
+# Just compute running average in net building block. L#200-244.
 def _average_gradients(worker_grads):
     """Calculate the average gradient for each shared variable across all workers.
     This function essentially synchronizes all workers.
@@ -84,6 +85,7 @@ def _average_gradients(worker_grads):
     if len(worker_grads) == 1:
         return worker_grads[0]
     grads_list = []
+
     for i in range(len(worker_grads[0])):
         dummy=[]
         for grad in worker_grads:
@@ -227,57 +229,40 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # tf.get_variable_scope().reuse_variables()
 
                         # get summaries
+                        # TODO: figure out the summaries nonsense.
                         summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
 
                         # Calculate the gradients for the current data batch
                         with tf.control_dependencies([loss_averages_op]):
                             grads_vars = opt.compute_gradients(total_loss)
 
-                        # grads = [grad for grad, _ in grads_vars]
-
+                        # TODO: Do running average here.
                         # Accumulate gradients across all workers.
                         worker_grads.append(grads_vars)
 
                         # Accumulate extra non-standard operations across workers
                         worker_ops.append(n_net.get_misc_ops())
 
-        # print("length of worker_grads list %d" %len(worker_grads))
-        # print("grads from worker_0 %s" % format(worker_grads[0][10]))
-        # print("grads from worker_0 %s" % format(worker_grads[1][10]))
-
-        # Average gradients over workers.
-        # print(len(worker_grads[0]))
-        # print("grads: %s" % format(worker_grads[0]))
-
+        # average over gradients.
         avg_gradients = _average_gradients(worker_grads)
 
-        # print("losses shape: %s" %format(losses.shape))
-        # print(losses)
-        # avg_gradients = worker_grads[0]
-        # Add histograms for gradients.
-        # for grad, var in avg_gradients:
-        #     summaries.append(tf.summary.histogram(var+ '/gradients', grad))
-
-        # Apply gradients.
+        # Apply gradients to trainable variables
         apply_gradient_op = opt.apply_gradients(avg_gradients, global_step=global_step)
 
-        # Add histograms for trainable variables.
-        for var in tf.trainable_variables():
+        # Add histograms for trainable variables and their gradients
+        for grad, var in avg_gradients:
             tf.summary.histogram(var.op.name, var)
+            tf.summary.histogram(var.op.name+'/gradients', grad)
 
         # Track the moving averages of all trainable variables.
         variable_averages = tf.train.ExponentialMovingAverage(
             hyper_params['moving_average_decay'], global_step)
         variable_averages_op = variable_averages.apply(tf.trainable_variables())
-        # print('trainable variables:\n')
-        # print(tf.trainable_variables())
-        # print('apply gradient ops:\n')
-        # print(apply_gradient_op)
 
         # Gather all training related ops into a single one.
-        # with tf.control_dependencies([apply_gradient_op, variable_averages_op, tf.group(*worker_ops)]):
-        #     train_op = tf.no_op(name='train')
-        train_op = tf.group(apply_gradient_op, variable_averages_op)
+        with tf.control_dependencies([apply_gradient_op, variable_averages_op, tf.group(*worker_ops)]):
+            train_op = tf.no_op(name='train')
+        # train_op = tf.group(apply_gradient_op, variable_averages_op)
 
         # Config file for tf.Session()
         config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
