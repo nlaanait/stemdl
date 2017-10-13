@@ -128,7 +128,7 @@ class ConvNet(object):
                 self._calculate_loss_classifier(self.hyper_params['loss_function'])
         # Calculate total loss
         losses = tf.get_collection(tf.GraphKeys.LOSSES, self.scope)
-        regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES, self.scope)
+        regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
         print(losses)
         print(regularization)
         total_loss = tf.add_n([losses,regularization])
