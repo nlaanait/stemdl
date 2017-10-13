@@ -57,9 +57,10 @@ class ConvNet(object):
         else:
             self.reuse = True
 
-    def build_model(self):
+    def build_model(self, summaries=False):
         """
         Here we build the model.
+        :param summaries: bool, flag to print out summaries.
         """
         # Initiate 1st layer
         print('Building Neural Net on %s...' % self.scope)
@@ -70,9 +71,10 @@ class ConvNet(object):
             out = self._activate(input=out, name=scope.name, params=layer_params)
 
             # Tensorboard Summaries
-            self._activation_summary(out)
-            self._activation_image_summary(out)
-            self._kernel_image_summary(kernel)
+            if summaries:
+                self._activation_summary(out)
+                self._activation_image_summary(out)
+                self._kernel_image_summary(kernel)
             in_shape = self.images.get_shape()
             print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
                   (scope.name, format(in_shape), format(out.shape), format(layer_params['kernel']),
@@ -105,7 +107,8 @@ class ConvNet(object):
                 # print layer specs and generate Tensorboard summaries
                 out_shape = out.get_shape()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
-                self._activation_summary(out)
+                if summaries:
+                    self._activation_summary(out)
 
         print('Total # of layers & weights: %d, %2.1e\n' % (len(self.network), self.num_weights))
 
