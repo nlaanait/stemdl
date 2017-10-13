@@ -129,6 +129,8 @@ class ConvNet(object):
         # Calculate total loss
         losses = tf.get_collection(tf.GraphKeys.LOSSES, self.scope)
         regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES, self.scope)
+        print('losses: %s' %format(losses.shape))
+        print('regularization: %s' % format(regularization.shape))
         total_loss = tf.add_n([losses,regularization])
         # Moving average of loss and summaries
         loss_ops = self._add_loss_summaries(total_loss,losses)
