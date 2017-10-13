@@ -258,8 +258,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             summaries.append(tf.summary.histogram(var.op.name+'/gradients', grad))
 
         Summary = tf.summary.merge_all()
-        print(Summary.ListFields())
-        Summary.ClearField('worker_1')
+        print(Summary)
+        # Summary.ClearField('worker_1')
 
         # Track the moving averages of all trainable variables.
         variable_averages = tf.train.ExponentialMovingAverage(
