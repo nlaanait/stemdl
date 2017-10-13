@@ -410,8 +410,10 @@ class ConvNet(object):
         Generate text summary out of *.json file input
         :return: None
         """
-        net_config = tf.constant(str(self.network), name='network_config')
-        hyp_params = tf.constant(str(self.hyper_params), name='hyper_params')
+        net_list = [[key, str([self.network[key]])] for key in self.network.iterkeys()]
+        hyp_list = [[key, str([self.network[key]])] for key in self.hyper_params.iterkeys()]
+        net_config = tf.constant(net_list, name='network_config')
+        hyp_params = tf.constant(hyp_list, name='hyper_params')
         tf.summary.text(net_config.op.name, net_config)
         tf.summary.text(hyp_params.op.name, hyp_params)
 
