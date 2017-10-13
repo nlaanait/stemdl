@@ -72,13 +72,14 @@ class ConvNet(object):
             out, kernel = self._conv(input=self.images, params=layer_params)
             out = self._batch_norm(input=out)
             out = self._activate(input=out, name=scope.name, params=layer_params)
-
+            in_shape = self.images.get_shape()
             # Tensorboard Summaries
             if self.summary:
                 self._activation_summary(out)
                 self._activation_image_summary(out)
                 self._kernel_image_summary(kernel)
-            in_shape = self.images.get_shape()
+                self._json_summary()
+
             print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
                   (scope.name, format(in_shape), format(out.shape), format(layer_params['kernel']),
                    format(layer_params['stride']) ))
@@ -403,6 +404,16 @@ class ConvNet(object):
             print('%s --- input: %s, output: %s, weights: %s, bias: %s'
                   % (scope.name, format(input_shape), format(output_shape), format(params['weights']),
                      format(params['bias'])))
+
+    def _json_summary(self):
+        """
+        Generate text summary out of *.json file input
+        :return: None
+        """
+        net_config = tf.constant(str(self.network), name='network_config')
+        hyp_params = tf.constant(str(self.hyper_params), name='hyper_params')
+        tf.summary.text(net_config.op.name, net_config)
+        tf.summary.text(hyp_params.op.name, hyp_params)
 
     # Variable placement, initialization, regularization
     def _cpu_variable_init(self, name, shape, initializer, trainable=True, regularize=False):

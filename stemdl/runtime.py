@@ -258,10 +258,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             summaries.append(tf.summary.histogram(var.op.name+'/gradients', grad))
 
         # Add network and hyperparameters *.json files to summary as text
-        net_config = tf.constant(str(network_config), name='network_config')
-        hyp_params = tf.constant(str(hyper_params), name='hyper_params')
-        summaries.append(tf.summary.text(net_config.name,net_config))
-        summaries.append(tf.summary.text(hyp_params.name,hyp_params))
+        # net_config = tf.constant(str(network_config), name='network_config')
+        # hyp_params = tf.constant(str(hyper_params), name='hyper_params')
+        # summaries.append(tf.summary.text(net_config.op.name,net_config))
+        # summaries.append(tf.summary.text(hyp_params.op.name,hyp_params))
         _ = tf.summary.merge_all()
 
         print(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
