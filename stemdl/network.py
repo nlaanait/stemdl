@@ -78,7 +78,7 @@ class ConvNet(object):
                 self._activation_summary(out)
                 self._activation_image_summary(out)
                 self._kernel_image_summary(kernel)
-                if self.global_step == 1:
+                if self.global_step == self.flags.save_frequency:
                     self._json_summary()
 
             print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
@@ -126,7 +126,7 @@ class ConvNet(object):
                 self._calculate_loss_regressor(self.hyper_params['loss_function'])
             if self.net_type == 'classifier':
                 self._calculate_loss_classifier(self.hyper_params['loss_function'])
-        # losses = tf.get_collection('losses', scope)
+        losses = tf.get_collection('losses', scope)
         # total_loss = tf.add_n(losses, name='total_loss')
         # return losses, total_loss
 
