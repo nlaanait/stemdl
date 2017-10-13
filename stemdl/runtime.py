@@ -260,9 +260,9 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         variable_averages_op = variable_averages.apply(tf.trainable_variables())
 
         # Gather all training related ops into a single one.
-        # with tf.control_dependencies([apply_gradient_op, variable_averages_op, tf.group(*worker_ops)]):
-        #     train_op = tf.no_op(name='train')
-        train_op = tf.group(apply_gradient_op, variable_averages_op)
+        with tf.control_dependencies([apply_gradient_op, variable_averages_op, tf.group(*worker_ops)]):
+            train_op = tf.no_op(name='train')
+        # train_op = tf.group(apply_gradient_op, variable_averages_op)
 
         # Config file for tf.Session()
         config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
@@ -278,13 +278,6 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 config=config) as mon_sess:
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
-                    # loss_arr = mon_sess.run(worker_total_loss)
-                    # print('total_loss for each worker: %s' %format(loss_arr))
-                    # grad_arr_0, grad_arr_4 = mon_sess.run(worker_grads[0][0])#, worker_grads[4][0][0]])
-                    # print('worker_0 grads: %s' %format(grad_arr_0))
-                    # losses = mon_sess.run(losses[0])
-                    # print('worker_0 losses: %s' % format(losses))
-                    # print('worker_4 grads: %s' % format(grad_arr_4))
 
 
 def set_flags(checkpt_dir, batch_size=64, data_dir=None):
