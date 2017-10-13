@@ -71,6 +71,14 @@ def main(argv):  # pylint: disable=unused-argument
     network_config = io_utils.load_json_network_config(args.network_config[0])
     hyper_params = io_utils.load_json_hyper_params(args.hyper_params[0])
 
+    # add the above to tensorboard
+    net_list = [[key, str([network_config[key]])] for key in network_config.iterkeys()]
+    hyp_list = [[key, str([hyper_params[key]])] for key in hyper_params.iterkeys()]
+    net_config = tf.constant(net_list, name='network_config')
+    hyp_params = tf.constant(hyp_list, name='hyper_params')
+    tf.summary.text(net_config.op.name, net_config)
+    tf.summary.text(hyp_params.op.name, hyp_params)
+
     # train or evaluate
     if args.mode == 'train':
         runtime.train(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
