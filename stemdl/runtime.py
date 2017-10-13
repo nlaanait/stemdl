@@ -256,15 +256,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         for grad, var in avg_gradients:
             summaries.append(tf.summary.histogram(var.op.name, var))
             summaries.append(tf.summary.histogram(var.op.name+'/gradients', grad))
-
-        # Add network and hyperparameters *.json files to summary as text
-        # net_config = tf.constant(str(network_config), name='network_config')
-        # hyp_params = tf.constant(str(hyper_params), name='hyper_params')
-        # summaries.append(tf.summary.text(net_config.op.name,net_config))
-        # summaries.append(tf.summary.text(hyp_params.op.name,hyp_params))
         _ = tf.summary.merge_all()
 
-        print(tf.get_collection(tf.GraphKeys.R))
 
         # Track the moving averages of all trainable variables.
         variable_averages = tf.train.ExponentialMovingAverage(
