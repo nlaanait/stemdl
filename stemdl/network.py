@@ -121,14 +121,14 @@ class ConvNet(object):
         self.model_output = out
 
     def get_loss(self):
-        with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
+        with tf.variable_scope(self.scope, reuse=self.reuse) as _:
             if self.net_type == 'regressor':
                 self._calculate_loss_regressor(self.hyper_params['loss_function'])
             if self.net_type == 'classifier':
                 self._calculate_loss_classifier(self.hyper_params['loss_function'])
         # Calculate total loss
-        losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
-        regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES, scope)
+        losses = tf.get_collection(tf.GraphKeys.LOSSES, self.scope)
+        regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES, self.scope)
         total_loss = tf.add_n(tf.group([losses,regularization]))
         # Moving average of loss and summaries
         loss_ops = self._add_loss_summaries(total_loss,losses)
