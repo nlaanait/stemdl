@@ -26,7 +26,8 @@ class ConvNet(object):
     """
     Vanilla Convolutional Neural Network (Feed-Forward).
     """
-    def __init__(self, scope, flags, global_step, hyper_params, network, images, labels, operation='train'):
+    def __init__(self, scope, flags, global_step, hyper_params, network, images, labels, operation='train',
+                 summary=False):
         """
         :param flags: tf.app.flags
         :param global_step: as it says
@@ -35,6 +36,7 @@ class ConvNet(object):
         :param images: batch of images
         :param labels: batch of labels
         :param operation: string, 'train' or 'eval'
+        :param summary: bool, flag to write tensorboard summaries
         :return:
         """
         self.scope = scope
@@ -50,6 +52,7 @@ class ConvNet(object):
         self.operation = operation
         assert self.operation == 'train' or self.operation == 'eval',\
             "'operation' must be 'train' or 'eval'"
+        self.summary = summary
         self.num_weights = 0
         self.misc_ops = []
         if self.scope == self.flags.worker_name+'_0/':
@@ -71,7 +74,7 @@ class ConvNet(object):
             out = self._activate(input=out, name=scope.name, params=layer_params)
 
             # Tensorboard Summaries
-            if summaries:
+            if self.summary:
                 self._activation_summary(out)
                 self._activation_image_summary(out)
                 self._kernel_image_summary(kernel)
@@ -107,7 +110,7 @@ class ConvNet(object):
                 # print layer specs and generate Tensorboard summaries
                 out_shape = out.get_shape()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
-                if summaries:
+                if self.summary:
                     self._activation_summary(out)
 
         print('Total # of layers & weights: %d, %2.1e\n' % (len(self.network), self.num_weights))
@@ -150,7 +153,8 @@ class ConvNet(object):
                                                       decay_residual,staircase=False)
             # cap the residual cutoff to some min value.
             residual_tol = tf.maximum(residual_tol, tf.constant(min_residual))
-            tf.summary.scalar('residual_cutoff', residual_tol)
+            if self.summary:
+                tf.summary.scalar('residual_cutoff', residual_tol)
             # calculate the cost
             cost = tf.losses.huber_loss(labels, predictions=self.model_output, delta=residual_tol,
                                         reduction=tf.losses.Reduction.MEAN)

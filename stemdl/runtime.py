@@ -195,8 +195,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         worker_total_loss = []
         with tf.variable_scope(tf.get_variable_scope(), reuse=None):
             for gpu_id in range(num_GPUS):
-                # Flag to only generate summaries on the last device.
-                summary = not bool(num_GPUS%(gpu_id+1))
+                # Flag to only generate summaries on the first device.
+                summary = gpu_id == 0
                 with tf.device('/gpu:%d' % gpu_id):
                     with tf.name_scope('%s_%d' % (flags.worker_name, gpu_id)) as scope:
 
@@ -210,10 +210,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
                         # Setup Neural Net
                         n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
-                                             operation='train')
+                                             operation='train', summary=summary)
 
                         # Build it and propagate images through it.
-                        n_net.build_model(summaries=summary)
+                        n_net.build_model()
 
                         # calculate the loss
                         n_net.get_loss()
@@ -230,7 +230,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Generate summaries for the losses and get corresponding op
                         loss_averages_op = _add_loss_summaries(total_loss, losses, flags, summaries=summary)
 
-                        # get summaries
+                        # get summaries, except for the one produced by string_input_producer
                         # TODO: figure out the summaries nonsense.
                         if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
 
@@ -245,6 +245,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Accumulate extra non-standard operations across workers
                         worker_ops.append(n_net.get_misc_ops())
 
+        print(tf.GraphKeys.SUMMARIES)
         # average over gradients.
         avg_gradients = _average_gradients(worker_grads)
 
@@ -284,7 +285,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
 
-# TODO: Implement a train function that synchronizes only when average loss-rate changes considerably.
+# TODO: Implement a train function that synchronizes only when the average loss rate changes considerably.
 
 def set_flags(checkpt_dir, batch_size=64, data_dir=None):
     """
