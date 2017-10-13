@@ -232,7 +232,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
                         # get summaries, except for the one produced by string_input_producer
                         # TODO: figure out the summaries nonsense.
-                        #if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
+                        if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
 
                         # Calculate the gradients for the current data batch
                         with tf.control_dependencies([loss_averages_op]):
@@ -245,7 +245,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Accumulate extra non-standard operations across workers
                         worker_ops.append(n_net.get_misc_ops())
 
-        print(tf.GraphKeys.SUMMARIES)
+        print(summaries)
         # average over gradients.
         avg_gradients = _average_gradients(worker_grads)
 
