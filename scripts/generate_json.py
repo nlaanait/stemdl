@@ -13,8 +13,8 @@ from stemdl import io_utils
 # templates for network_config  #
 #################################
 
-layer_keys_list = ['conv1', 'conv2', 'pool1', 'conv3', 'conv4', 'conv5',
-                   'conv6', 'conv7', 'pool3','fc_1', 'linear_output']
+layer_keys_list = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5','pool1',
+                   'conv6', 'conv7','conv8', 'conv9', 'conv10', 'pool2','fc_1', 'linear_output']
 
 # parameters dictionary
 conv_layer_1 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [8, 8], 'features': 64,
@@ -26,10 +26,10 @@ pool_max = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], '
 conv_layer_3 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [2, 2], 'features': 64,
                             'activation':'relu', 'padding':'SAME'})
 fully_connected = OrderedDict({'type': 'fully_connected','weights': 512,'bias': 512, 'activation': 'tanh',
-                               'regularize': False})
+                               'regularize': True})
 linear_ouput = OrderedDict({'type': 'linear_output','weights': 3,'bias': 3,'regularize': False})
 
-layer_params_list = [conv_layer_1]*5 + [pool_avg] + [conv_layer_1]*2 + [pool_avg] + [conv_layer_3]*2 + [pool_avg] + \
+layer_params_list = [conv_layer_1]*5 + [pool_avg] + [conv_layer_1]*2 + [conv_layer_2]*3 + [pool_avg] + \
                     [fully_connected] + [linear_ouput]
 
 #################################
