@@ -283,6 +283,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
 
+# TODO: Implement a train function that synchronizes only when average loss-rate changes considerably.
 
 def set_flags(checkpt_dir, batch_size=64, data_dir=None):
     """
