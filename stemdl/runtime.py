@@ -262,7 +262,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         summaries.append(tf.summary.text('Hyper Parameters', tf.constant(str(hyper_params))))
         _ = tf.summary.merge_all()
 
-
+        print(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
         # Track the moving averages of all trainable variables.
         variable_averages = tf.train.ExponentialMovingAverage(
             hyper_params['moving_average_decay'], global_step)
