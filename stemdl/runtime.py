@@ -211,8 +211,9 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Setup Neural Net
                         n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
                                              operation='train')
+
                         # Build it and propagate images through it.
-                        n_net.build_model()
+                        n_net.build_model(summaries=summary)
 
                         # calculate the loss
                         n_net.get_loss()
