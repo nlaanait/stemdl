@@ -473,7 +473,7 @@ class ConvNet(object):
         return var
 
     def _weight_decay(self, tensor):
-        return tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay'])
+        return tf.expand_dims(tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay']),0)
 
 
 # TODO: implement ResNet
