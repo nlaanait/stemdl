@@ -257,12 +257,15 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             summaries.append(tf.summary.histogram(var.op.name, var))
             summaries.append(tf.summary.histogram(var.op.name+'/gradients', grad))
 
-        # Add network and hyperparameters *.json files to summary
-        summaries.append(tf.summary.text('Neural Net',tf.constant(str(network_config))))
-        summaries.append(tf.summary.text('Hyper Parameters', tf.constant(str(hyper_params))))
+        # Add network and hyperparameters *.json files to summary as text
+        net_config = tf.constant(str(network_config, name='network_config'))
+        hyp_params = tf.constant(str(network_config, name='hyper_params'))
+        summaries.append(tf.summary.text(net_config.name,net_config))
+        summaries.append(tf.summary.text(hyp_params.name,hyp_params))
         _ = tf.summary.merge_all()
 
         print(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+
         # Track the moving averages of all trainable variables.
         variable_averages = tf.train.ExponentialMovingAverage(
             hyper_params['moving_average_decay'], global_step)
