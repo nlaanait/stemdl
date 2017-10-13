@@ -13,11 +13,11 @@ from stemdl import io_utils
 # templates for network_config  #
 #################################
 
-layer_keys_list = ['conv1', 'conv2', 'pool1', 'conv3', 'conv4', 'pool2',
+llayer_keys_list = ['conv1', 'conv2', 'pool1', 'conv3', 'conv4', 'pool2',
                    'conv5', 'conv6', 'pool3','fc_1', 'linear_output']
 
 # parameters dictionary
-conv_layer_1 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [8, 8], 'features': 96,
+conv_layer_1 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [8, 8], 'features': 64,
                             'activation':'relu', 'padding':'SAME'})
 conv_layer_2 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [4, 4], 'features': 64,
                             'activation':'relu', 'padding':'SAME'})
@@ -25,11 +25,11 @@ pool_avg = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], '
 pool_max = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
 conv_layer_3 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [2, 2], 'features': 64,
                             'activation':'relu', 'padding':'SAME'})
-fully_connected = OrderedDict({'type': 'fully_connected','weights': 256,'bias': 256, 'activation': 'relu',
+fully_connected = OrderedDict({'type': 'fully_connected','weights': 512,'bias': 512, 'activation': 'tanh',
                                'regularize': False})
 linear_ouput = OrderedDict({'type': 'linear_output','weights': 3,'bias': 3,'regularize': False})
 
-layer_params_list = [conv_layer_1]*2 + [pool_avg] + [conv_layer_2]*2 + [pool_avg] + [conv_layer_3]*2 + [pool_avg] + \
+layer_params_list = [conv_layer_1]*5 + [pool_avg] + [conv_layer_1]*2 + [pool_avg] + [conv_layer_3]*2 + [pool_avg] + \
                     [fully_connected] + [linear_ouput]
 
 #################################
@@ -42,13 +42,13 @@ hyper_params_regression = {'network_type': 'regressor', #'network_type': 'classi
                            'warm_up': False,
                            'num_epochs_per_decay':30,
                            'learning_rate_decay_factor': 0.5,
-                           'initial_learning_rate': 0.2,
+                           'initial_learning_rate': 0.01,
                            'num_epochs_per_ramp': 10,
                            'num_epochs_in_warm_up': 100,
                            'warm_up_max_learning_rate': 1e-3,
                            'weight_decay': 1.e-4,
                            'moving_average_decay': 0.9999,
-                           'loss_function': {'type': 'MSE',
+                           'loss_function': {'type': 'Huber',
                                              'residual_num_epochs_decay': 30,
                                              'residual_initial': 5.0,
                                              'residual_minimum': 1.0,
