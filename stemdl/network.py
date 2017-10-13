@@ -126,9 +126,13 @@ class ConvNet(object):
                 self._calculate_loss_regressor(self.hyper_params['loss_function'])
             if self.net_type == 'classifier':
                 self._calculate_loss_classifier(self.hyper_params['loss_function'])
-        losses = tf.get_collection('losses', scope)
-        # total_loss = tf.add_n(losses, name='total_loss')
-        # return losses, total_loss
+        # Calculate total loss
+        losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
+        regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES, scope)
+        total_loss = tf.add_n(tf.group([losses,regularization]))
+        # Moving average of loss and summaries
+        loss_ops = self._add_loss_summaries(total_loss,losses)
+        return total_loss, loss_ops
 
     def get_misc_ops(self):
         ops = tf.group(*self.misc_ops)
@@ -405,6 +409,31 @@ class ConvNet(object):
             print('%s --- input: %s, output: %s, weights: %s, bias: %s'
                   % (scope.name, format(input_shape), format(output_shape), format(params['weights']),
                      format(params['bias'])))
+
+    def _add_loss_summaries(self, total_loss, losses):
+        """
+        Add summaries for losses in model.
+        Generates moving average for all losses and associated summaries for
+        visualizing the performance of the network.
+        :param flags:
+        :param total_loss:
+        :param losses:
+        :return: loss_averages_op
+        """
+        # Compute the moving average of all individual losses and the total loss.
+        loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
+        loss_averages_op = loss_averages.apply(losses + [total_loss])
+
+        # Attach a scalar summary to all individual losses and the total loss;
+        if self.summary:
+            for l in losses + [total_loss]:
+                # Name each loss as '(raw)' and name the moving average version of the loss
+                # as the original loss name.
+                loss_name = re.sub('%s_[0-9]*/' % worker_name, '', l.op.name)
+                tf.summary.scalar(loss_name + ' (raw)', l)
+                tf.summary.scalar(loss_name, loss_averages.average(l))
+
+        return loss_averages_op
 
     def _json_summary(self):
         """
