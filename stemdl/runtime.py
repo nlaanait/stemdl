@@ -45,7 +45,7 @@ class _LoggerHook(tf.train.SessionRunHook):
                                 examples_per_sec, sec_per_batch))
 
 
-def _add_loss_summaries(total_loss, losses, flags):
+def _add_loss_summaries(total_loss, losses, flags, summaries=False):
     """
     Add summaries for losses in model.
     Generates moving average for all losses and associated summaries for
@@ -60,12 +60,13 @@ def _add_loss_summaries(total_loss, losses, flags):
     loss_averages_op = loss_averages.apply(losses + [total_loss])
 
     # Attach a scalar summary to all individual losses and the total loss;
-    for l in losses + [total_loss]:
-        # Name each loss as '(raw)' and name the moving average version of the loss
-        # as the original loss name.
-        loss_name = re.sub('%s_[0-9]*/' % flags.worker_name, '', l.op.name)
-        tf.summary.scalar(l.op.name + ' (raw)', l)
-        tf.summary.scalar(l.op.name, loss_averages.average(l))
+    if summaries:
+        for l in losses + [total_loss]:
+            # Name each loss as '(raw)' and name the moving average version of the loss
+            # as the original loss name.
+            loss_name = re.sub('%s_[0-9]*/' % flags.worker_name, '', l.op.name)
+            tf.summary.scalar(loss_name + ' (raw)', l)
+            tf.summary.scalar(loss_name, loss_averages.average(l))
 
     return loss_averages_op
 
@@ -177,11 +178,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
     with tf.Graph().as_default(), tf.device('/cpu:0'):
         global_step = tf.contrib.framework.get_or_create_global_step()
+
         # Setup data stream
         with tf.name_scope('Input') as _:
-
             filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
-
             # pass the filename_queue to the inputs classes to decode
             dset = inputs.DatasetTFRecords(filename_queue, flags)
             image, label = dset.decode_image_label()
@@ -194,9 +194,11 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         worker_ops = []
         worker_total_loss = []
         with tf.variable_scope(tf.get_variable_scope(), reuse=None):
-            for i in range(num_GPUS):
-                with tf.device('/gpu:%d' % i):
-                    with tf.name_scope('%s_%d' % (flags.worker_name, i)) as scope:
+            for gpu_id in range(num_GPUS):
+                # Flag to only generate summaries on the last device.
+                if gpu_id == num_GPUS - 1: summary = True
+                with tf.device('/gpu:%d' % gpu_id):
+                    with tf.name_scope('%s_%d' % (flags.worker_name, gpu_id)) as scope:
 
                         # Process images and generate examples batch
                         images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
@@ -225,12 +227,11 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         worker_total_loss.append(total_loss)
 
                         # Generate summaries for the losses and get corresponding op
-                        loss_averages_op = _add_loss_summaries(total_loss, losses, flags)
-                        # tf.get_variable_scope().reuse_variables()
+                        loss_averages_op = _add_loss_summaries(total_loss, losses, flags, summaries=summary)
 
                         # get summaries
                         # TODO: figure out the summaries nonsense.
-                        summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
+                        if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
 
                         # Calculate the gradients for the current data batch
                         with tf.control_dependencies([loss_averages_op]):
@@ -249,10 +250,12 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # Apply gradients to trainable variables
         apply_gradient_op = opt.apply_gradients(avg_gradients, global_step=global_step)
 
-        # Add histograms for trainable variables and their gradients
+        # Add Summary histograms for trainable variables and their gradients
         for grad, var in avg_gradients:
             tf.summary.histogram(var.op.name, var)
             tf.summary.histogram(var.op.name+'/gradients', grad)
+
+        tf.summary.merge_all()
 
         # Track the moving averages of all trainable variables.
         variable_averages = tf.train.ExponentialMovingAverage(
@@ -275,7 +278,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         with tf.train.MonitoredTrainingSession(
             checkpoint_dir=flags.train_dir,
             hooks=[tf.train.StopAtStepHook(last_step=flags.max_steps), tf.train.NanTensorHook(total_loss),logHook],
-                config=config) as mon_sess:
+                config=config, save_summaries_steps=flags.save_frequency) as mon_sess:
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
 
