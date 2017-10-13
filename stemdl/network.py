@@ -131,7 +131,7 @@ class ConvNet(object):
         regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
         print(losses)
         print(regularization)
-        total_loss = tf.add_n([losses,regularization])
+        total_loss = tf.add_n(losses+regularization)
         # Moving average of loss and summaries
         loss_ops = self._add_loss_summaries(total_loss,losses)
         return total_loss, loss_ops
@@ -475,7 +475,7 @@ class ConvNet(object):
         return var
 
     def _weight_decay(self, tensor):
-        return tf.expand_dims(tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay']),0)
+        return tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay'])
 
 
 # TODO: implement ResNet
