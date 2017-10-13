@@ -13,8 +13,8 @@ from stemdl import io_utils
 # templates for network_config  #
 #################################
 
-llayer_keys_list = ['conv1', 'conv2', 'pool1', 'conv3', 'conv4', 'pool2',
-                   'conv5', 'conv6', 'pool3','fc_1', 'linear_output']
+layer_keys_list = ['conv1', 'conv2', 'pool1', 'conv3', 'conv4', 'conv5',
+                   'conv6', 'conv7', 'pool3','fc_1', 'linear_output']
 
 # parameters dictionary
 conv_layer_1 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [8, 8], 'features': 64,
