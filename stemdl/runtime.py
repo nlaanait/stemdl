@@ -196,7 +196,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         with tf.variable_scope(tf.get_variable_scope(), reuse=None):
             for gpu_id in range(num_GPUS):
                 # Flag to only generate summaries on the last device.
-                if gpu_id == num_GPUS - 1: summary = True
+                summary = not bool(num_GPUS%(gpu_id+1))
                 with tf.device('/gpu:%d' % gpu_id):
                     with tf.name_scope('%s_%d' % (flags.worker_name, gpu_id)) as scope:
 
