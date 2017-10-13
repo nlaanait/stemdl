@@ -78,8 +78,7 @@ class ConvNet(object):
                 self._activation_summary(out)
                 self._activation_image_summary(out)
                 self._kernel_image_summary(kernel)
-                if self.global_step == self.flags.save_frequency:
-                    self._json_summary()
+                self._json_summary()
 
             print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
                   (scope.name, format(in_shape), format(out.shape), format(layer_params['kernel']),
@@ -121,18 +120,18 @@ class ConvNet(object):
         self.model_output = out
 
     def get_loss(self):
-        with tf.variable_scope(self.scope, reuse=self.reuse) as _:
+        with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
             if self.net_type == 'regressor':
                 self._calculate_loss_regressor(self.hyper_params['loss_function'])
             if self.net_type == 'classifier':
                 self._calculate_loss_classifier(self.hyper_params['loss_function'])
-        # Calculate total loss
-        losses = tf.get_collection(tf.GraphKeys.LOSSES, self.scope)
-        regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-        total_loss = tf.add_n(losses+regularization)
-        # Moving average of loss and summaries
-        loss_ops = self._add_loss_summaries(total_loss,losses)
-        return total_loss, loss_ops
+        # # Calculate total loss
+        # losses = tf.get_collection(tf.GraphKeys.LOSSES, self.scope)
+        # regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+        # total_loss = tf.add_n(losses+regularization)
+        # # Moving average of loss and summaries
+        # loss_ops = self._add_loss_summaries(total_loss,losses)
+        # return total_loss, loss_ops
 
     def get_misc_ops(self):
         ops = tf.group(*self.misc_ops)

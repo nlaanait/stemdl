@@ -216,19 +216,21 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         n_net.build_model()
 
                         # calculate the total loss
-                        total_loss, loss_averages_op = n_net.get_loss()
+                        n_net.get_loss()
+                        # total_loss, loss_averages_op = n_net.get_loss()
 
-                        # # Assemble all of the losses.
-                        # losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
-                        #
-                        # # Calculate the total loss for the current worker
-                        # total_loss = tf.add_n(losses, name='total_loss')
+                        # Assemble all of the losses.
+                        losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
+                        regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+
+                        # Calculate the total loss for the current worker
+                        total_loss = tf.add_n(losses+regularization, name='total_loss')
 
                         # Accumulate total across all workers
                         worker_total_loss.append(total_loss)
 
                         # Generate summaries for the losses and get corresponding op
-                        # loss_averages_op = _add_loss_summaries(total_loss, losses, flags, summaries=summary)
+                        loss_averages_op = _add_loss_summaries(total_loss, losses, flags, summaries=summary)
 
                         # get summaries, except for the one produced by string_input_producer
                         # TODO: figure out the summaries nonsense.
