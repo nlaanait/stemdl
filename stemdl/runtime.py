@@ -257,9 +257,11 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             summaries.append(tf.summary.histogram(var.op.name, var))
             summaries.append(tf.summary.histogram(var.op.name+'/gradients', grad))
 
-        Summary = tf.summary.merge_all()
-        print(Summary)
-        # Summary.ClearField('worker_1')
+        # Add network and hyperparameters *.json files to summary
+        summaries.append(tf.summary.text('Neural Net',tf.constant(str(network_config))))
+        summaries.append(tf.summary.text('Hyper Parameters', tf.constant(str(hyper_params))))
+        _ = tf.summary.merge_all()
+
 
         # Track the moving averages of all trainable variables.
         variable_averages = tf.train.ExponentialMovingAverage(
