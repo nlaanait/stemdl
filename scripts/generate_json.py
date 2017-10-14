@@ -36,15 +36,16 @@ layer_params_list = [conv_layer_1]*5 + [pool_avg] + [conv_layer_1]*2 + [conv_lay
 ################
 # VGG-16-like #
 ##############
-layer_keys_list = ['conv1', 'conv2', 'pool1', 'conv3', 'conv4','pool2', 'conv5','conv6', 'conv7','conv8','pool3', 'conv9', 'conv10','conv11','conv12', 'pool3','conv13', 'conv14', 'conv15', 'conv16','pool4', 'fc_1','fc_2', 'linear_output']
+layer_keys_list = ['conv1', 'conv2', 'pool1', 'conv3', 'conv4','pool2', 'conv5','conv6', 'conv7','conv8','pool3', 'conv9', 'conv10','conv11','conv12', 'pool3','conv13', 'conv14', 'conv15', 'conv16','pool4', 'fc_1','fc_2', 'fc_3', 'linear_output']
 conv_1 =OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 64,'activation':'relu', 'padding':'SAME'})
 conv_2 =OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 128,'activation':'relu', 'padding':'SAME'})
 conv_3 =OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 256,'activation':'relu', 'padding':'SAME'})
 conv_4 =OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 512,'activation':'relu', 'padding':'SAME'})
 pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
-fully_connected = OrderedDict({'type': 'fully_connected','weights': 1000,'bias': 1000, 'activation': 'tanh','regularize': True})
+fully_connected_1 = OrderedDict({'type': 'fully_connected','weights': 4096,'bias': 4096, 'activation': 'relu','regularize': False})
+fully_connected_2 = OrderedDict({'type': 'fully_connected','weights': 1000,'bias': 1000, 'activation': 'relu','regularize': True})
 linear_output = OrderedDict({'type': 'linear_output','weights': 3,'bias': 3,'regularize': False})
-layer_params_list = [conv_1]*2 +[pool] + [conv_2]*2 + [pool] + [conv_3]*4 + [pool] + [conv_4]*4 + [pool] + [conv_4]*4 + [pool] + [fully_connected]*2 + [linear_output]
+layer_params_list = [conv_1]*2 +[pool] + [conv_2]*2 + [pool] + [conv_3]*4 + [pool] + [conv_4]*4 + [pool] + [conv_4]*4 + [pool] + [fully_connected_1]*2 + [fully_connected_2] + [linear_output]
 
 
 #################################
