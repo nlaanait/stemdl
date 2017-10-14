@@ -1,0 +1,20 @@
+{
+	"warm_up": false,
+	"loss_function": {
+		"residual_minimum": 1.0,
+		"residual_initial": 5.0,
+		"residual_num_epochs_decay": 30,
+		"residual_decay_factor": 0.75,
+		"type": "Huber"
+	},
+	"num_epochs_per_decay": 30,
+	"num_epochs_per_ramp": 10,
+	"network_type": "regressor",
+	"weight_decay": 0.0001,
+	"learning_rate_decay_factor": 0.5,
+	"initial_learning_rate": 0.1,
+	"warm_up_max_learning_rate": 0.001,
+	"optimization": "ADAM",
+	"num_epochs_in_warm_up": 100,
+	"moving_average_decay": 0.9999
+}
