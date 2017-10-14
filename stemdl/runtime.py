@@ -8,6 +8,7 @@ import time
 from datetime import datetime
 import tensorflow as tf
 import re
+import numpy as np
 from . import network
 from . import inputs
 
@@ -217,7 +218,6 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
                         # calculate the total loss
                         n_net.get_loss()
-                        # total_loss, loss_averages_op = n_net.get_loss()
 
                         # Assemble all of the losses.
                         losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
@@ -247,7 +247,6 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Accumulate extra non-standard operations across workers
                         worker_ops.append(n_net.get_misc_ops())
 
-        # print(summaries)
         # average over gradients.
         avg_gradients = _average_gradients(worker_grads)
 
@@ -260,7 +259,6 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             summaries.append(tf.summary.histogram(var.op.name+'/gradients', grad))
         _ = tf.summary.merge_all()
 
-
         # Track the moving averages of all trainable variables.
         variable_averages = tf.train.ExponentialMovingAverage(
             hyper_params['moving_average_decay'], global_step)
@@ -269,7 +267,6 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # Gather all training related ops into a single one.
         with tf.control_dependencies([apply_gradient_op, variable_averages_op, tf.group(*worker_ops)]):
             train_op = tf.no_op(name='train')
-        # train_op = tf.group(apply_gradient_op, variable_averages_op)
 
         # Config file for tf.Session()
         config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
@@ -287,9 +284,98 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
 
-# TODO: Implement a train function that synchronizes only when the average loss rate changes considerably.
 
-def set_flags(checkpt_dir, batch_size=64, data_dir=None):
+# TODO: Implement a train function that synchronizes only when the average loss rate changes considerably.
+def infer(flags, saver, summary_writer, loss, summary_op, cpu_bound=True, gpu_id=0):
+    """
+    Runs inference
+    :param flags: tf.app.flags
+    :param saver: tf.train.Saver object, restores neural net model.
+    :param summary_writer: a tf.summary.FileWriter, writes tensorboard summaries to disk.
+    :param loss: Tensor, loss to evaluate.
+    :param summary_op: tf.op, summary operations.
+    :param cpu_bound: bool, whether to run evaluation solely on the host, default True.
+    :param gpu_id: int, device id where to run evaluation, default 0.
+    :return: None
+    """
+    # Config file for tf.Session()
+    config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
+                            log_device_placement=flags.log_device_placement)
+
+    if cpu_bound:
+        device = '/cpu:0'
+        config.device_count= {'GPU': 0}
+        config.gpu_options.allow_growth = True
+        config.gpu_options.per_process_gpu_memory_fraction = 0.001
+    else:
+        device = '/gpu:%d' % gpu_id
+
+    with tf.device(device):
+        with tf.Session(config=config) as sess:
+            # Restore Model from checkpoint
+            ckpt = tf.train.get_checkpoint_state(flags.checkpoint_dir)
+            if ckpt and ckpt.model_checkpoint_path:
+                saver.restore(sess, ckpt.model_checkpoint_path)
+                # Assuming model_checkpoint_path looks something like:
+                # train/model.ckpt-0,
+                # Extract global_step
+                global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+            else:
+                print('No valid Checkpoint File was found!!')
+                return
+
+            # TODO: Extend tf.MonitoredTrainSession for evaluations session to minimize all this garbage collection.
+
+            # Start the queue runners for the input stream.
+            coord = tf.train.Coordinator()
+            try:
+                threads = []
+                for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
+                    threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
+                                                     start=True))
+
+                num_iter = int(np.ceil(flags.num_examples / flags.batch_size))
+                step = 0
+                # In the case of multiple outputs, we sort the prediction per output.
+                sorted_predictions = np.zeros(shape=(1,flags.OUTPUT_DIM))
+                start_time = time.time()
+                while step < num_iter and not coord.should_stop():
+                    # sum up losses
+                    loss_current = np.array(sess.run([loss])).reshape(flags.batch_size,flags.OUTPUT_DIM)
+                    loss_current = np.mean(loss_current,axis=0, keepdims=True)
+                    sorted_predictions += loss_current
+                    step += 1
+
+                sorted_predictions /= step
+                sorted_predictions = sorted_predictions.flatten()
+
+                # Time it took to evaluate
+                print('Took %.3f seconds to evaluate %d images' % (time.time() - start_time, flags.num_examples))
+
+                # Print Model Outputs and Summarize in Tensorboard
+                summary = tf.Summary()
+                summary.ParseFromString(sess.run(summary_op))
+                for i, output_label in enumerate(flags.OUTPUT_LABELS):
+                    print('%s: %s-Error = %.3f' % (datetime.now(), output_label, sorted_predictions[i]))
+                    summary.value.add(tag=output_label+'_Error', simple_value=sorted_predictions[i])
+
+                # Also add a mean error
+                mean = np.mean(sorted_predictions)
+                print('%s: Mean Error = %.3f' % (datetime.now(), mean))
+                summary.value.add(tag='Mean Error', simple_value=mean)
+
+                summary_writer.add_summary(summary, global_step)
+            except Exception as e:
+                coord.request_stop(e)
+
+            # Kill the input queue threads
+            coord.request_stop()
+            coord.join(threads, stop_grace_period_secs=1)
+
+def eval():
+    pass
+
+def set_flags(checkpt_dir, eval_dir, batch_size=64, data_dir=None):
     """
     Sets flags that could change from one run to the next
     :param checkpt_dir:
@@ -298,5 +384,6 @@ def set_flags(checkpt_dir, batch_size=64, data_dir=None):
     :return:
     """
     tf.app.flags.DEFINE_string('train_dir', checkpt_dir, """Directory where to write event logs and checkpoint.""")
+    tf.app.flags.DEFINE_string('eval_dir', eval_dir, """Directory where to write event logs during evaluation.""")
     tf.app.flags.DEFINE_integer('batch_size', batch_size, """Number of images to process in a batch.""")
     tf.app.flags.DEFINE_string('data_dir', data_dir,"""Directory where data tfrecords is located""")

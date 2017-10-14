@@ -78,7 +78,8 @@ class ConvNet(object):
                 self._activation_summary(out)
                 self._activation_image_summary(out)
                 self._kernel_image_summary(kernel)
-                self._json_summary()
+                if self.global_step < 2 * self.flags.self.save_frequency:
+                    self._json_summary()
 
             print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
                   (scope.name, format(in_shape), format(out.shape), format(layer_params['kernel']),
@@ -473,7 +474,6 @@ class ConvNet(object):
 
     def _weight_decay(self, tensor):
         return tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay'])
-
 
 # TODO: implement ResNet
 # TODO: ResNet should inherit Net
