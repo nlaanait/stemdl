@@ -73,6 +73,9 @@ def main(argv):
     # Create directories
     if tf.gfile.Exists(checkpt_dir):
         print('Directory "%s" exists already.\nReloading model from latest checkpoint.' %format(checkpt_dir))
+    elif tf.gfile.Exists(eval_dir):
+        print('Removing "%s"' %format(eval_dir))
+        tf.gfile.DeleteRecursively(eval_dir)
     else:
         tf.gfile.MakeDirs(checkpt_dir)
         tf.gfile.MakeDirs(eval_dir)
