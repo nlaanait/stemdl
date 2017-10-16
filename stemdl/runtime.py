@@ -312,8 +312,8 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 dset = inputs.DatasetTFRecords(filename_queue, flags)
                 image, label = dset.decode_image_label()
                 # distort images and generate examples batch
-                images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15,
-                                                               random_glimpses='normal', geometric=True, zoom=True)
+                images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15, distort=False,
+                                                               random_glimpses='normal', geometric=True)
 
             # Build the model and forward propagate
             with tf.name_scope('Eval') as scope:
