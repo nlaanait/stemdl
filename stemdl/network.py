@@ -82,7 +82,7 @@ class ConvNet(object):
                 #     pass
                 # tf.cond(self.global_step < 2 * self.flags.save_frequency, true_fn=self._json_summary,
                 #         false_fn=lambda: None)
-
+            #TODO: print out memory footprint per layer...
             print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
                   (scope.name, format(in_shape), format(out.shape), format(layer_params['kernel']),
                    format(layer_params['stride']) ))
