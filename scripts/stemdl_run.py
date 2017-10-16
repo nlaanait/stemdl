@@ -88,9 +88,9 @@ def main(argv):
     hyper_params = io_utils.load_json_hyper_params(args.hyper_params[0])
 
     # train or evaluate
-    if args.mode == 'train':
+    if args.mode[0] == 'train':
         runtime.train(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
-    if args.mode == 'eval':
+    if args.mode[0] == 'eval':
         runtime.eval(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
 
 if __name__ == '__main__':
