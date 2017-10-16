@@ -448,6 +448,7 @@ class ConvNet(object):
         hyp_params = tf.constant(hyp_list, name='hyper_params')
         tf.summary.text(net_config.op.name, net_config)
         tf.summary.text(hyp_params.op.name, hyp_params)
+        return None
 
     # Variable placement, initialization, regularization
     def _cpu_variable_init(self, name, shape, initializer, trainable=True, regularize=False):
