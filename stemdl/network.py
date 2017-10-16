@@ -78,7 +78,7 @@ class ConvNet(object):
                 self._activation_summary(out)
                 self._activation_image_summary(out)
                 self._kernel_image_summary(kernel)
-                if self.global_step < 2 * self.flags.self.save_frequency:
+                if self.global_step < 2 * self.flags.save_frequency:
                     self._json_summary()
 
             print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
