@@ -96,6 +96,7 @@ class ConvNet(object):
                     out = self._batch_norm(input=out)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
                     self._activation_image_summary(out)
+                    if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] == 'pooling':
                     out = self._pool(input=out, name=scope.name, params=layer_params)
@@ -103,6 +104,7 @@ class ConvNet(object):
                 if layer_params['type'] == 'fully_connected':
                     out = self._linear(input=out, name=scope.name+'_preactiv', params=layer_params)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
+                    if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] == 'linear_output':
                     in_shape = out.get_shape()
@@ -110,12 +112,11 @@ class ConvNet(object):
                     assert out.get_shape()[-1] == self.flags.OUTPUT_DIM, 'Dimensions of the linear output layer' + \
                                                                          'do not match the expected output set in' + \
                                                                          'tf.app.flags. Check flags or network_config.json'
+                    if self.summary: self._activation_summary(out)
 
                 # print layer specs and generate Tensorboard summaries
                 out_shape = out.get_shape()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
-                if self.summary:
-                    self._activation_summary(out)
 
         print('Total # of layers & weights: %d, %2.1e\n' % (len(self.network), self.num_weights))
 
