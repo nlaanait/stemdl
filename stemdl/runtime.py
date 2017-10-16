@@ -328,7 +328,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 hyper_params['loss_function']['type'] = 'MSE'
 
             # Setup Neural Net
-            n_net = network.ConvNet('worker:/0', flags, 0, hyper_params, network_config, images, labels,
+            n_net = network.ConvNet('worker_0/', flags, 0, hyper_params, network_config, images, labels,
                                     operation='train', summary=False)
 
             # Build it and propagate images through it.
