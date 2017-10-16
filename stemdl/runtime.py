@@ -309,7 +309,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
         device = '/gpu:%d' % (num_GPUS - 1)
         gpu_id = num_GPUS - 1
 
-    with tf.device('/cpu:0'):
+    with tf.device(device):
         with tf.Graph().as_default() as g:
             # Setup data stream
             with tf.name_scope('Input_Eval') as _:
@@ -320,7 +320,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 # distort images and generate examples batch
                 images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15, distort=False,
                                                                random_glimpses='normal', geometric=True)
-        with tf.
+
         with tf.variable_scope(tf.get_variable_scope(), reuse=None):
             # Build the model and forward propagate
             with tf.name_scope('Eval') as scope:
