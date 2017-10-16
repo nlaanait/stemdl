@@ -318,7 +318,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
             # Build the model and forward propagate
             with tf.name_scope('Eval') as scope:
                 # Force the evaluation of MSE if doing regression
-                if hyper_params['type'] == 'regressor':
+                if hyper_params['network_type'] == 'regressor':
                     hyper_params['loss_function']['type'] = 'MSE'
 
                 # Setup Neural Net
@@ -334,12 +334,12 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 # Initialize a dictionary of evaluation ops
                 eval_ops = {}
                 eval_ops['prediction'] = prediction
-                if hyper_params['type'] == 'regressor':
+                if hyper_params['network_type'] == 'regressor':
                     labels = tf.cast(labels, tf.float64)
                     MSE_op = tf.losses.mean_squared_error(labels, predictions=prediction, reduction=tf.losses.Reduction.NONE)
                     eval_ops['errors'] = MSE_op
                     eval_ops['errors_labels'] = 'MSE'
-                if hyper_params['type'] == 'classifier':
+                if hyper_params['network_type'] == 'classifier':
                     # Calculate top-1 and top-5 error
                     labels = tf.cast(labels, tf.int64)
                     in_top_1_op = tf.cast(tf.nn.in_top_k(prediction, labels, 1), tf.float32)
