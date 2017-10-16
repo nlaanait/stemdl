@@ -1,20 +1,20 @@
 {
-	"num_epochs_per_decay": 30,
-	"optimization": "ADAM",
+	"weight_decay": 0.0001,
+	"network_type": "regressor",
+	"moving_average_decay": 0.9999,
+	"learning_rate_decay_factor": 0.5,
+	"num_epochs_per_ramp": 10,
+	"num_epochs_in_warm_up": 100,
+	"warm_up": false,
 	"loss_function": {
 		"residual_num_epochs_decay": 30,
-		"residual_decay_factor": 0.75,
-		"residual_minimum": 1.0,
+		"residual_initial": 5.0,
 		"type": "Huber",
-		"residual_initial": 5.0
+		"residual_decay_factor": 0.75,
+		"residual_minimum": 1.0
 	},
-	"num_epochs_per_ramp": 10,
-	"warm_up": false,
-	"initial_learning_rate": 0.1,
-	"moving_average_decay": 0.9999,
-	"weight_decay": 0.0001,
-	"learning_rate_decay_factor": 0.5,
 	"warm_up_max_learning_rate": 0.001,
-	"num_epochs_in_warm_up": 100,
-	"network_type": "regressor"
+	"num_epochs_per_decay": 30,
+	"optimization": "ADAM",
+	"initial_learning_rate": 0.1
 }
