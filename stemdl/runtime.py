@@ -302,6 +302,12 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
         :param data_path: string, path to data.
         :return: None
     """
+    if num_GPUS == 0:
+        device = '/cpu:0'
+        cpu_bound = True
+    else:
+        device = '/gpu:%d' % (num_GPUS - 1)
+        gpu_id = num_GPUS - 1
 
     with tf.device('/cpu:0'):
         with tf.Graph().as_default() as g:
@@ -314,7 +320,8 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 # distort images and generate examples batch
                 images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15, distort=False,
                                                                random_glimpses='normal', geometric=True)
-
+        with tf.
+        with tf.variable_scope(tf.get_variable_scope(), reuse=None):
             # Build the model and forward propagate
             with tf.name_scope('Eval') as scope:
                 # Force the evaluation of MSE if doing regression
@@ -358,7 +365,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 summary_writer = tf.summary.FileWriter(flags.eval_dir, g)
 
                 while True:
-                    eval_process(flags, saver, summary_writer, eval_ops, summary_op)
+                    eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=cpu_bound, gpu_id=gpu_id)
                     if flags.run_once:
                         break
                     time.sleep(flags.eval_interval_secs)
