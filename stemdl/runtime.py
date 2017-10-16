@@ -11,6 +11,7 @@ import re
 import numpy as np
 from . import network
 from . import inputs
+import os
 
 
 class _LoggerHook(tf.train.SessionRunHook):
@@ -155,7 +156,7 @@ def get_optimizer(flags, hyper_params, global_step):
     opt = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE)
     return opt
 
-
+# TODO: Implement another train function that synchronizes only when the average loss rate changes "considerably".
 def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
     """
     Train the network for a number of steps.
@@ -254,12 +255,14 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         apply_gradient_op = opt.apply_gradients(avg_gradients, global_step=global_step)
 
         # Add Summary histograms for trainable variables and their gradients
+        # TODO: using the default summary save in MonitoredTrainingSession causes all kinds of "useless"
+        # summaries to be saved. Disable it and instantiate a summary saver object for additional control. See eval().
+
         for grad, var in avg_gradients:
             summaries.append(tf.summary.histogram(var.op.name, var))
             summaries.append(tf.summary.histogram(var.op.name+'/gradients', grad))
-        summary = tf.summary.merge_all()
-        print(summary)
-        print(type(summary))
+        _ = tf.summary.merge_all()
+
         # Track the moving averages of all trainable variables.
         variable_averages = tf.train.ExponentialMovingAverage(
             hyper_params['moving_average_decay'], global_step)
@@ -278,22 +281,96 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         logHook = _LoggerHook(flags, avg_total_loss, num_GPUS)
 
         # Start Training Session
-        with tf.train.MonitoredTrainingSession(
-            checkpoint_dir=flags.train_dir,
-            hooks=[tf.train.StopAtStepHook(last_step=flags.max_steps), tf.train.NanTensorHook(total_loss),logHook],
-                config=config, save_summaries_steps=flags.save_frequency) as mon_sess:
+        with tf.train.MonitoredTrainingSession(checkpoint_dir=flags.train_dir,
+                                               hooks=[tf.train.StopAtStepHook(last_step=flags.max_steps),
+                                                      tf.train.NanTensorHook(avg_total_loss),logHook], config=config,
+                                               save_summaries_steps=flags.save_frequency) as mon_sess:
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
 
 
-# TODO: Implement a train function that synchronizes only when the average loss rate changes considerably.
-def infer(flags, saver, summary_writer, loss, summary_op, cpu_bound=True, gpu_id=0):
+def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
     """
-    Runs inference
+        Evaluate the network for a number of steps.
+        # 1. load the neural net from the checkpoint directory.
+        # 2. Evaluate neural net predictions.
+        # 3. repeat.
+        :param network_config: OrderedDict, network configuration
+        :param hyper_params: OrderedDict, hyper_parameters
+        :param flags: tf.app.flags
+        :param num_GPUS: int, default 1.
+        :param data_path: string, path to data.
+        :return: None
+    """
+
+    with tf.device('/cpu:0'):
+        with tf.Graph().as_default() as g:
+            # Setup data stream
+            with tf.name_scope('Input_Eval') as _:
+                filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
+                # pass the filename_queue to the inputs classes to decode
+                dset = inputs.DatasetTFRecords(filename_queue, flags)
+                image, label = dset.decode_image_label()
+                # distort images and generate examples batch
+                images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15,
+                                                               random_glimpses='normal', geometric=True, zoom=True)
+
+            # Build the model and forward propagate
+            with tf.name_scope('Eval') as scope:
+                # Force the evaluation of MSE if doing regression
+                if hyper_params['type'] == 'regressor':
+                    hyper_params['loss_function']['type'] = 'MSE'
+
+                # Setup Neural Net
+                n_net = network.ConvNet(scope, flags, 0, hyper_params, network_config, images, labels,
+                                        operation='train', summary=False)
+
+                # Build it and propagate images through it.
+                n_net.build_model()
+                #TODO: check the batch norm method!!!!
+
+                # get the output and the error
+                prediction = n_net.model_output
+                # Initialize a dictionary of evaluation ops
+                eval_ops = {}
+                eval_ops['prediction'] = prediction
+                if hyper_params['type'] == 'regressor':
+                    labels = tf.cast(labels, tf.float64)
+                    MSE_op = tf.losses.mean_squared_error(labels, predictions=prediction, reduction=tf.losses.Reduction.NONE)
+                    eval_ops['errors'] = MSE_op
+                    eval_ops['errors_labels'] = 'MSE'
+                if hyper_params['type'] == 'classifier':
+                    # Calculate top-1 and top-5 error
+                    labels = tf.cast(labels, tf.int64)
+                    in_top_1_op = tf.cast(tf.nn.in_top_k(prediction, labels, 1), tf.float32)
+                    in_top_5_op = tf.cast(tf.nn.in_top_k(prediction, labels, 5), tf.float32)
+                    eval_ops['errors'] = [in_top_1_op, in_top_5_op]
+                    eval_ops['errors_labels'] = ['Top-1 Precision', 'Top-5 Precision']
+
+                # Restore the moving average versions of all learned variables for eval
+                variable_averages = tf.train.ExponentialMovingAverage(
+                    network.MOVING_AVERAGE_DECAY)
+                variables_to_restore = variable_averages.variables_to_restore()
+                saver = tf.train.Saver(variables_to_restore)
+
+                # Build the summary operation based on the TF collection of Summaries.
+                summary_op = tf.summary.merge_all()
+                summary_writer = tf.summary.FileWriter(flags.eval_dir, g)
+
+                while True:
+                    eval_process(flags, saver, summary_writer, eval_ops, summary_op)
+                    if flags.run_once:
+                        break
+                    time.sleep(flags.eval_interval_secs)
+
+
+def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=True, gpu_id=0):
+    """
+    Helper function to eval(): preprocess predictions, save summaries, and start queue runners.
     :param flags: tf.app.flags
     :param saver: tf.train.Saver object, restores neural net model.
     :param summary_writer: a tf.summary.FileWriter, writes tensorboard summaries to disk.
-    :param loss: Tensor, loss to evaluate.
+    :param eval_ops: tf.op, evaluation ops.
     :param summary_op: tf.op, summary operations.
     :param cpu_bound: bool, whether to run evaluation solely on the host, default True.
     :param gpu_id: int, device id where to run evaluation, default 0.
@@ -335,37 +412,57 @@ def infer(flags, saver, summary_writer, loss, summary_op, cpu_bound=True, gpu_id
                     threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
                                                      start=True))
 
-                num_iter = int(np.ceil(flags.num_examples / flags.batch_size))
+                num_evals = int(np.ceil(flags.num_examples / flags.batch_size))
                 step = 0
-                # In the case of multiple outputs, we sort the prediction per output.
-                sorted_predictions = np.zeros(shape=(1,flags.OUTPUT_DIM))
+                # In the case of multiple outputs, we sort the predictions per output.
+                # Allocate arrays
+                predictions = np.array([])
+                sorted_errors = np.zeros(shape=(1, flags.OUTPUT_DIM))
+                errors_lists = [ sorted_errors for _ in range(len(eval_ops['errors'])) ]
+                # Begin evaluation
                 start_time = time.time()
-                while step < num_iter and not coord.should_stop():
-                    # sum up losses
-                    loss_current = np.array(sess.run([loss])).reshape(flags.batch_size,flags.OUTPUT_DIM)
-                    loss_current = np.mean(loss_current,axis=0, keepdims=True)
-                    sorted_predictions += loss_current
+                while step < num_evals and not coord.should_stop():
+                    # evaluate predictions
+                    predictions = np.append(predictions, sess.run(eval_ops['prediction']))
+                    # evalute errors
+                    errors_outputs = sess.run(eval_ops['errors'])
+                    for err_arr, err_out in zip(errors_lists, errors_outputs):
+                        current_error = np.array(err_out).reshape(flags.batch_size,flags.OUTPUT_DIM)
+                        # average errors over batch dimension
+                        current_error = np.mean(current_error, axis=0, keepdims=True)
+                        err_arr += current_error
                     step += 1
 
-                sorted_predictions /= step
-                sorted_predictions = sorted_predictions.flatten()
+                # Reformatting the output arrays
+                predictions = predictions.reshape(step * flags.batchsize, flags.OUTPUT_DIM)
+                for err_arr in errors_lists:
+                    err_arr /= step
+                    err_arr = err_arr.flatten()
 
-                # Time it took to evaluate
+                # Get time it took to evaluate
                 print('Took %.3f seconds to evaluate %d images' % (time.time() - start_time, flags.num_examples))
+
+                # Save predictions to disk
+                fname = '%s_%s.npy' % (predictions, format(datetime.now()))
+                np.save(os.path.join(flags.eval_dir, fname), predictions, allow_pickle=False)
 
                 # Print Model Outputs and Summarize in Tensorboard
                 summary = tf.Summary()
                 summary.ParseFromString(sess.run(summary_op))
-                for i, output_label in enumerate(flags.OUTPUT_LABELS):
-                    print('%s: %s-Error = %.3f' % (datetime.now(), output_label, sorted_predictions[i]))
-                    summary.value.add(tag=output_label+'_Error', simple_value=sorted_predictions[i])
+                if flags.output_labels:
+                    # TODO: figure out how to load the output labels. hyper_params.json could be a good choice.
+                    output_labels = []
+                    for i, output_label in enumerate(output_labels):
+                        print('%s: %s-Error = %.3f' % (datetime.now(), output_label, sorted_errors[i]))
+                        summary.value.add(tag=output_label+'_Error', simple_value=sorted_errors[i])
 
-                # Also add a mean error
-                mean = np.mean(sorted_predictions)
-                print('%s: Mean Error = %.3f' % (datetime.now(), mean))
-                summary.value.add(tag='Mean Error', simple_value=mean)
-
+                # Print and Summarize the Mean Error across all outputs.
+                for err_arr, label in zip(errors_lists, eval_ops['errors_labels']):
+                    mean = np.mean(err_arr)
+                    print('%s: %s = %.3f' % (datetime.now(), label, mean))
+                    summary.value.add(tag= label, simple_value=mean)
                 summary_writer.add_summary(summary, global_step)
+
             except Exception as e:
                 coord.request_stop(e)
 
@@ -373,8 +470,6 @@ def infer(flags, saver, summary_writer, loss, summary_op, cpu_bound=True, gpu_id
             coord.request_stop()
             coord.join(threads, stop_grace_period_secs=1)
 
-def eval():
-    pass
 
 def set_flags(checkpt_dir, eval_dir, batch_size=64, data_dir=None):
     """

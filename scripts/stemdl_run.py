@@ -21,7 +21,7 @@ tf.app.flags.DEFINE_boolean('log_device_placement', False, """Whether to log dev
 tf.app.flags.DEFINE_boolean('allow_soft_placement', True, """Whether to allow variable soft placement on the device-""" +\
                      """ This is needed for multi-gpu runs.""")
 tf.app.flags.DEFINE_integer('log_frequency', 50, """How often to log results to the console.""")
-tf.app.flags.DEFINE_integer('save_frequency', 500, """How often to save summaries to disk""")
+tf.app.flags.DEFINE_integer('save_frequency', 500, """How often to save summaries to disk.""")
 tf.app.flags.DEFINE_integer('max_steps', 1000000,"""Number of batches to run.""")
 tf.app.flags.DEFINE_integer('num_epochs', 500,"""Number of Data Epochs to do training""")
 tf.app.flags.DEFINE_integer('NUM_EXAMPLES_PER_EPOCH', 729000,"""Number of examples in training data.""")
@@ -31,6 +31,8 @@ tf.app.flags.DEFINE_string('worker_name', 'worker', """Name of gpu worker to app
 tf.app.flags.DEFINE_integer('eval_interval_secs', 300, """How often to run model evaluation.""")
 tf.app.flags.DEFINE_integer('num_examples', 5000, """Number of examples to run.""")
 tf.app.flags.DEFINE_boolean('run_once', False, """Whether to run evalulation only once.""")
+tf.app.flags.DEFINE_boolean('output_labels', False, """Whether the predictions of the neural net are labeled and reported
+ separately.""")
 
 # Basic parameters describing the data set.
 tf.app.flags.DEFINE_integer('NUM_CLASSES', 3, """Number of classes in training/evaluation data.""")
@@ -62,6 +64,7 @@ def main(argv):
                         nargs='?', default=1)
     parser.add_argument('--batch_size', type=int, help='number of images per batch to propagate through the network.'+\
                         '\nPowers of 2 are processed more efficiently.\nDefault 64.', nargs='?', default=64)
+
     args = parser.parse_args()
 
     checkpt_dir = args.checkpt_dir[0]
@@ -85,7 +88,7 @@ def main(argv):
     if args.mode == 'train':
         runtime.train(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
     if args.mode == 'eval':
-        pass
+        runtime.eval(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
 
 if __name__ == '__main__':
     main(sys.argv)
