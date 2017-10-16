@@ -78,10 +78,10 @@ class ConvNet(object):
                 self._activation_summary(out)
                 self._activation_image_summary(out)
                 self._kernel_image_summary(kernel)
-                def none():
-                    pass
-                tf.cond(self.global_step < 2 * self.flags.save_frequency, true_fn=self._json_summary,
-                        false_fn=lambda: None)
+                # def none():
+                #     pass
+                # tf.cond(self.global_step < 2 * self.flags.save_frequency, true_fn=self._json_summary,
+                #         false_fn=lambda: None)
 
             print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
                   (scope.name, format(in_shape), format(out.shape), format(layer_params['kernel']),
