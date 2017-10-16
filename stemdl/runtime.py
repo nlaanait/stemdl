@@ -323,52 +323,51 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
         with tf.variable_scope(tf.get_variable_scope(), reuse=None):
             # Build the model and forward propagate
-            with tf.name_scope('Eval') as scope:
-                # Force the evaluation of MSE if doing regression
-                if hyper_params['network_type'] == 'regressor':
-                    hyper_params['loss_function']['type'] = 'MSE'
+            # Force the evaluation of MSE if doing regression
+            if hyper_params['network_type'] == 'regressor':
+                hyper_params['loss_function']['type'] = 'MSE'
 
-                # Setup Neural Net
-                n_net = network.ConvNet(scope, flags, 0, hyper_params, network_config, images, labels,
-                                        operation='train', summary=False)
+            # Setup Neural Net
+            n_net = network.ConvNet(scope, flags, 0, hyper_params, network_config, images, labels,
+                                    operation='train', summary=False)
 
-                # Build it and propagate images through it.
-                n_net.build_model()
-                #TODO: check the batch norm method!!!!
+            # Build it and propagate images through it.
+            n_net.build_model()
+            #TODO: check the batch norm method!!!!
 
-                # get the output and the error
-                prediction = n_net.model_output
-                # Initialize a dictionary of evaluation ops
-                eval_ops = {}
-                eval_ops['prediction'] = prediction
-                if hyper_params['network_type'] == 'regressor':
-                    labels = tf.cast(labels, tf.float64)
-                    MSE_op = tf.losses.mean_squared_error(labels, predictions=prediction, reduction=tf.losses.Reduction.NONE)
-                    eval_ops['errors'] = MSE_op
-                    eval_ops['errors_labels'] = 'MSE'
-                if hyper_params['network_type'] == 'classifier':
-                    # Calculate top-1 and top-5 error
-                    labels = tf.cast(labels, tf.int64)
-                    in_top_1_op = tf.cast(tf.nn.in_top_k(prediction, labels, 1), tf.float32)
-                    in_top_5_op = tf.cast(tf.nn.in_top_k(prediction, labels, 5), tf.float32)
-                    eval_ops['errors'] = [in_top_1_op, in_top_5_op]
-                    eval_ops['errors_labels'] = ['Top-1 Precision', 'Top-5 Precision']
+            # get the output and the error
+            prediction = n_net.model_output
+            # Initialize a dictionary of evaluation ops
+            eval_ops = {}
+            eval_ops['prediction'] = prediction
+            if hyper_params['network_type'] == 'regressor':
+                labels = tf.cast(labels, tf.float64)
+                MSE_op = tf.losses.mean_squared_error(labels, predictions=prediction, reduction=tf.losses.Reduction.NONE)
+                eval_ops['errors'] = MSE_op
+                eval_ops['errors_labels'] = 'MSE'
+            if hyper_params['network_type'] == 'classifier':
+                # Calculate top-1 and top-5 error
+                labels = tf.cast(labels, tf.int64)
+                in_top_1_op = tf.cast(tf.nn.in_top_k(prediction, labels, 1), tf.float32)
+                in_top_5_op = tf.cast(tf.nn.in_top_k(prediction, labels, 5), tf.float32)
+                eval_ops['errors'] = [in_top_1_op, in_top_5_op]
+                eval_ops['errors_labels'] = ['Top-1 Precision', 'Top-5 Precision']
 
-                # Restore the moving average versions of all learned variables for eval
-                variable_averages = tf.train.ExponentialMovingAverage(
-                    network.MOVING_AVERAGE_DECAY)
-                variables_to_restore = variable_averages.variables_to_restore()
-                saver = tf.train.Saver(variables_to_restore)
+            # Restore the moving average versions of all learned variables for eval
+            variable_averages = tf.train.ExponentialMovingAverage(
+                network.MOVING_AVERAGE_DECAY)
+            variables_to_restore = variable_averages.variables_to_restore()
+            saver = tf.train.Saver(variables_to_restore)
 
-                # Build the summary operation based on the TF collection of Summaries.
-                summary_op = tf.summary.merge_all()
-                summary_writer = tf.summary.FileWriter(flags.eval_dir, g)
+            # Build the summary operation based on the TF collection of Summaries.
+            summary_op = tf.summary.merge_all()
+            summary_writer = tf.summary.FileWriter(flags.eval_dir, g)
 
-                while True:
-                    eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=cpu_bound, gpu_id=gpu_id)
-                    if flags.run_once:
-                        break
-                    time.sleep(flags.eval_interval_secs)
+            while True:
+                eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=cpu_bound, gpu_id=gpu_id)
+                if flags.run_once:
+                    break
+                time.sleep(flags.eval_interval_secs)
 
 
 def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=True, gpu_id=0):
