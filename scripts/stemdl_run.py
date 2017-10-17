@@ -30,7 +30,7 @@ tf.app.flags.DEFINE_string('worker_name', 'worker', """Name of gpu worker to app
 # Basic parameters describing the evaluation run
 tf.app.flags.DEFINE_integer('eval_interval_secs', 300, """How often to run model evaluation.""")
 tf.app.flags.DEFINE_integer('num_examples', 5000, """Number of examples to run.""")
-tf.app.flags.DEFINE_boolean('run_once', False, """Whether to run evalulation only once.""")
+tf.app.flags.DEFINE_boolean('run_once', True, """Whether to run evalulation only once.""")
 tf.app.flags.DEFINE_boolean('output_labels', False, """Whether the predictions of the neural net are labeled and reported
  separately.""")
 
