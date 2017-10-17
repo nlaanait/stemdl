@@ -411,7 +411,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
     with tf.device(device):
         with tf.Session(config=config) as sess:
             # Restore Model from checkpoint
-            ckpt = tf.train.get_checkpoint_state(flags.checkpt_dir)
+            ckpt = tf.train.get_checkpoint_state(tf.train.latest_checkpoint(flags.checkpt_dir))
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)
                 # Assuming model_checkpoint_path looks something like:
