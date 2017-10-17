@@ -290,8 +290,12 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                                                       tf.train.NanTensorHook(avg_total_loss),logHook], config=config,
                                                save_summaries_steps=flags.save_frequency) as mon_sess:
                 while not mon_sess.should_stop():
-                    mon_sess.run(train_op, options= run_options, run_metadata=run_metadata)
-
+                    mon_sess.run(train_op)
+                    if not bool(global_step % flags.save_frequency):
+                        mon_sess.run(train_op, options= run_options, run_metadata=run_metadata)
+                        summary_writer = tf.summary.FileWriter(flags.train_dir)
+                        summary_writer.add_run_metadata(run_metadata, 'stats %d' %global_step, global_step=global_step)
+                        summary_writer.close()
 
 def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
     """
