@@ -323,23 +323,11 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                                                                random_glimpses='normal', geometric=True)
 
             with tf.variable_scope(tf.get_variable_scope(), reuse=None):
-                # with tf.name_scope('Input_Eval') as _:
-                #     filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
-                #     # pass the filename_queue to the inputs classes to decode
-                #     dset = inputs.DatasetTFRecords(filename_queue, flags)
-                #     image, label = dset.decode_image_label()
-                #     # # distort images and generate examples batch
-                #     images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15, distort=False,
-                #                                                    random_glimpses='normal', geometric=True)
+
                 # Build the model and forward propagate
                 # Force the evaluation of MSE if doing regression
                 if hyper_params['network_type'] == 'regressor':
                     hyper_params['loss_function']['type'] = 'MSE'
-
-                # # distort images and generate examples batch
-                # images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15,
-                #                                                distort=False,
-                #                                                random_glimpses='normal', geometric=True)
 
                 # Setup Neural Net
                 n_net = network.ConvNet('worker_0/', flags, 0, hyper_params, network_config, images, labels,
@@ -376,7 +364,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
             # Build the summary operation based on the TF collection of Summaries.
             summary_op = tf.summary.merge_all()
             summary_writer = tf.summary.FileWriter(flags.eval_dir, g)
-
+            print(flags.checkpt_dir)
             while True:
                 eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=cpu_bound, gpu_id=gpu_id)
                 if flags.run_once:
@@ -496,9 +484,10 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
 def set_flags(checkpt_dir, eval_dir, batch_size=64, data_dir=None):
     """
     Sets flags that could change from one run to the next
-    :param checkpt_dir:
-    :param batch_size:
-    :param data_dir:
+    :param checkpt_dir: checkpoint directory.
+    :param batch_size: as it says.
+    :param eval_dir: evaluation directory.
+    :param data_dir: as it says.
     :return:
     """
     tf.app.flags.DEFINE_string('train_dir', checkpt_dir, """Directory where to write event logs and checkpoint.""")
