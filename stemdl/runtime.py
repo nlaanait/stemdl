@@ -321,7 +321,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 # # distort images and generate examples batch
                 images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15, distort=False,
                                                                random_glimpses='normal', geometric=True)
-
+                # TODO: Turn data augmentation into flags
             with tf.variable_scope(tf.get_variable_scope(), reuse=None):
 
                 # Build the model and forward propagate
@@ -331,7 +331,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
                 # Setup Neural Net
                 n_net = network.ConvNet('worker_0/', flags, 0, hyper_params, network_config, images, labels,
-                                        operation='train', summary=False)
+                                        operation='eval', summary=False)
 
                 # Build it and propagate images through it.
                 n_net.build_model()
