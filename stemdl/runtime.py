@@ -290,25 +290,27 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                                                hooks=[tf.train.StopAtStepHook(last_step=flags.max_steps),
                                                       tf.train.NanTensorHook(avg_total_loss),logHook], config=config,
                                                save_summaries_steps=None, save_summaries_secs=None) as mon_sess:
-            def getstats():
-                _, sum_merged = mon_sess.run([train_op, summary_merged], options=run_options, run_metadata=run_metadata)
-                summary_writer.add_run_metadata(run_metadata, 'step %s' % format(global_step),
-                                                global_step=global_step)
-                summary_writer.add_summary(sum_merged, global_step=global_step)
-                print('Running Stats and Saving Summaries...')
-                return summary_merged
+            # def getstats():
+            #     _, sum_merged = mon_sess.run([train_op, summary_merged], options=run_options, run_metadata=run_metadata)
+            #     summary_writer.add_run_metadata(run_metadata, 'step %s' % format(global_step),
+            #                                     global_step=global_step)
+            #     summary_writer.add_summary(sum_merged, global_step=global_step)
+            #     print('Running Stats and Saving Summaries...')
+            #     return summary_merged
+
             while not mon_sess.should_stop():
-                tf.cond(global_step % flags.save_frequency == 0, getstats(), mon_sess.run(train_op))
-                # # Train, Record stats and save summaries
-                # if global_step % flags.save_frequency == 0:
-                #     _, sum_merged = mon_sess.run([train_op, summary_merged], options= run_options, run_metadata=run_metadata)
-                #     summary_writer.add_run_metadata(run_metadata, 'step %s' % format(global_step),
-                #                                     global_step=global_step)
-                #     summary_writer.add_summary(sum_merged, global_step=global_step)
-                #     print('Running Stats and Saving Summaries...')
-                # else:
-                #     # Just train
-                #     mon_sess.run(train_op)
+
+                # tf.cond(global_step % flags.save_frequency == 0, getstats(), mon_sess.run(train_op))
+                # Train, Record stats and save summaries
+                if logHook._step % flags.save_frequency == 0:
+                    _, sum_merged = mon_sess.run([train_op, summary_merged], options= run_options, run_metadata=run_metadata)
+                    summary_writer.add_run_metadata(run_metadata, 'step %s' % format(global_step),
+                                                    global_step=global_step)
+                    summary_writer.add_summary(sum_merged, global_step=global_step)
+                    print('Running Stats and Saving Summaries...')
+                else:
+                    # Just train
+                    mon_sess.run(train_op)
 
             summary_writer.close()
 
