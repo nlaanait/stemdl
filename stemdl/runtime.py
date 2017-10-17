@@ -439,7 +439,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                         # evaluate predictions
                         predict_arr = sess.run(eval_ops['prediction'], run_metadata=run_metadata,
                                                                       options=run_options)
-                        predictions = np.append(predict_arr)
+                        predictions = np.append(predictions, predict_arr)
                         summary_writer.add_run_metadata(run_metadata, 'step %d' %step)
                     else:
                         # evaluate predictions
