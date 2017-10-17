@@ -10,6 +10,7 @@ from stemdl import io_utils
 import tensorflow as tf
 import argparse
 import sys
+import os
 
 
 """
@@ -68,7 +69,8 @@ def main(argv):
 
     checkpt_dir = args.checkpt_dir[0]
     # Also need a directory within the checkpoint dir for event files coming from eval
-    eval_dir = checkpt_dir+'_eval'
+    eval_dir = os.path.join(checkpt_dir, '_eval')
+
     # Create directories
     if tf.gfile.Exists(checkpt_dir):
         print('Directory "%s" exists already.\nReloading model from latest checkpoint.' %format(checkpt_dir))
