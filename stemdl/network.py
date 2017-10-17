@@ -406,20 +406,20 @@ class ConvNet(object):
     def _print_layer_specs(self, params, scope, input_shape, output_shape):
         print(self.num_weights)
 
-        bytesize = 4.
-        if not self.flags.IMAGE_FP16: bytesize = 2.
-        mem_in_GB = np.cumprod(output_shape)[-1] * bytesize / 1024**3
+        bytesize = 4.0
+        if not self.flags.IMAGE_FP16: bytesize = 2.0
+        mem_in_GB = np.cumprod(output_shape)[-1] * bytesize / 1024**2
         print(mem_in_GB)
         if params['type'] == 'convolutional':
-            print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %2.2e,  memory: %2.2e GB' %
+            print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %2.2e,  memory: %2.2e MB' %
                   (scope.name, format(output_shape), format(params['kernel']),
                    format(params['stride']), float(self.num_weights), float(mem_in_GB)))
         if params['type'] == 'pool':
-            print('%s --- output: %s, kernel: %s, stride: %s, memory: %2.2e GB' %
+            print('%s --- output: %s, kernel: %s, stride: %s, memory: %2.2e MB' %
                   (scope.name, format(output_shape), format(params['kernel']),
                    format(params['stride']), mem_in_GB))
         if params['type'] == 'fully_connected' or params['type'] == 'linear_output':
-            print('%s --- output: %s, weights: %s, bias: %s, # of weights: %2.2e, memory: %2.2e GB'
+            print('%s --- output: %s, weights: %s, bias: %s, # of weights: %2.2e, memory: %2.2e MB'
                   % (scope.name, format(output_shape), format(params['weights']),
                      format(params['bias']), self.num_weights, mem_in_GB))
 
