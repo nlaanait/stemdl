@@ -280,9 +280,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         avg_total_loss = tf.reduce_mean(worker_total_loss)
         logHook = _LoggerHook(flags, avg_total_loss, num_GPUS)
 
-        # Stats
+        # Stats and summaries
         run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
         run_metadata = tf.RunMetadata()
+        summary_writer = tf.summary.FileWriter(flags.train_dir)
 
         # Start Training Session
         with tf.train.MonitoredTrainingSession(checkpoint_dir=flags.train_dir,
@@ -293,7 +294,6 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                     # Train, Record stats and save summaries
                     if global_step % flags.save_frequency == 0:
                         _, sum_merged = mon_sess.run([train_op, summary_merged], options= run_options, run_metadata=run_metadata)
-                        summary_writer = tf.summary.FileWriter(flags.train_dir)
                         summary_writer.add_run_metadata(run_metadata, 'step %s' % format(global_step),
                                                         global_step=global_step)
                         summary_writer.add_summary(sum_merged, global_step=global_step)
