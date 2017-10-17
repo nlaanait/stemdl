@@ -308,6 +308,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
     else:
         device = '/gpu:%d' % (num_GPUS - 1)
         gpu_id = num_GPUS - 1
+        cpu_bound = False
 
     with tf.device(device):
         with tf.Graph().as_default() as g:
