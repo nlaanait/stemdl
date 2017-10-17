@@ -314,7 +314,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
         with tf.Graph().as_default() as g:
             # Setup data stream
             with tf.name_scope('Input_Eval') as _:
-                filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
+                filename_queue = tf.train.string_input_producer([data_path])
                 # pass the filename_queue to the inputs classes to decode
                 dset = inputs.DatasetTFRecords(filename_queue, flags)
                 image, label = dset.decode_image_label()
@@ -427,7 +427,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                 # Allocate arrays
                 predictions = np.array([])
                 sorted_errors = np.zeros(shape=(1, flags.OUTPUT_DIM))
-                errors_lists = [ sorted_errors for _ in range(len(eval_ops['errors'])) ]
+                errors_lists = [ sorted_errors for _ in enumerate(eval_ops['errors']) ]
 
                 # Begin evaluation
                 start_time = time.time()
