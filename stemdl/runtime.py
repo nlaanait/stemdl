@@ -432,12 +432,18 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                 # Begin evaluation
                 start_time = time.time()
                 while step < num_evals and not coord.should_stop():
-                    # Get stats
-                    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-                    run_metadata = tf.RunMetadata()
-                    # evaluate predictions
-                    predictions = np.append(predictions, sess.run(eval_ops['prediction'], run_metadata=run_metadata,
-                                                                  options= run_options))
+                    if step % 10 == 0:
+                        # Get stats
+                        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+                        run_metadata = tf.RunMetadata()
+                        # evaluate predictions
+                        predict_arr, _ = sess.run(eval_ops['prediction'], run_metadata=run_metadata,
+                                                                      options=run_options)
+                        predictions = np.append(predict_arr)
+                        summary_writer.add_run_metadata(run_metadata, 'step %d' %step)
+                    else:
+                        # evaluate predictions
+                        predictions = np.append(predictions, sess.run(eval_ops['prediction']))
                     # evalute errors
                     errors_outputs = sess.run(eval_ops['errors'], run_metadata=run_metadata)
                     for err_arr, err_out in zip(errors_lists, errors_outputs):
@@ -476,7 +482,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                     print('%s: %s = %.3f' % (datetime.now(), label, mean))
                     summary.value.add(tag= label, simple_value=mean)
                 summary_writer.add_summary(summary, global_step)
-                summary_writer.add_run_metadata(run_metadata,'each_step')
+
             except Exception as e:
                 coord.request_stop(e)
 
