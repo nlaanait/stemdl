@@ -83,9 +83,10 @@ class ConvNet(object):
                 # tf.cond(self.global_step < 2 * self.flags.save_frequency, true_fn=self._json_summary,
                 #         false_fn=lambda: None)
             #TODO: print out memory footprint per layer...
-            print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
-                  (scope.name, format(in_shape), format(out.shape), format(layer_params['kernel']),
-                   format(layer_params['stride']) ))
+            self._print_layer_specs(layer_params, scope, in_shape, out.get_shape())
+            # print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
+            #       (scope.name, format(in_shape), format(out.shape), format(layer_params['kernel']),
+            #        format(layer_params['stride']) ))
 
         # Initiate the remaining layers
         for layer_name, layer_params in list(self.network.items())[1:]:
@@ -405,7 +406,7 @@ class ConvNet(object):
     def _print_layer_specs(self, params, scope, input_shape, output_shape):
         bytesize = 4
         if not self.flags.IMAGE_FP16: bytesize = 2
-        mem_in_GB = np.cumprod(output_shape) * bytesize / 1024**3
+        mem_in_GB = np.cumprod(output_shape)[-1] * bytesize / 1024**3
         if params['type'] == 'convolutional':
             print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %2.2e,  memory: %2.2e GB' %
                   (scope.name, format(output_shape), format(params['kernel']),
