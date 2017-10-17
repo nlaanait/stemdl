@@ -204,7 +204,7 @@ class ConvNet(object):
         output = tf.nn.conv2d(input, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
 
         # Keep tabs on the number of weights
-        self.num_weights += kernel_shape[0]*kernel_shape[1]*kernel_shape
+        self.num_weights += np.cumprod(kernel_shape)[-1]
 
         return output, kernel
 
