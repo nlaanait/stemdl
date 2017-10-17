@@ -119,7 +119,8 @@ class ConvNet(object):
                 out_shape = out.get_shape()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
 
-        print('Total # of layers: %d,  weights: %2.1e, memory: %s \n' % (len(self.network), self.num_weights, format(self.mem)))
+        print('Total # of layers: %d,  weights: %2.1e, memory: %s MB \n' % (len(self.network), self.num_weights,
+                                                                         format(self.mem/1024)))
 
         # reference the output
         self.model_output = out
