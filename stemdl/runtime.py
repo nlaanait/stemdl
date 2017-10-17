@@ -453,7 +453,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                 print('Took %.3f seconds to evaluate %d images' % (time.time() - start_time, flags.num_examples))
 
                 # Save predictions to disk
-                fname = '%s_%s.npy' % ('predictions', format(datetime.now()).split('')[-1])
+                fname = '%s_%s.npy' % ('predictions', format(datetime.now()).split(' ')[-1])
                 np.save(os.path.join(flags.eval_dir, fname), predictions, allow_pickle=False)
 
                 # Print Model Outputs and Summarize in Tensorboard
