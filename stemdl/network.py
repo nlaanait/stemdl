@@ -15,13 +15,6 @@ from tensorflow.python.training import moving_averages
 worker_name = 'worker'
 
 
-# This should be a superclass
-# TODO: implement Feed-Forward Net superclass
-class FeedFwdNet(object):
-    pass
-
-
-# TODO: ConvNet should inherit FeedFwdNet
 class ConvNet(object):
     """
     Vanilla Convolutional Neural Network (Feed-Forward).

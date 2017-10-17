@@ -212,7 +212,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
                         # Setup Neural Net
                         n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
-                                             operation='train', summary=summary)
+                                             operation='train', summary=False)
 
                         # Build it and propagate images through it.
                         n_net.build_model()
