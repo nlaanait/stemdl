@@ -437,7 +437,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                     run_metadata = tf.RunMetadata()
                     # evaluate predictions
                     predictions = np.append(predictions, sess.run(eval_ops['prediction'], run_metadata=run_metadata,
-                                                                  run_options= run_options))
+                                                                  options= run_options))
                     # evalute errors
                     errors_outputs = sess.run(eval_ops['errors'], run_metadata=run_metadata)
                     for err_arr, err_out in zip(errors_lists, errors_outputs):
