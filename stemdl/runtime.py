@@ -345,7 +345,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
             if hyper_params['network_type'] == 'regressor':
                 labels = tf.cast(labels, tf.float64)
                 MSE_op = tf.losses.mean_squared_error(labels, predictions=prediction, reduction=tf.losses.Reduction.NONE)
-                eval_ops['errors'] = MSE_op
+                eval_ops['errors'] = [MSE_op]
                 eval_ops['errors_labels'] = 'MSE'
             if hyper_params['network_type'] == 'classifier':
                 # Calculate top-1 and top-5 error
