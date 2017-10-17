@@ -364,7 +364,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
             # Build the summary operation based on the TF collection of Summaries.
             summary_op = tf.summary.merge_all()
             summary_writer = tf.summary.FileWriter(flags.eval_dir, g)
-            print(flags.checkpt_dir)
+
             while True:
                 eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=cpu_bound, gpu_id=gpu_id)
                 if flags.run_once:
@@ -399,7 +399,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
     with tf.device(device):
         with tf.Session(config=config) as sess:
             # Restore Model from checkpoint
-            ckpt = tf.train.get_checkpoint_state(tf.train.latest_checkpoint(flags.checkpt_dir))
+            ckpt = tf.train.get_checkpoint_state(flags.train_dir)
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)
                 # Assuming model_checkpoint_path looks something like:
