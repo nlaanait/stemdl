@@ -420,7 +420,7 @@ class ConvNet(object):
                    format(params['stride']), format(mem_in_GB)))
         if params['type'] == 'fully_connected' or params['type'] == 'linear_output':
             print('%s --- output: %s, weights: %s, bias: %s, # of weights: %s,  memory: %s MB' %
-                  % (scope.name, format(output_shape), format(params['weights']),
+                   (scope.name, format(output_shape), format(params['weights']),
                      format(params['bias']), format(self.num_weights), format(mem_in_GB)))
 
     def _add_loss_summaries(self, total_loss, losses):
