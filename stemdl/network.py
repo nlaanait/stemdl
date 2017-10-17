@@ -411,9 +411,9 @@ class ConvNet(object):
         mem_in_GB = np.cumprod(output_shape)[-1] * bytesize / 1024**2
         print(mem_in_GB)
         if params['type'] == 'convolutional':
-            print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %2.2e,  memory: %2.2e MB' %
+            print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB' %
                   (scope.name, format(output_shape), format(params['kernel']),
-                   format(params['stride']), self.num_weights, mem_in_GB))
+                   format(params['stride']), format(self.num_weights), format(mem_in_GB)))
         if params['type'] == 'pool':
             print('%s --- output: %s, kernel: %s, stride: %s, memory: %2.2e MB' %
                   (scope.name, format(output_shape), format(params['kernel']),
