@@ -407,7 +407,7 @@ class ConvNet(object):
         if not self.flags.IMAGE_FP16: bytesize = 2
         mem_in_GB = np.cumprod(output_shape) * bytesize / 1024**3
         if params['type'] == 'convolutional':
-            print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %2.2e GB' %
+            print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %2.2e,  memory: %2.2e GB' %
                   (scope.name, format(output_shape), format(params['kernel']),
                    format(params['stride']), self.num_weights, mem_in_GB))
         if params['type'] == 'pool':
@@ -415,9 +415,9 @@ class ConvNet(object):
                   (scope.name, format(output_shape), format(params['kernel']),
                    format(params['stride']), mem_in_GB))
         if params['type'] == 'fully_connected' or params['type'] == 'linear_output':
-            print('%s --- output: %s, weights: %s, bias: %s, memory: %2.2e GB'
+            print('%s --- output: %s, weights: %s, bias: %s, # of weights: %2.3e, memory: %2.2e GB'
                   % (scope.name, format(output_shape), format(params['weights']),
-                     format(params['bias']), mem_in_GB))
+                     format(params['bias']), self.num_weights, mem_in_GB))
 
     def _add_loss_summaries(self, total_loss, losses):
         """
