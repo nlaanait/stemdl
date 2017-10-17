@@ -335,7 +335,6 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
                 # Build it and propagate images through it.
                 n_net.build_model()
-                #TODO: check the batch norm method!!!!
 
                 # get the output and the error
                 prediction = n_net.model_output
@@ -454,7 +453,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                 print('Took %.3f seconds to evaluate %d images' % (time.time() - start_time, flags.num_examples))
 
                 # Save predictions to disk
-                fname = '%s_%s.npy' % ('predictions', format(datetime.now()))
+                fname = '%s_%s.npy' % ('predictions', format(datetime.now()).split('')[-1])
                 np.save(os.path.join(flags.eval_dir, fname), predictions, allow_pickle=False)
 
                 # Print Model Outputs and Summarize in Tensorboard
