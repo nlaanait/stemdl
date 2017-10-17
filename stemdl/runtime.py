@@ -261,7 +261,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         for grad, var in avg_gradients:
             summaries.append(tf.summary.histogram(var.op.name, var))
             summaries.append(tf.summary.histogram(var.op.name+'/gradients', grad))
-        _ = tf.summary.merge_all()
+        summary_merged = tf.summary.merge_all()
 
         # Track the moving averages of all trainable variables.
         variable_averages = tf.train.ExponentialMovingAverage(
@@ -288,14 +288,17 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         with tf.train.MonitoredTrainingSession(checkpoint_dir=flags.train_dir,
                                                hooks=[tf.train.StopAtStepHook(last_step=flags.max_steps),
                                                       tf.train.NanTensorHook(avg_total_loss),logHook], config=config,
-                                               save_summaries_steps=flags.save_frequency) as mon_sess:
+                                               save_summaries_steps=None, save_summaries_secs=None) as mon_sess:
                 while not mon_sess.should_stop():
                     mon_sess.run(train_op)
-                    if not bool(global_step % flags.save_frequency):
+                    if global_step % flags.save_frequency == 0:
                         mon_sess.run(train_op, options= run_options, run_metadata=run_metadata)
                         summary_writer = tf.summary.FileWriter(flags.train_dir)
-                        summary_writer.add_run_metadata(run_metadata, 'stats %d' %global_step, global_step=global_step)
+                        summary_writer.add_run_metadata(run_metadata, 'step %s' % format(global_step),
+                                                        global_step=global_step)
+                        summary_writer.add_summary(summary_merged, global_step=global_step)
                         summary_writer.close()
+                summary_writer.close()
 
 def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
     """
