@@ -409,7 +409,7 @@ class ConvNet(object):
         bytesize = 4.0
         if not self.flags.IMAGE_FP16: bytesize = 2.0
         mem_in_GB = np.cumprod(output_shape)[-1] * bytesize / 1024.**2
-        # print(mem_in_GB)
+        print(type(mem_in_GB))
         if params['type'] == 'convolutional':
             print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %2.2e MB' %
                   (scope.name, format(output_shape), format(params['kernel']),
