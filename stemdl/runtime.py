@@ -432,10 +432,14 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                 # Begin evaluation
                 start_time = time.time()
                 while step < num_evals and not coord.should_stop():
+                    if bool(step % 10):
+                        # Get stats
+                        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+                        run_metadata = tf.RunMetadata()
                     # evaluate predictions
-                    predictions = np.append(predictions, sess.run(eval_ops['prediction']))
+                    predictions = np.append(predictions, sess.run(eval_ops['prediction'], run_metadata=run_metadata))
                     # evalute errors
-                    errors_outputs = sess.run(eval_ops['errors'])
+                    errors_outputs = sess.run(eval_ops['errors'], run_metadata=run_metadata)
                     for err_arr, err_out in zip(errors_lists, errors_outputs):
                         current_error = np.array(err_out).reshape(flags.batch_size,flags.OUTPUT_DIM)
                         # average errors over batch dimension
@@ -472,7 +476,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                     print('%s: %s = %.3f' % (datetime.now(), label, mean))
                     summary.value.add(tag= label, simple_value=mean)
                 summary_writer.add_summary(summary, global_step)
-
+                summary_writer.add_run_metadata()
             except Exception as e:
                 coord.request_stop(e)
 
