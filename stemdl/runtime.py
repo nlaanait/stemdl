@@ -321,35 +321,35 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
             #     # images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15, distort=False,
             #     #                                                random_glimpses='normal', geometric=True)
 
-        with tf.variable_scope(tf.get_variable_scope(), reuse=None):
-            with tf.name_scope('Input_Eval') as _:
-                filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
-                # pass the filename_queue to the inputs classes to decode
-                dset = inputs.DatasetTFRecords(filename_queue, flags)
-                image, label = dset.decode_image_label()
-                # # distort images and generate examples batch
-                images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15, distort=False,
-                                                               random_glimpses='normal', geometric=True)
-                # Build the model and forward propagate
+            with tf.variable_scope(tf.get_variable_scope(), reuse=None):
+                with tf.name_scope('Input_Eval') as _:
+                    filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
+                    # pass the filename_queue to the inputs classes to decode
+                    dset = inputs.DatasetTFRecords(filename_queue, flags)
+                    image, label = dset.decode_image_label()
+                    # # distort images and generate examples batch
+                    images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15, distort=False,
+                                                                   random_glimpses='normal', geometric=True)
+                    # Build the model and forward propagate
                 # Force the evaluation of MSE if doing regression
-            if hyper_params['network_type'] == 'regressor':
-                hyper_params['loss_function']['type'] = 'MSE'
+                if hyper_params['network_type'] == 'regressor':
+                    hyper_params['loss_function']['type'] = 'MSE'
 
-            # # distort images and generate examples batch
-            # images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15,
-            #                                                distort=False,
-            #                                                random_glimpses='normal', geometric=True)
+                # # distort images and generate examples batch
+                # images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15,
+                #                                                distort=False,
+                #                                                random_glimpses='normal', geometric=True)
 
-            # Setup Neural Net
-            n_net = network.ConvNet('worker_0/', flags, 0, hyper_params, network_config, images, labels,
-                                    operation='train', summary=False)
+                # Setup Neural Net
+                n_net = network.ConvNet('worker_0/', flags, 0, hyper_params, network_config, images, labels,
+                                        operation='train', summary=False)
 
-            # Build it and propagate images through it.
-            n_net.build_model()
-            #TODO: check the batch norm method!!!!
+                # Build it and propagate images through it.
+                n_net.build_model()
+                #TODO: check the batch norm method!!!!
 
-            # get the output and the error
-            prediction = n_net.model_output
+                # get the output and the error
+                prediction = n_net.model_output
             # Initialize a dictionary of evaluation ops
             eval_ops = {}
             eval_ops['prediction'] = prediction
