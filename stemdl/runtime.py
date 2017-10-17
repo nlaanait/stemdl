@@ -351,7 +351,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 # get the output and the error
                 prediction = n_net.model_output
             # Initialize a dictionary of evaluation ops
-            eval_ops = {}
+            eval_ops = dict()
             eval_ops['prediction'] = prediction
             if hyper_params['network_type'] == 'regressor':
                 labels = tf.cast(labels, tf.float64)
