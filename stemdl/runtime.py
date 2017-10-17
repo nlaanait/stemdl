@@ -313,13 +313,13 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
         with tf.Graph().as_default() as g:
             # Setup data stream
             # with tf.name_scope('Input_Eval') as _:
-                filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
-                # pass the filename_queue to the inputs classes to decode
-                dset = inputs.DatasetTFRecords(filename_queue, flags)
-                image, label = dset.decode_image_label()
-                # # distort images and generate examples batch
-                # images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15, distort=False,
-                #                                                random_glimpses='normal', geometric=True)
+            #     filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
+            #     # pass the filename_queue to the inputs classes to decode
+            #     dset = inputs.DatasetTFRecords(filename_queue, flags)
+            #     image, label = dset.decode_image_label()
+            #     # # distort images and generate examples batch
+            #     # images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15, distort=False,
+            #     #                                                random_glimpses='normal', geometric=True)
 
         with tf.variable_scope(tf.get_variable_scope(), reuse=None):
             with tf.name_scope('Input_Eval') as _:
