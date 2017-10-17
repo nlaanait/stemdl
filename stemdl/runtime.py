@@ -297,6 +297,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         summary_writer.add_run_metadata(run_metadata, 'step %s' % format(global_step),
                                                         global_step=global_step)
                         summary_writer.add_summary(sum_merged, global_step=global_step)
+                        print('Running Stats and Saving Summaries...')
                     else:
                         # Just train
                         mon_sess.run(train_op)
