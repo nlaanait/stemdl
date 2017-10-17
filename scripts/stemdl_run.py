@@ -46,7 +46,6 @@ tf.app.flags.DEFINE_boolean('IMAGE_FP16', False, """ Whether to use half-precisi
 FLAGS = tf.app.flags.FLAGS
 
 
-# TODO: NEED TO FIGURE HOW TO GET EVAL DATA
 def main(argv):
     parser = argparse.ArgumentParser(description='Setup and Run a Deep Neural Network.')
     parser.add_argument('--data_path', type=str, help='path to tfrecords file with images + labels.', nargs=1,
