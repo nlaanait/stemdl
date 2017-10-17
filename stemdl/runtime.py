@@ -368,7 +368,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
             # Restore the moving average versions of all learned variables for eval
             variable_averages = tf.train.ExponentialMovingAverage(
-                flags.MOVING_AVERAGE_DECAY)
+                hyper_params['moving_average_decay'])
             variables_to_restore = variable_averages.variables_to_restore()
             saver = tf.train.Saver(variables_to_restore)
 
