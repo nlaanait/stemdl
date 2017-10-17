@@ -298,7 +298,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 print('Running Stats and Saving Summaries...')
                 return summary_merged
             while not mon_sess.should_stop():
-                _ = tf.cond(global_step % flags.save_frequency == 0, getstats(), mon_sess.run(train_op))
+                tf.cond(global_step % flags.save_frequency == 0, getstats(), mon_sess.run(train_op))
                 # # Train, Record stats and save summaries
                 # if global_step % flags.save_frequency == 0:
                 #     _, sum_merged = mon_sess.run([train_op, summary_merged], options= run_options, run_metadata=run_metadata)
