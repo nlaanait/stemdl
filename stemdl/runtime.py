@@ -304,7 +304,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 # Train, Record stats and save summaries
                 if logHook._step % flags.save_frequency == 0:
                     _, sum_merged = mon_sess.run([train_op, summary_merged], options= run_options, run_metadata=run_metadata)
-                    summary_writer.add_run_metadata(run_metadata, 'step %s' % format(global_step),
+                    summary_writer.add_run_metadata(run_metadata, 'step %s' % format(logHook._step),
                                                     global_step=global_step)
                     summary_writer.add_summary(sum_merged, global_step=global_step)
                     print('Running Stats and Saving Summaries...')
