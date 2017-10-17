@@ -444,7 +444,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                     step += 1
 
                 # Reformatting the output arrays
-                predictions = predictions.reshape(step * flags.batchsize, flags.OUTPUT_DIM)
+                predictions = predictions.reshape(step * flags.batch_size, flags.OUTPUT_DIM)
                 for err_arr in errors_lists:
                     err_arr /= step
                     err_arr = err_arr.flatten()
