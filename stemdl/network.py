@@ -405,9 +405,11 @@ class ConvNet(object):
 
     def _print_layer_specs(self, params, scope, input_shape, output_shape):
         print(self.num_weights)
+
         bytesize = 4.
         if not self.flags.IMAGE_FP16: bytesize = 2.
         mem_in_GB = np.cumprod(output_shape)[-1] * bytesize / 1024**3
+        print(mem_in_GB)
         if params['type'] == 'convolutional':
             print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %2.2e,  memory: %2.2e GB' %
                   (scope.name, format(output_shape), format(params['kernel']),
