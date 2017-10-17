@@ -410,13 +410,13 @@ class ConvNet(object):
         if params['type'] == 'convolutional':
             print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %2.2e,  memory: %2.2e GB' %
                   (scope.name, format(output_shape), format(params['kernel']),
-                   format(params['stride']), self.num_weights, mem_in_GB))
+                   format(params['stride']), self.num_weights, float(mem_in_GB)))
         if params['type'] == 'pool':
             print('%s --- output: %s, kernel: %s, stride: %s, memory: %2.2e GB' %
                   (scope.name, format(output_shape), format(params['kernel']),
                    format(params['stride']), mem_in_GB))
         if params['type'] == 'fully_connected' or params['type'] == 'linear_output':
-            print('%s --- output: %s, weights: %s, bias: %s, # of weights: %2.3e, memory: %2.2e GB'
+            print('%s --- output: %s, weights: %s, bias: %s, # of weights: %2.2e, memory: %2.2e GB'
                   % (scope.name, format(output_shape), format(params['weights']),
                      format(params['bias']), self.num_weights, mem_in_GB))
 
