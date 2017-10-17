@@ -119,7 +119,7 @@ class ConvNet(object):
                 out_shape = out.get_shape()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
 
-        print('Total # of layers & weights: %d, %2.1e\n' % (len(self.network), self.num_weights))
+        print('Total # of layers: %d,  weights: %2.1e, memory: %s \n' % (len(self.network), self.num_weights, format(self.mem)))
 
         # reference the output
         self.model_output = out
@@ -407,7 +407,7 @@ class ConvNet(object):
         tf.summary.image(tensor_name + '/kernels' , map_tile)
 
     def _print_layer_specs(self, params, scope, input_shape, output_shape):
-        mem_in_MB = self.mem/1024
+        mem_in_MB = np.cumprod(output_shape)[-1] * self.bytesize / 1024**2
         if params['type'] == 'convolutional':
             print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB' %
                   (scope.name, format(output_shape), format(params['kernel']),
