@@ -59,6 +59,9 @@ class ConvNet(object):
             self.reuse = None
         else:
             self.reuse = True
+        self.bytesize = 2
+        if not self.flags.IMAGE_FP16: self.bytesize = 4
+        self.mem = np.cumprod(self.images.get_shape())[-1]*self.bytesize/1024 #(in KB)
 
     def build_model(self, summaries=False):
         """
@@ -67,6 +70,7 @@ class ConvNet(object):
         """
         # Initiate 1st layer
         print('Building Neural Net on %s...' % self.scope)
+        print('input: ---, dim: %s memory: %s MB' %(format(self.images.get_shape()), format(self.mem/1024)))
         layer_name, layer_params = list(self.network.items())[0]
         with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
             out, kernel = self._conv(input=self.images, params=layer_params)
@@ -82,11 +86,7 @@ class ConvNet(object):
                 #     pass
                 # tf.cond(self.global_step < 2 * self.flags.save_frequency, true_fn=self._json_summary,
                 #         false_fn=lambda: None)
-            #TODO: print out memory footprint per layer...
             self._print_layer_specs(layer_params, scope, in_shape, out.get_shape())
-            # print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
-            #       (scope.name, format(in_shape), format(out.shape), format(layer_params['kernel']),
-            #        format(layer_params['stride']) ))
 
         # Initiate the remaining layers
         for layer_name, layer_params in list(self.network.items())[1:]:
@@ -204,8 +204,9 @@ class ConvNet(object):
                                          initializer=tf.truncated_normal_initializer(stddev=init_val))
         output = tf.nn.conv2d(input, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
 
-        # Keep tabs on the number of weights
+        # Keep tabs on the number of weights and memory
         self.num_weights += np.cumprod(kernel_shape)[-1]
+        self.mem += np.cumprod(output.get_shape())[-1]*self.bytesize / 1024
 
         return output, kernel
 
@@ -269,9 +270,9 @@ class ConvNet(object):
         bias = self._cpu_variable_init('bias', bias_shape, initializer=tf.constant_initializer(0.0))
         output = tf.nn.bias_add(tf.matmul(input_reshape, weights), bias, name=name)
 
-        # Keep tabs on the number of weights
+        # Keep tabs on the number of weights and memory
         self.num_weights += bias_shape[0] + np.cumprod(weights_shape)[-1]
-
+        self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
         return output
 
     @staticmethod
@@ -288,8 +289,7 @@ class ConvNet(object):
 
         return tf.nn.relu(input, name=name)
 
-    @staticmethod
-    def _pool(input=None, params=None, name=None):
+    def _pool(self, input=None, params=None, name=None):
         """
         Pooling
         :param params: dict, must specify type of pooling (max, average), stride, and kernel size
@@ -301,6 +301,9 @@ class ConvNet(object):
             output = tf.nn.max_pool(input, kernel_shape, stride_shape, params['padding'], name=name, data_format='NCHW')
         if params['pool_type'] == 'avg':
             output = tf.nn.avg_pool(input, kernel_shape, stride_shape, params['padding'], name=name, data_format='NCHW')
+
+        # Keep tabs on memory
+        self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
         return output
 
     # Summary helper methods
@@ -404,24 +407,19 @@ class ConvNet(object):
         tf.summary.image(tensor_name + '/kernels' , map_tile)
 
     def _print_layer_specs(self, params, scope, input_shape, output_shape):
-        # print(self.num_weights)
-
-        bytesize = 4.0
-        if not self.flags.IMAGE_FP16: bytesize = 2.0
-        mem_in_GB = np.cumprod(output_shape)[-1] * bytesize / 1024.**2
-        print(type(mem_in_GB))
+        mem_in_MB = self.mem/1024
         if params['type'] == 'convolutional':
-            print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %2.2e MB' %
+            print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB' %
                   (scope.name, format(output_shape), format(params['kernel']),
-                   format(params['stride']), format(self.num_weights), mem_in_GB))
+                   format(params['stride']), format(self.num_weights), format(mem_in_MB)))
         if params['type'] == 'pool':
             print('%s --- output: %s, kernel: %s, stride: %s, memory: %s MB' %
                   (scope.name, format(output_shape), format(params['kernel']),
-                   format(params['stride']), format(mem_in_GB)))
+                   format(params['stride']), format(mem_in_MB)))
         if params['type'] == 'fully_connected' or params['type'] == 'linear_output':
             print('%s --- output: %s, weights: %s, bias: %s, # of weights: %s,  memory: %s MB' %
                    (scope.name, format(output_shape), format(params['weights']),
-                     format(params['bias']), format(self.num_weights), format(mem_in_GB)))
+                     format(params['bias']), format(self.num_weights), format(mem_in_MB)))
 
     def _add_loss_summaries(self, total_loss, losses):
         """
