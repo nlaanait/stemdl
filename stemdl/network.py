@@ -204,7 +204,7 @@ class ConvNet(object):
         output = tf.nn.conv2d(input, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
 
         # Keep tabs on the number of weights
-        self.num_weights += np.cumprod(kernel_shape)[-1]
+        self.num_weights += kernel_shape[0]*kernel_shape[1]*kernel_shape
 
         return output, kernel
 
@@ -402,16 +402,22 @@ class ConvNet(object):
         # Display feature maps
         tf.summary.image(tensor_name + '/kernels' , map_tile)
 
-    @staticmethod
-    def _print_layer_specs(params, scope, input_shape, output_shape):
-        if params['type'] == 'convolutional' or params['type'] == 'pooling':
-            print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
-                  (scope.name, format(input_shape), format(output_shape), format(params['kernel']),
-                   format(params['stride'])))
+    def _print_layer_specs(self, params, scope, input_shape, output_shape):
+        bytesize = 4
+        if not self.flags.IMAGE_FP16: bytesize = 2
+        mem_in_GB = np.cumprod(output_shape) * bytesize / 1024**3
+        if params['type'] == 'convolutional':
+            print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %2.2e GB' %
+                  (scope.name, format(output_shape), format(params['kernel']),
+                   format(params['stride']), self.num_weights, mem_in_GB))
+        if params['type'] == 'pool':
+            print('%s --- output: %s, kernel: %s, stride: %s, memory: %2.2e GB' %
+                  (scope.name, format(output_shape), format(params['kernel']),
+                   format(params['stride']), mem_in_GB))
         if params['type'] == 'fully_connected' or params['type'] == 'linear_output':
-            print('%s --- input: %s, output: %s, weights: %s, bias: %s'
-                  % (scope.name, format(input_shape), format(output_shape), format(params['weights']),
-                     format(params['bias'])))
+            print('%s --- output: %s, weights: %s, bias: %s, memory: %2.2e GB'
+                  % (scope.name, format(output_shape), format(params['weights']),
+                     format(params['bias']), mem_in_GB))
 
     def _add_loss_summaries(self, total_loss, losses):
         """
