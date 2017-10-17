@@ -404,12 +404,12 @@ class ConvNet(object):
         tf.summary.image(tensor_name + '/kernels' , map_tile)
 
     def _print_layer_specs(self, params, scope, input_shape, output_shape):
-        print(self.num_weights)
+        # print(self.num_weights)
 
         bytesize = 4.0
         if not self.flags.IMAGE_FP16: bytesize = 2.0
         mem_in_GB = np.cumprod(output_shape)[-1] * bytesize / 1024**2
-        print(mem_in_GB)
+        # print(mem_in_GB)
         if params['type'] == 'convolutional':
             print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB' %
                   (scope.name, format(output_shape), format(params['kernel']),
