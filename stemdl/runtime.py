@@ -411,7 +411,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
     with tf.device(device):
         with tf.Session(config=config) as sess:
             # Restore Model from checkpoint
-            ckpt = tf.train.get_checkpoint_state(flags.checkpoint_dir)
+            ckpt = tf.train.get_checkpoint_state(flags.checkpt_dir)
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)
                 # Assuming model_checkpoint_path looks something like:
@@ -434,11 +434,13 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
 
                 num_evals = int(np.ceil(flags.num_examples / flags.batch_size))
                 step = 0
+
                 # In the case of multiple outputs, we sort the predictions per output.
                 # Allocate arrays
                 predictions = np.array([])
                 sorted_errors = np.zeros(shape=(1, flags.OUTPUT_DIM))
                 errors_lists = [ sorted_errors for _ in range(len(eval_ops['errors'])) ]
+
                 # Begin evaluation
                 start_time = time.time()
                 while step < num_evals and not coord.should_stop():
