@@ -437,7 +437,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                         run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
                         run_metadata = tf.RunMetadata()
                         # evaluate predictions
-                        predict_arr, _ = sess.run(eval_ops['prediction'], run_metadata=run_metadata,
+                        predict_arr = sess.run(eval_ops['prediction'], run_metadata=run_metadata,
                                                                       options=run_options)
                         predictions = np.append(predict_arr)
                         summary_writer.add_run_metadata(run_metadata, 'step %d' %step)
