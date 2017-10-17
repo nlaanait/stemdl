@@ -297,7 +297,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         summary_writer.add_run_metadata(run_metadata, 'step %s' % format(global_step),
                                                         global_step=global_step)
                         summary_writer.add_summary(summary_merged, global_step=global_step)
-                        summary_writer.close()
+
                 summary_writer.close()
 
 def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):

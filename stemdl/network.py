@@ -96,7 +96,6 @@ class ConvNet(object):
                     out, _ = self._conv(input=out, params=layer_params)
                     out = self._batch_norm(input=out)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
-                    self._activation_image_summary(out)
                     if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] == 'pooling':
