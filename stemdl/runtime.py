@@ -475,7 +475,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                     print('%s: %s = %.3f' % (datetime.now(), label, mean))
                     summary.value.add(tag= label, simple_value=mean)
                 summary_writer.add_summary(summary, global_step)
-                summary_writer.add_run_metadata()
+                summary_writer.add_run_metadata(run_metadata)
             except Exception as e:
                 coord.request_stop(e)
 
