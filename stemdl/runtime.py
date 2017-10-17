@@ -432,10 +432,9 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                 # Begin evaluation
                 start_time = time.time()
                 while step < num_evals and not coord.should_stop():
-                    if bool(step % 10):
-                        # Get stats
-                        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-                        run_metadata = tf.RunMetadata()
+                    # Get stats
+                    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+                    run_metadata = tf.RunMetadata()
                     # evaluate predictions
                     predictions = np.append(predictions, sess.run(eval_ops['prediction'], run_metadata=run_metadata))
                     # evalute errors
