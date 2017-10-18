@@ -67,7 +67,7 @@ class ConvNet(object):
         layer_name, layer_params = list(self.network.items())[0]
         with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
             out, kernel = self._conv(input=self.images, params=layer_params)
-            out = self._batch_norm(input=out)
+            if layer_params['batch_norm']: out = self._batch_norm(input=out)
             out = self._activate(input=out, name=scope.name, params=layer_params)
             in_shape = self.images.get_shape()
             # Tensorboard Summaries
@@ -87,7 +87,7 @@ class ConvNet(object):
                 in_shape = out.get_shape()
                 if layer_params['type'] == 'convolutional':
                     out, _ = self._conv(input=out, params=layer_params)
-                    out = self._batch_norm(input=out)
+                    if layer_params['batch_norm']: out = self._batch_norm(input=out)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
                     if self.summary: self._activation_summary(out)
 
@@ -147,21 +147,19 @@ class ConvNet(object):
             "Type of regression loss function must be 'Huber' or 'MSE'"
         if params['type'] == 'Huber':
             # decay the residual cutoff exponentially
-            # decay_steps = int(self.flags.NUM_EXAMPLES_PER_EPOCH / self.flags.batch_size \
-            #                   * params['residual_num_epochs_decay'])
-            # initial_residual = params['residual_initial']
-            # min_residual = params['residual_minimum']
-            # decay_residual = params['residual_decay_factor']
-            # residual_tol = tf.train.exponential_decay(initial_residual, self.global_step, decay_steps,
-            #                                           decay_residual,staircase=False)
-            # # cap the residual cutoff to some min value.
-            # residual_tol = tf.maximum(residual_tol, tf.constant(min_residual))
-            # if self.summary:
-            #     tf.summary.scalar('residual_cutoff', residual_tol)
-            # # calculate the cost
-            # cost = tf.losses.huber_loss(labels, predictions=self.model_output, delta=residual_tol,
-            #                             reduction=tf.losses.Reduction.MEAN)
-            cost = tf.losses.huber_loss(labels, predictions=self.model_output, delta=params['residual_initial'],
+            decay_steps = int(self.flags.NUM_EXAMPLES_PER_EPOCH / self.flags.batch_size \
+                              * params['residual_num_epochs_decay'])
+            initial_residual = params['residual_initial']
+            min_residual = params['residual_minimum']
+            decay_residual = params['residual_decay_factor']
+            residual_tol = tf.train.exponential_decay(initial_residual, self.global_step, decay_steps,
+                                                      decay_residual,staircase=False)
+            # cap the residual cutoff to some min value.
+            residual_tol = tf.maximum(residual_tol, tf.constant(min_residual))
+            if self.summary:
+                tf.summary.scalar('residual_cutoff', residual_tol)
+            # calculate the cost
+            cost = tf.losses.huber_loss(labels, predictions=self.model_output, delta=residual_tol,
                                         reduction=tf.losses.Reduction.MEAN)
         if params['type'] == 'MSE':
             cost = tf.losses.mean_squared_error(labels, predictions=self.model_output,
@@ -176,12 +174,11 @@ class ConvNet(object):
         :return: cost
         """
         labels = tf.cast(self.labels, tf.int64)
-        if params['type'] == 'exclusive':
-            labels = tf.argmax(labels, axis=1)
-            cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
-                labels=labels, logits=self.model_output)
-            cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy')
-            return cross_entropy_mean
+        labels = tf.argmax(labels, axis=1)
+        cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
+            labels=labels, logits=self.model_output)
+        cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy')
+        return cross_entropy_mean
 
     # Network layers helper methods
     def _conv(self, input=None, params=None):

@@ -371,7 +371,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 labels = tf.cast(labels, tf.float64)
                 MSE_op = tf.losses.mean_squared_error(labels, predictions=prediction, reduction=tf.losses.Reduction.NONE)
                 eval_ops['errors'] = [MSE_op]
-                eval_ops['errors_labels'] = 'MSE'
+                eval_ops['errors_labels'] = 'Mean-Squared Error'
             if hyper_params['network_type'] == 'classifier':
                 # Calculate top-1 and top-5 error
                 labels = tf.cast(labels, tf.int64)
@@ -495,10 +495,10 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                 summary = tf.Summary()
                 summary.ParseFromString(sess.run(summary_op))
                 if flags.output_labels:
-                    # TODO: figure out how to load the output labels. hyper_params.json could be a good choice.
+                    # TODO: Specify in tf.app.flags where to load labels for outputs
                     output_labels = []
                     for i, output_label in enumerate(output_labels):
-                        print('%s: %s-Error = %.3f' % (datetime.now(), output_label, sorted_errors[i]))
+                        print('%s: %s = %.3f' % (datetime.now(), format(output_label), sorted_errors[i]))
                         summary.value.add(tag=output_label+'_Error', simple_value=sorted_errors[i])
 
                 # Print and Summarize the Mean Error across all outputs.
