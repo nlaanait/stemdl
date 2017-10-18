@@ -14,17 +14,13 @@ from tensorflow.python.training import moving_averages
 # to differentiate the operations. But then remove from the summaries
 worker_name = 'worker'
 
-# This should be a superclass
-# TODO: implement Net superclass
-class Net(object):
-    pass
 
-# TODO: ConvNet should inherit Net
 class ConvNet(object):
     """
     Vanilla Convolutional Neural Network (Feed-Forward).
     """
-    def __init__(self, scope, flags, global_step, hyper_params, network, images, labels, operation='train'):
+    def __init__(self, scope, flags, global_step, hyper_params, network, images, labels, operation='train',
+                 summary=False):
         """
         :param flags: tf.app.flags
         :param global_step: as it says
@@ -33,6 +29,7 @@ class ConvNet(object):
         :param images: batch of images
         :param labels: batch of labels
         :param operation: string, 'train' or 'eval'
+        :param summary: bool, flag to write tensorboard summaries
         :return:
         """
         self.scope = scope
@@ -48,33 +45,41 @@ class ConvNet(object):
         self.operation = operation
         assert self.operation == 'train' or self.operation == 'eval',\
             "'operation' must be 'train' or 'eval'"
+        self.summary = summary
         self.num_weights = 0
         self.misc_ops = []
         if self.scope == self.flags.worker_name+'_0/':
             self.reuse = None
         else:
             self.reuse = True
+        self.bytesize = 2
+        if not self.flags.IMAGE_FP16: self.bytesize = 4
+        self.mem = np.cumprod(self.images.get_shape())[-1]*self.bytesize/1024 #(in KB)
 
-    def build_model(self):
+    def build_model(self, summaries=False):
         """
         Here we build the model.
+        :param summaries: bool, flag to print out summaries.
         """
         # Initiate 1st layer
         print('Building Neural Net on %s...' % self.scope)
+        print('input: ---, dim: %s memory: %s MB' %(format(self.images.get_shape()), format(self.mem/1024)))
         layer_name, layer_params = list(self.network.items())[0]
         with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
             out, kernel = self._conv(input=self.images, params=layer_params)
             out = self._batch_norm(input=out)
             out = self._activate(input=out, name=scope.name, params=layer_params)
-
-            # Tensorboard Summaries
-            self._activation_summary(out)
-            self._activation_image_summary(out)
-            self._kernel_image_summary(kernel)
             in_shape = self.images.get_shape()
-            print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
-                  (scope.name, format(in_shape), format(out.shape), format(layer_params['kernel']),
-                   format(layer_params['stride']) ))
+            # Tensorboard Summaries
+            if self.summary:
+                self._activation_summary(out)
+                self._activation_image_summary(out)
+                self._kernel_image_summary(kernel)
+                # def none():
+                #     pass
+                # tf.cond(self.global_step < 2 * self.flags.save_frequency, true_fn=self._json_summary,
+                #         false_fn=lambda: None)
+            self._print_layer_specs(layer_params, scope, in_shape, out.get_shape())
 
         # Initiate the remaining layers
         for layer_name, layer_params in list(self.network.items())[1:]:
@@ -84,7 +89,7 @@ class ConvNet(object):
                     out, _ = self._conv(input=out, params=layer_params)
                     out = self._batch_norm(input=out)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
-                    self._activation_image_summary(out)
+                    if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] == 'pooling':
                     out = self._pool(input=out, name=scope.name, params=layer_params)
@@ -92,6 +97,7 @@ class ConvNet(object):
                 if layer_params['type'] == 'fully_connected':
                     out = self._linear(input=out, name=scope.name+'_preactiv', params=layer_params)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
+                    if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] == 'linear_output':
                     in_shape = out.get_shape()
@@ -99,13 +105,14 @@ class ConvNet(object):
                     assert out.get_shape()[-1] == self.flags.OUTPUT_DIM, 'Dimensions of the linear output layer' + \
                                                                          'do not match the expected output set in' + \
                                                                          'tf.app.flags. Check flags or network_config.json'
+                    if self.summary: self._activation_summary(out)
 
                 # print layer specs and generate Tensorboard summaries
                 out_shape = out.get_shape()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
-                self._activation_summary(out)
 
-        print('Total # of layers & weights: %d, %2.1e\n' % (len(self.network), self.num_weights))
+        print('Total # of layers: %d,  weights: %2.1e, memory: %s MB \n' % (len(self.network), self.num_weights,
+                                                                         format(self.mem/1024)))
 
         # reference the output
         self.model_output = out
@@ -116,9 +123,13 @@ class ConvNet(object):
                 self._calculate_loss_regressor(self.hyper_params['loss_function'])
             if self.net_type == 'classifier':
                 self._calculate_loss_classifier(self.hyper_params['loss_function'])
-        # losses = tf.get_collection('losses', scope)
-        # total_loss = tf.add_n(losses, name='total_loss')
-        # return losses, total_loss
+        # # Calculate total loss
+        # losses = tf.get_collection(tf.GraphKeys.LOSSES, self.scope)
+        # regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+        # total_loss = tf.add_n(losses+regularization)
+        # # Moving average of loss and summaries
+        # loss_ops = self._add_loss_summaries(total_loss,losses)
+        # return total_loss, loss_ops
 
     def get_misc_ops(self):
         ops = tf.group(*self.misc_ops)
@@ -136,18 +147,21 @@ class ConvNet(object):
             "Type of regression loss function must be 'Huber' or 'MSE'"
         if params['type'] == 'Huber':
             # decay the residual cutoff exponentially
-            decay_steps = int(self.flags.NUM_EXAMPLES_PER_EPOCH / self.flags.batch_size \
-                              * params['residual_num_epochs_decay'])
-            initial_residual = params['residual_initial']
-            min_residual = params['residual_minimum']
-            decay_residual = params['residual_decay_factor']
-            residual_tol = tf.train.exponential_decay(initial_residual, self.global_step, decay_steps,
-                                                      decay_residual,staircase=False)
-            # cap the residual cutoff to some min value.
-            residual_tol = tf.maximum(residual_tol, tf.constant(min_residual))
-            tf.summary.scalar('residual_cutoff', residual_tol)
-            # calculate the cost
-            cost = tf.losses.huber_loss(labels, predictions=self.model_output, delta=residual_tol,
+            # decay_steps = int(self.flags.NUM_EXAMPLES_PER_EPOCH / self.flags.batch_size \
+            #                   * params['residual_num_epochs_decay'])
+            # initial_residual = params['residual_initial']
+            # min_residual = params['residual_minimum']
+            # decay_residual = params['residual_decay_factor']
+            # residual_tol = tf.train.exponential_decay(initial_residual, self.global_step, decay_steps,
+            #                                           decay_residual,staircase=False)
+            # # cap the residual cutoff to some min value.
+            # residual_tol = tf.maximum(residual_tol, tf.constant(min_residual))
+            # if self.summary:
+            #     tf.summary.scalar('residual_cutoff', residual_tol)
+            # # calculate the cost
+            # cost = tf.losses.huber_loss(labels, predictions=self.model_output, delta=residual_tol,
+            #                             reduction=tf.losses.Reduction.MEAN)
+            cost = tf.losses.huber_loss(labels, predictions=self.model_output, delta=params['residual_initial'],
                                         reduction=tf.losses.Reduction.MEAN)
         if params['type'] == 'MSE':
             cost = tf.losses.mean_squared_error(labels, predictions=self.model_output,
@@ -185,8 +199,9 @@ class ConvNet(object):
                                          initializer=tf.truncated_normal_initializer(stddev=init_val))
         output = tf.nn.conv2d(input, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
 
-        # Keep tabs on the number of weights
+        # Keep tabs on the number of weights and memory
         self.num_weights += np.cumprod(kernel_shape)[-1]
+        self.mem += np.cumprod(output.get_shape())[-1]*self.bytesize / 1024
 
         return output, kernel
 
@@ -216,7 +231,7 @@ class ConvNet(object):
                                            initializer=tf.zeros_initializer(), trainable=False)
             variance = self._cpu_variable_init('moving_variance', shape=shape, \
                                                initializer=tf.ones_initializer(), trainable=False)
-            output = tf.nn.fused_batch_norm(input, beta, gamma, 1.e-3, mean, variance,data_format='NCHW',
+            output, _, _ = tf.nn.fused_batch_norm(input, gamma, beta, mean, variance, epsilon=1.e-3, data_format='NCHW',
                                             is_training=False)
         # Keep tabs on the number of weights
         self.num_weights += beta.shape[0].value + gamma.shape[0].value
@@ -250,9 +265,9 @@ class ConvNet(object):
         bias = self._cpu_variable_init('bias', bias_shape, initializer=tf.constant_initializer(0.0))
         output = tf.nn.bias_add(tf.matmul(input_reshape, weights), bias, name=name)
 
-        # Keep tabs on the number of weights
+        # Keep tabs on the number of weights and memory
         self.num_weights += bias_shape[0] + np.cumprod(weights_shape)[-1]
-
+        self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
         return output
 
     @staticmethod
@@ -269,8 +284,7 @@ class ConvNet(object):
 
         return tf.nn.relu(input, name=name)
 
-    @staticmethod
-    def _pool(input=None, params=None, name=None):
+    def _pool(self, input=None, params=None, name=None):
         """
         Pooling
         :param params: dict, must specify type of pooling (max, average), stride, and kernel size
@@ -282,6 +296,9 @@ class ConvNet(object):
             output = tf.nn.max_pool(input, kernel_shape, stride_shape, params['padding'], name=name, data_format='NCHW')
         if params['pool_type'] == 'avg':
             output = tf.nn.avg_pool(input, kernel_shape, stride_shape, params['padding'], name=name, data_format='NCHW')
+
+        # Keep tabs on memory
+        self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
         return output
 
     # Summary helper methods
@@ -344,7 +361,7 @@ class ConvNet(object):
             map_tile = tf.expand_dims(map_tile,0)
             map_tile = tf.log1p(map_tile)
             # Display feature maps
-            tf.summary.image(tensor_name + '/map_slice_'+ str(ind), map_tile)
+            tf.summary.image(tensor_name + '/activation'+ str(ind), map_tile)
 
     @staticmethod
     def _kernel_image_summary(image_stack, n_features=None):
@@ -384,16 +401,58 @@ class ConvNet(object):
         # Display feature maps
         tf.summary.image(tensor_name + '/kernels' , map_tile)
 
-    @staticmethod
-    def _print_layer_specs(params, scope, input_shape, output_shape):
-        if params['type'] == 'convolutional' or params['type'] == 'pooling':
-            print('%s --- input: %s, output: %s, kernel: %s, stride: %s ' %
-                  (scope.name, format(input_shape), format(output_shape), format(params['kernel']),
-                   format(params['stride'])))
+    def _print_layer_specs(self, params, scope, input_shape, output_shape):
+        mem_in_MB = np.cumprod(output_shape)[-1] * self.bytesize / 1024**2
+        if params['type'] == 'convolutional':
+            print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB' %
+                  (scope.name, format(output_shape), format(params['kernel']),
+                   format(params['stride']), format(self.num_weights), format(mem_in_MB)))
+        if params['type'] == 'pool':
+            print('%s --- output: %s, kernel: %s, stride: %s, memory: %s MB' %
+                  (scope.name, format(output_shape), format(params['kernel']),
+                   format(params['stride']), format(mem_in_MB)))
         if params['type'] == 'fully_connected' or params['type'] == 'linear_output':
-            print('%s --- input: %s, output: %s, weights: %s, bias: %s'
-                  % (scope.name, format(input_shape), format(output_shape), format(params['weights']),
-                     format(params['bias'])))
+            print('%s --- output: %s, weights: %s, bias: %s, # of weights: %s,  memory: %s MB' %
+                   (scope.name, format(output_shape), format(params['weights']),
+                     format(params['bias']), format(self.num_weights), format(mem_in_MB)))
+
+    def _add_loss_summaries(self, total_loss, losses):
+        """
+        Add summaries for losses in model.
+        Generates moving average for all losses and associated summaries for
+        visualizing the performance of the network.
+        :param flags:
+        :param total_loss:
+        :param losses:
+        :return: loss_averages_op
+        """
+        # Compute the moving average of all individual losses and the total loss.
+        loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
+        loss_averages_op = loss_averages.apply(losses + [total_loss])
+
+        # Attach a scalar summary to all individual losses and the total loss;
+        if self.summary:
+            for l in losses + [total_loss]:
+                # Name each loss as '(raw)' and name the moving average version of the loss
+                # as the original loss name.
+                loss_name = re.sub('%s_[0-9]*/' % worker_name, '', l.op.name)
+                tf.summary.scalar(loss_name + ' (raw)', l)
+                tf.summary.scalar(loss_name, loss_averages.average(l))
+
+        return loss_averages_op
+
+    def _json_summary(self):
+        """
+        Generate text summary out of *.json file input
+        :return: None
+        """
+        net_list = [[key, str([self.network[key]])] for key in self.network.iterkeys()]
+        hyp_list = [[key, str([self.hyper_params[key]])] for key in self.hyper_params.iterkeys()]
+        net_config = tf.constant(net_list, name='network_config')
+        hyp_params = tf.constant(hyp_list, name='hyper_params')
+        tf.summary.text(net_config.op.name, net_config)
+        tf.summary.text(hyp_params.op.name, hyp_params)
+        return None
 
     # Variable placement, initialization, regularization
     def _cpu_variable_init(self, name, shape, initializer, trainable=True, regularize=False):
@@ -422,6 +481,7 @@ class ConvNet(object):
 
     def _weight_decay(self, tensor):
         return tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay'])
+
 # TODO: implement ResNet
 # TODO: ResNet should inherit Net
 class ResNet(object):

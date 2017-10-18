@@ -10,6 +10,7 @@ from stemdl import io_utils
 import tensorflow as tf
 import argparse
 import sys
+import os
 
 
 """
@@ -20,11 +21,19 @@ These FLAGS define variables for a particular TF workflow and are not expected t
 tf.app.flags.DEFINE_boolean('log_device_placement', False, """Whether to log device placement.""")
 tf.app.flags.DEFINE_boolean('allow_soft_placement', True, """Whether to allow variable soft placement on the device-""" +\
                      """ This is needed for multi-gpu runs.""")
-tf.app.flags.DEFINE_integer('log_frequency', 10, """How often to log results to the console.""")
+tf.app.flags.DEFINE_integer('log_frequency', 50, """How often to log results to the console.""")
+tf.app.flags.DEFINE_integer('save_frequency', 500, """How often to save summaries to disk.""")
 tf.app.flags.DEFINE_integer('max_steps', 1000000,"""Number of batches to run.""")
 tf.app.flags.DEFINE_integer('num_epochs', 500,"""Number of Data Epochs to do training""")
 tf.app.flags.DEFINE_integer('NUM_EXAMPLES_PER_EPOCH', 729000,"""Number of examples in training data.""")
 tf.app.flags.DEFINE_string('worker_name', 'worker', """Name of gpu worker to append to each device ops, scope, etc...""")
+
+# Basic parameters describing the evaluation run
+tf.app.flags.DEFINE_integer('eval_interval_secs', 30, """How often to run model evaluation.""")
+tf.app.flags.DEFINE_integer('num_examples', 6400, """Number of examples to run.""")
+tf.app.flags.DEFINE_boolean('run_once', True, """Whether to run evalulation only once.""")
+tf.app.flags.DEFINE_boolean('output_labels', False, """Whether the predictions of the neural net are labeled and reported
+ separately.""")
 
 # Basic parameters describing the data set.
 tf.app.flags.DEFINE_integer('NUM_CLASSES', 3, """Number of classes in training/evaluation data.""")
@@ -38,7 +47,7 @@ tf.app.flags.DEFINE_boolean('IMAGE_FP16', False, """ Whether to use half-precisi
 FLAGS = tf.app.flags.FLAGS
 
 
-def main(argv):  # pylint: disable=unused-argument
+def main(argv):
     parser = argparse.ArgumentParser(description='Setup and Run a Deep Neural Network.')
     parser.add_argument('--data_path', type=str, help='path to tfrecords file with images + labels.', nargs=1,
                         required=True)
@@ -55,26 +64,35 @@ def main(argv):  # pylint: disable=unused-argument
                         nargs='?', default=1)
     parser.add_argument('--batch_size', type=int, help='number of images per batch to propagate through the network.'+\
                         '\nPowers of 2 are processed more efficiently.\nDefault 64.', nargs='?', default=64)
+
     args = parser.parse_args()
 
-    # Create the checkpoint directory
-    if tf.gfile.Exists(args.checkpt_dir[0]):
-        print('Directory "%s" exists already.\nReloading model from latest checkpoint.' %format(args.checkpt_dir[0]))
+    checkpt_dir = args.checkpt_dir[0]
+    # Also need a directory within the checkpoint dir for event files coming from eval
+    eval_dir = os.path.join(checkpt_dir, '_eval')
+
+    # Create directories
+    if tf.gfile.Exists(checkpt_dir):
+        print('Directory "%s" exists already.\nReloading model from latest checkpoint.' %format(checkpt_dir))
+    elif tf.gfile.Exists(eval_dir):
+        print('Removing "%s"' %format(eval_dir))
+        tf.gfile.DeleteRecursively(eval_dir)
     else:
-        tf.gfile.MakeDirs(args.checkpt_dir[0])
+        tf.gfile.MakeDirs(checkpt_dir)
+        tf.gfile.MakeDirs(eval_dir)
 
     # Set additional tf.app.flags
-    runtime.set_flags(args.checkpt_dir[0], args.batch_size, args.data_path[0])
+    runtime.set_flags(checkpt_dir, eval_dir, args.batch_size, args.data_path[0])
 
     # load network config file and hyper_parameters
     network_config = io_utils.load_json_network_config(args.network_config[0])
     hyper_params = io_utils.load_json_hyper_params(args.hyper_params[0])
 
     # train or evaluate
-    if args.mode == 'train':
+    if args.mode[0] == 'train':
         runtime.train(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
-    if args.mode == 'eval':
-        pass
+    if args.mode[0] == 'eval':
+        runtime.eval(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
 
 if __name__ == '__main__':
     main(sys.argv)
