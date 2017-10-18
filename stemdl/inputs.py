@@ -112,6 +112,10 @@ class DatasetTFRecords(object):
 
         # Display the training images in the visualizer.
         tf.summary.image('Test_Images', images, max_outputs=1)
+
+        # change to NCHW format
+        images = tf.transpose(images, perm=[0, 3, 1, 2])
+
         return images, labels
 
     @staticmethod
