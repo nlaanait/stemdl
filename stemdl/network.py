@@ -67,7 +67,10 @@ class ConvNet(object):
         layer_name, layer_params = list(self.network.items())[0]
         with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
             out, kernel = self._conv(input=self.images, params=layer_params)
-            if layer_params['batch_norm']: out = self._batch_norm(input=out)
+            if layer_params['batch_norm']:
+                out = self._batch_norm(input=out)
+            else:
+                out = self._add_bias(input=out, params=layer_params)
             out = self._activate(input=out, name=scope.name, params=layer_params)
             in_shape = self.images.get_shape()
             # Tensorboard Summaries
@@ -75,10 +78,7 @@ class ConvNet(object):
                 self._activation_summary(out)
                 self._activation_image_summary(out)
                 self._kernel_image_summary(kernel)
-                # def none():
-                #     pass
-                # tf.cond(self.global_step < 2 * self.flags.save_frequency, true_fn=self._json_summary,
-                #         false_fn=lambda: None)
+
             self._print_layer_specs(layer_params, scope, in_shape, out.get_shape())
 
         # Initiate the remaining layers
@@ -87,7 +87,10 @@ class ConvNet(object):
                 in_shape = out.get_shape()
                 if layer_params['type'] == 'convolutional':
                     out, _ = self._conv(input=out, params=layer_params)
-                    if layer_params['batch_norm']: out = self._batch_norm(input=out)
+                    if layer_params['batch_norm']:
+                        out = self._batch_norm(input=out)
+                    else:
+                        out = self._add_bias(input=out, params=layer_params)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
                     if self.summary: self._activation_summary(out)
 
@@ -122,7 +125,7 @@ class ConvNet(object):
             if self.net_type == 'regressor':
                 self._calculate_loss_regressor(self.hyper_params['loss_function'])
             if self.net_type == 'classifier':
-                self._calculate_loss_classifier(self.hyper_params['loss_function'])
+                self._calculate_loss_classifier()
         # # Calculate total loss
         # losses = tf.get_collection(tf.GraphKeys.LOSSES, self.scope)
         # regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
@@ -167,17 +170,25 @@ class ConvNet(object):
 
         return cost
 
-    def _calculate_loss_classifier(self,params):
+    def _calculate_loss_classifier(self):
         """
         Calculate the loss objective for classification
         :param params: dictionary, specifies the objective to use
         :return: cost
         """
-        labels = tf.cast(self.labels, tf.int64)
+        labels = self.labels
         labels = tf.argmax(labels, axis=1)
         cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
             labels=labels, logits=self.model_output)
         cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy')
+        precision_1 = tf.scalar_mul(1. / self.flags.batch_size,
+                                    tf.reduce_sum(tf.cast(tf.nn.in_top_k(self.model_output, labels, 1), tf.float32)))
+        precision_5 = tf.scalar_mul(1. / self.flags.batch_size,
+                                    tf.reduce_sum(tf.cast(tf.nn.in_top_k(self.model_output, labels, 5), tf.float32)))
+        if self.summary :
+            tf.summary.scalar('precision@1_train', precision_1)
+            tf.summary.scalar('precision@5_train', precision_5)
+        tf.add_to_collection(tf.GraphKeys.LOSSES, cross_entropy_mean)
         return cross_entropy_mean
 
     # Network layers helper methods
@@ -192,8 +203,10 @@ class ConvNet(object):
         features = params['features']
         kernel_shape = list(params['kernel']) + [input.shape[1].value, features]
         init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
+        # kernel = self._cpu_variable_init('weights', shape=kernel_shape,
+        #                                  initializer=tf.truncated_normal_initializer(stddev=init_val))
         kernel = self._cpu_variable_init('weights', shape=kernel_shape,
-                                         initializer=tf.truncated_normal_initializer(stddev=init_val))
+                                         initializer=tf.uniform_unit_scaling_initializer(factor=1.43))
         output = tf.nn.conv2d(input, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
 
         # Keep tabs on the number of weights and memory
@@ -201,6 +214,22 @@ class ConvNet(object):
         self.mem += np.cumprod(output.get_shape())[-1]*self.bytesize / 1024
 
         return output, kernel
+
+    def _add_bias(self, input=None, params=None):
+        """
+        Adds bias to a convolutional layer.
+        :param input:
+        :param params:
+        :return:
+        """
+        bias_shape = input.shape[-1].value
+        bias = self._cpu_variable_init('bias', shape=bias_shape, initializer=tf.constant_initializer(1.e-3))
+        output = tf.nn.bias_add(input, bias)
+
+        # Keep tabs on the number of bias parameters and memory
+        self.num_weights += bias_shape
+        self.mem += bias_shape*self.bytesize / 1024
+        return output
 
     def _batch_norm(self, input=None):
         """
@@ -259,7 +288,7 @@ class ConvNet(object):
             weights = self._cpu_variable_init('weights', shape=weights_shape,
                                               initializer=tf.uniform_unit_scaling_initializer(factor=1.0))
 
-        bias = self._cpu_variable_init('bias', bias_shape, initializer=tf.constant_initializer(0.0))
+        bias = self._cpu_variable_init('bias', bias_shape, initializer=tf.constant_initializer(1.e-3))
         output = tf.nn.bias_add(tf.matmul(input_reshape, weights), bias, name=name)
 
         # Keep tabs on the number of weights and memory
@@ -483,5 +512,3 @@ class ConvNet(object):
 # TODO: ResNet should inherit Net
 class ResNet(object):
     pass
-
-
