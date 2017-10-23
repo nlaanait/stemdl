@@ -1,5 +1,5 @@
 """
-Created on 10/8/17.
+Created on 10/23/17.
 @author: Numan Laanait.
 email: laanaitn@ornl.gov
 """
@@ -21,7 +21,7 @@ These FLAGS define variables for a particular TF workflow and are not expected t
 tf.app.flags.DEFINE_boolean('log_device_placement', False, """Whether to log device placement.""")
 tf.app.flags.DEFINE_boolean('allow_soft_placement', True, """Whether to allow variable soft placement on the device-""" +\
                      """ This is needed for multi-gpu runs.""")
-tf.app.flags.DEFINE_integer('log_frequency', 50, """How often to log results to the console.""")
+tf.app.flags.DEFINE_integer('log_frequency', 10, """How often to log results to the console.""")
 tf.app.flags.DEFINE_integer('save_frequency', 500, """How often to save summaries to disk.""")
 tf.app.flags.DEFINE_integer('max_steps', 1000000,"""Number of batches to run.""")
 tf.app.flags.DEFINE_integer('num_epochs', 500,"""Number of Data Epochs to do training""")
@@ -29,22 +29,21 @@ tf.app.flags.DEFINE_integer('NUM_EXAMPLES_PER_EPOCH', 729000,"""Number of exampl
 tf.app.flags.DEFINE_string('worker_name', 'worker', """Name of gpu worker to append to each device ops, scope, etc...""")
 
 # Basic parameters describing the evaluation run
-tf.app.flags.DEFINE_integer('eval_interval_secs', 30, """How often to run model evaluation.""")
+tf.app.flags.DEFINE_integer('eval_interval_secs', 120, """How often to run model evaluation.""")
 tf.app.flags.DEFINE_integer('num_examples', 6400, """Number of examples to run.""")
-tf.app.flags.DEFINE_boolean('run_once', True, """Whether to run evalulation only once.""")
-tf.app.flags.DEFINE_string('output_labels', 'alpha; beta; gamma', """Whether the predictions of the neural net are labeled and reported
- separately.""")
+tf.app.flags.DEFINE_boolean('run_once', False, """Whether to run evalulation only once.""")
+tf.app.flags.DEFINE_string('output_labels', "precision @1; precision @5", """Labels to give the output of the NN. """)
 
 # Basic parameters describing the data set.
-tf.app.flags.DEFINE_integer('NUM_CLASSES', 3, """Number of classes in training/evaluation data.""")
-tf.app.flags.DEFINE_integer('OUTPUT_DIM', 3, """Dimension of the Network's Output""")
+tf.app.flags.DEFINE_integer('NUM_CLASSES', 27, """Number of classes in training/evaluation data.""")
+tf.app.flags.DEFINE_integer('OUTPUT_DIM', 27, """Dimension of the Network's Output""")
 tf.app.flags.DEFINE_integer('IMAGE_HEIGHT', 85, """IMAGE HEIGHT""")
 tf.app.flags.DEFINE_integer('IMAGE_WIDTH', 120, """IMAGE WIDTH""")
 tf.app.flags.DEFINE_integer('IMAGE_DEPTH', 1, """IMAGE DEPTH""")
 tf.app.flags.DEFINE_integer('CROP_HEIGHT', 60, """CROP HEIGHT""")
 tf.app.flags.DEFINE_integer('CROP_WIDTH', 80, """CROP WIDTH""")
 tf.app.flags.DEFINE_boolean('IMAGE_FP16', False, """ Whether to use half-precision format for images.""")
-tf.app.flags.DEFINE_string('LABEL_DTYPE', 'float64', """ precision of label.""")
+tf.app.flags.DEFINE_string('LABEL_DTYPE', 'int64', """ precision of label.""")
 FLAGS = tf.app.flags.FLAGS
 
 
@@ -89,15 +88,14 @@ def main(argv):
     network_config = io_utils.load_json_network_config(args.network_config[0])
     hyper_params = io_utils.load_json_hyper_params(args.hyper_params[0])
 
-    # Create logfile to redirect all print statements
-    sys.stdout = open(args.mode[0] + '.log', mode='w')
+     # Create logfile to redirect all print statements
+    #sys.stdout = open(args.mode[0] + '.log', mode='r+')
 
     # train or evaluate
     if args.mode[0] == 'train':
         runtime.train(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
     if args.mode[0] == 'eval':
         runtime.eval(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
-    # sys.stdout = open(args.mode[0]+'.log', mode='w')
 
 if __name__ == '__main__':
     main(sys.argv)
