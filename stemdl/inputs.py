@@ -33,7 +33,8 @@ class DatasetTFRecords(object):
                 'label': tf.FixedLenFeature([], tf.string),
             })
         # decode from byte and reshape label and image
-        label = tf.decode_raw(features['label'], tf.float64)
+        label_dtype = tf.as_dtype(self.flags.LABEL_DTYPE)
+        label = tf.decode_raw(features['label'], label_dtype)
         label.set_shape(self.flags.NUM_CLASSES)
         image = tf.decode_raw(features['image_raw'], tf.float16)
         image.set_shape([self.flags.IMAGE_HEIGHT * self.flags.IMAGE_WIDTH * self.flags.IMAGE_DEPTH])
@@ -135,10 +136,10 @@ class DatasetTFRecords(object):
         # Apply random global affine transformations
         if geometric:
             # Setting bounds and generating random values for scaling and rotations
-            scale_X = np.random.normal(1.0, 0.04, size=1)
-            scale_Y = np.random.normal(1.0, 0.04, size=1)
-            theta_angle = np.random.normal(0., 0.5, size=1)
-            nu_angle = np.random.normal(0., 0.5, size=1)
+            scale_X = np.random.normal(1.0, 0.08, size=1)
+            scale_Y = np.random.normal(1.0, 0.08, size=1)
+            theta_angle = np.random.normal(0., 1, size=1)
+            nu_angle = np.random.normal(0., 1, size=1)
 
             # Constructing transfomation matrix
             a_0 = scale_X * np.cos(np.deg2rad(theta_angle))
