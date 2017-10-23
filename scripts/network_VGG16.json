@@ -315,7 +315,7 @@
 	"linear_output": {
 		"regularize": false,
 		"type": "linear_output",
-		"bias": 3,
-		"weights": 3
+		"bias": 27,
+		"weights": 27
 	}
 }
