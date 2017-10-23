@@ -12,6 +12,7 @@ import numpy as np
 from . import network
 from . import inputs
 import os
+from collections import OrderedDict
 
 
 class _LoggerHook(tf.train.SessionRunHook):
@@ -151,6 +152,9 @@ def get_optimizer(flags, hyper_params, global_step):
     if hyper_params['optimization'] == 'SGD':
         opt = tf.train.GradientDescentOptimizer(LEARNING_RATE)
         return opt
+    if hyper_params['optimization'] == 'Momentum':
+        opt = tf.train.MomentumOptimizer(LEARNING_RATE, momentum= 0.9)
+        return opt
 
     # Default is ADAM
     opt = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE)
@@ -204,15 +208,15 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
                         # Process images and generate examples batch
                         images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
-                                                                        noise_max=0.15,
-                                                                        random_glimpses='normal', geometric=True)
+                                                                        noise_max=0.25,
+                                                                        random_glimpses='uniform', geometric=True)
 
                         print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
                                                                                 format(labels.get_shape())))
 
                         # Setup Neural Net
                         n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
-                                             operation='train', summary=False)
+                                             operation='train', summary=summary)
 
                         # Build it and propagate images through it.
                         n_net.build_model()
@@ -290,20 +294,11 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                                                hooks=[tf.train.StopAtStepHook(last_step=flags.max_steps),
                                                       tf.train.NanTensorHook(avg_total_loss),logHook], config=config,
                                                save_summaries_steps=None, save_summaries_secs=None) as mon_sess:
-            # def getstats():
-            #     _, sum_merged = mon_sess.run([train_op, summary_merged], options=run_options, run_metadata=run_metadata)
-            #     summary_writer.add_run_metadata(run_metadata, 'step %s' % format(global_step),
-            #                                     global_step=global_step)
-            #     summary_writer.add_summary(sum_merged, global_step=global_step)
-            #     print('Running Stats and Saving Summaries...')
-            #     return summary_merged
-
             while not mon_sess.should_stop():
-
-                # tf.cond(global_step % flags.save_frequency == 0, getstats(), mon_sess.run(train_op))
                 # Train, Record stats and save summaries
                 if logHook._step % flags.save_frequency == 0:
-                    _, sum_merged = mon_sess.run([train_op, summary_merged], options= run_options, run_metadata=run_metadata)
+                    _, sum_merged = mon_sess.run([train_op, summary_merged], options= run_options,
+                                                 run_metadata=run_metadata)
                     summary_writer.add_run_metadata(run_metadata, 'step %s' % format(logHook._step),
                                                     global_step=logHook._step)
                     summary_writer.add_summary(sum_merged, global_step=logHook._step)
@@ -313,6 +308,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                     mon_sess.run(train_op)
 
             summary_writer.close()
+
 
 def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
     """
@@ -344,8 +340,8 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 dset = inputs.DatasetTFRecords(filename_queue, flags)
                 image, label = dset.decode_image_label()
                 # # distort images and generate examples batch
-                images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.02, noise_max=0.15, distort=False,
-                                                               random_glimpses='normal', geometric=True)
+                images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.05, noise_max=0.25, distort=True,
+                                                               random_glimpses='uniform', geometric=True)
                 # TODO: Turn data augmentation into flags
             with tf.variable_scope(tf.get_variable_scope(), reuse=None):
 
@@ -365,7 +361,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 prediction = n_net.model_output
 
             # Initialize a dictionary of evaluation ops
-            eval_ops = dict()
+            eval_ops = OrderedDict()
             eval_ops['prediction'] = prediction
             if hyper_params['network_type'] == 'regressor':
                 labels = tf.cast(labels, tf.float64)
@@ -374,7 +370,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 eval_ops['errors_labels'] = 'Mean-Squared Error'
             if hyper_params['network_type'] == 'classifier':
                 # Calculate top-1 and top-5 error
-                labels = tf.cast(labels, tf.int64)
+                labels = tf.argmax(labels, axis=1)
                 in_top_1_op = tf.cast(tf.nn.in_top_k(prediction, labels, 1), tf.float32)
                 in_top_5_op = tf.cast(tf.nn.in_top_k(prediction, labels, 5), tf.float32)
                 eval_ops['errors'] = [in_top_1_op, in_top_5_op]
@@ -391,15 +387,20 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
             summary_writer = tf.summary.FileWriter(flags.eval_dir, g)
 
             while True:
-                eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=cpu_bound, gpu_id=gpu_id)
+                if hyper_params['network_type'] == 'classifier':
+                    eval_classify(flags, saver, summary_writer, eval_ops, summary_op, labels, cpu_bound=cpu_bound,
+                                  gpu_id=gpu_id, save_to_disk=True)
+                else:
+                    eval_regress(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=cpu_bound,
+                                  gpu_id=gpu_id, save_to_disk=True)
                 if flags.run_once:
                     break
                 time.sleep(flags.eval_interval_secs)
 
 
-def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=True, gpu_id=0):
+def eval_regress(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=True, gpu_id=0, save_to_disk=True):
     """
-    Helper function to eval(): preprocess predictions, save summaries, and start queue runners.
+    Helper function to eval() for regression tasks: preprocess predictions, save summaries, and start queue runners.
     :param flags: tf.app.flags
     :param saver: tf.train.Saver object, restores neural net model.
     :param summary_writer: a tf.summary.FileWriter, writes tensorboard summaries to disk.
@@ -407,6 +408,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
     :param summary_op: tf.op, summary operations.
     :param cpu_bound: bool, whether to run evaluation solely on the host, default True.
     :param gpu_id: int, device id where to run evaluation, default 0.
+    :param save_to_disk: bool, whether to save to disk.
     :return: None
     """
     # Config file for tf.Session()
@@ -453,26 +455,17 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                 predictions = np.array([])
                 sorted_errors = np.zeros(shape=(1, flags.OUTPUT_DIM))
                 errors_lists = [ sorted_errors for _ in enumerate(eval_ops['errors']) ]
+                true_counts = [0 for _ in enumerate(eval_ops['errors'])]  # Counts the number of correct predictions in classification
 
                 # Begin evaluation
                 start_time = time.time()
                 while step < num_evals and not coord.should_stop():
-                    if step % 10 == 0:
-                        # Get stats
-                        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-                        run_metadata = tf.RunMetadata()
-                        # evaluate predictions
-                        predict_arr = sess.run(eval_ops['prediction'], run_metadata=run_metadata,
-                                                                      options=run_options)
-                        predictions = np.append(predictions, predict_arr)
-                        summary_writer.add_run_metadata(run_metadata, 'step %d' %step)
-                    else:
-                        # evaluate predictions
-                        predictions = np.append(predictions, sess.run(eval_ops['prediction']))
+                    # evaluate predictions
+                    predictions = np.append(predictions, sess.run(eval_ops['prediction']))
                     # evalute errors
-                    errors_outputs = sess.run(eval_ops['errors'], run_metadata=run_metadata)
+                    errors_outputs = sess.run(eval_ops['errors'])
                     for err_arr, err_out in zip(errors_lists, errors_outputs):
-                        current_error = np.array(err_out).reshape(flags.batch_size,flags.OUTPUT_DIM)
+                        current_error = np.array(err_out).reshape(flags.batch_size, flags.OUTPUT_DIM)
                         # average errors over batch dimension
                         current_error = np.mean(current_error, axis=0, keepdims=True)
                         err_arr += current_error
@@ -481,7 +474,7 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                 # Reformatting the output arrays
                 predictions = predictions.reshape(step * flags.batch_size, flags.OUTPUT_DIM)
                 for err_arr in errors_lists:
-                    err_arr /= step
+                    err_arr /= step # batch average over the mean error
                     err_arr = err_arr.flatten()
 
                 # Get time it took to evaluate
@@ -506,6 +499,121 @@ def eval_process(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                     mean = np.mean(err_arr)
                     print('%s: %s = %.3f' % (datetime.now(), label, mean))
                     summary.value.add(tag= label, simple_value=mean)
+                summary_writer.add_summary(summary, global_step)
+
+            except Exception as e:
+                coord.request_stop(e)
+
+            # Kill the input queue threads
+            coord.request_stop()
+            coord.join(threads, stop_grace_period_secs=1)
+
+
+def eval_classify(flags, saver, summary_writer, eval_ops, summary_op, labels, cpu_bound=True,
+                 gpu_id=0, save_to_disk=True):
+    """
+    Helper function to eval() for classification tasks: preprocess predictions, save summaries, and start queue runners.
+    :param flags: tf.app.flags
+    :param saver: tf.train.Saver object, restores neural net model.
+    :param summary_writer: a tf.summary.FileWriter, writes tensorboard summaries to disk.
+    :param eval_ops: tf.op, evaluation ops.
+    :param summary_op: tf.op, summary operations.
+    :param labels: tf.tensor, labels
+    :param cpu_bound: bool, whether to run evaluation solely on the host, default True.
+    :param gpu_id: int, device id where to run evaluation, default 0.
+    :param save_to_disk: bool, whether to save to disk.
+    :return: None
+    """
+    # Config file for tf.Session()
+    config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
+                            log_device_placement=flags.log_device_placement)
+
+    if cpu_bound:
+        device = '/cpu:0'
+        config.device_count = {'GPU': 0}
+        config.gpu_options.allow_growth = True
+        config.gpu_options.per_process_gpu_memory_fraction = 0.001
+    else:
+        device = '/gpu:%d' % gpu_id
+
+    with tf.device(device):
+        with tf.Session(config=config) as sess:
+            # Restore Model from checkpoint
+            ckpt = tf.train.get_checkpoint_state(flags.train_dir)
+            if ckpt and ckpt.model_checkpoint_path:
+                saver.restore(sess, ckpt.model_checkpoint_path)
+                # Assuming model_checkpoint_path looks something like:
+                # train/model.ckpt-0,
+                # Extract global_step
+                global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+            else:
+                print('No valid Checkpoint File was found!!')
+                return
+
+            # TODO: Extend tf.MonitoredTrainSession for evaluations session to minimize all this garbage collection.
+
+            # Start the queue runners for the input stream.
+            coord = tf.train.Coordinator()
+            try:
+                threads = []
+                for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
+                    threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
+                                                     start=True))
+
+                num_evals = int(np.ceil(flags.num_examples / flags.batch_size))
+                step = 0
+
+                # In the case of multiple outputs, we sort the predictions per output.
+                # Allocate arrays
+                sorted_errors = [np.zeros(shape=(flags.NUM_CLASSES,)) for _ in enumerate(eval_ops['errors'])]
+                true_counts = [0 for _ in enumerate( eval_ops['errors'])]
+
+
+                # Begin evaluation
+                start_time = time.time()
+                while step < num_evals and not coord.should_stop():
+                    # evaluate predictions
+                    errors_outputs = sess.run(eval_ops['errors'])
+                    # figure out classes present in batch
+                    classes = np.array(sess.run([labels])).flatten()
+                    uniq_cls, uniq_indx, uniq_cts = np.unique(classes, return_index=True, return_counts=True)
+                    # collect errors
+                    for i, _ in enumerate( eval_ops['errors']):
+                        # Get total of correct predictions
+                        true_counts[i] += np.sum(errors_outputs[i])
+                        # Sort predictions amongst classes
+                        zeroes = np.zeros_like(sorted_errors[i])
+                        zeroes[uniq_cls] = errors_outputs[i][uniq_indx]
+                        sorted_errors[i] += zeroes
+                    step += 1
+
+                # Total sample count
+                total_sample_count = step*flags.batch_size
+
+                # Averaging over the output arrays
+                for i, _ in enumerate(eval_ops['errors']):
+                    true_counts[i] /= float(total_sample_count)
+                    sorted_errors[i] /= float(step)
+
+                # Get time it took to evaluate
+                print('Took %.3f seconds to evaluate %d images' % (time.time() - start_time, flags.num_examples))
+
+                # Save precisions to disk
+                if save_to_disk:
+                    fname = '%s_%s.npy' % ('top_1_precision_per_class', format(datetime.now()).split(' ')[-1])
+                    np.save(os.path.join(flags.eval_dir, fname), sorted_errors[0], allow_pickle=False)
+
+                    fname = '%s_%s.npy' % ('top_5_precision_per_class', format(datetime.now()).split(' ')[-1])
+                    np.save(os.path.join(flags.eval_dir, fname), sorted_errors[1], allow_pickle=False)
+
+                # Print Model Outputs and Summarize in Tensorboard
+                summary = tf.Summary()
+                summary.ParseFromString(sess.run(summary_op))
+                output_labels = flags.output_labels.split(';')
+                for true_count, output_label in zip(true_counts, output_labels):
+                    print('%s: %s = %.3f' % (datetime.now(), format(output_label), true_count))
+                    summary.value.add(tag=output_label, simple_value=true_count)
+
                 summary_writer.add_summary(summary, global_step)
 
             except Exception as e:
