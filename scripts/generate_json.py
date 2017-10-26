@@ -31,7 +31,7 @@ pool_max = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], '
 conv_layer_3 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [2, 2], 'features': 64,
                             'activation':'relu', 'padding':'SAME'})
 fully_connected = OrderedDict({'type': 'fully_connected','weights': 1000,'bias': 1000, 'activation': 'tanh',
-                               'regularize': True})
+                               'regularize': True, 'dropout': True})
 linear_ouput = OrderedDict({'type': 'linear_output','weights': 3,'bias': 3,'regularize': False})
 
 layer_params_list = [conv_layer_1]*2 + [pool_avg] + [conv_layer_2]*4 + [pool_avg] + [conv_layer_3]*4 + [pool_avg] + \
@@ -52,10 +52,10 @@ conv_4 =OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3]
                      'padding':'SAME', 'batch_norm':False})
 pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
 fully_connected_1 = OrderedDict({'type': 'fully_connected','weights': 4096,'bias': 4096, 'activation': 'relu',
-                                 'regularize': False})
+                                 'regularize': False, 'dropout': True})
 fully_connected_2 = OrderedDict({'type': 'fully_connected','weights': 1000,'bias': 1000, 'activation': 'relu',
-                                 'regularize': True})
-linear_output = OrderedDict({'type': 'linear_output','weights': 3,'bias': 3,'regularize': False})
+                                 'regularize': True, 'dropout': False})
+linear_output = OrderedDict({'type': 'linear_output','weights': 3,'bias': 3,'regularize': False, 'dropout': False})
 layer_params_list = [conv_1]*2 +[pool] + [conv_2]*2 + [pool] + [conv_3]*4 + [pool] + [conv_4]*4 + [pool] + [conv_4]*4 + [pool] + [fully_connected_1]*2 + [fully_connected_2] + [linear_output]
 
 
