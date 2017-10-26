@@ -207,7 +207,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                     with tf.name_scope('%s_%d' % (flags.worker_name, gpu_id)) as scope:
 
                         # Process images and generate examples batch
-                        images, labels = dset.train_images_labels_batch(image, label, distort=True, noise_min=0.02,
+                        images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort, noise_min=0.02,
                                                                         noise_max=0.25,
                                                                         random_glimpses='uniform', geometric=True)
 
@@ -339,10 +339,10 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 # pass the filename_queue to the inputs classes to decode
                 dset = inputs.DatasetTFRecords(filename_queue, flags)
                 image, label = dset.decode_image_label()
-                # # distort images and generate examples batch
-                images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.05, noise_max=0.25, distort=True,
-                                                               random_glimpses='uniform', geometric=True)
-                # TODO: Turn data augmentation into flags
+                # distort images and generate examples batch
+                images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.05, noise_max=0.25,
+                                                               distort=flags.eval_distort, random_glimpses='uniform', geometric=True)
+
             with tf.variable_scope(tf.get_variable_scope(), reuse=None):
 
                 # Build the model and forward propagate

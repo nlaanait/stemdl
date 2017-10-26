@@ -27,12 +27,14 @@ tf.app.flags.DEFINE_integer('max_steps', 1000000,"""Number of batches to run."""
 tf.app.flags.DEFINE_integer('num_epochs', 500,"""Number of Data Epochs to do training""")
 tf.app.flags.DEFINE_integer('NUM_EXAMPLES_PER_EPOCH', 729000,"""Number of examples in training data.""")
 tf.app.flags.DEFINE_string('worker_name', 'worker', """Name of gpu worker to append to each device ops, scope, etc...""")
+tf.app.flags.DEFINE_boolean('train_distort', True, """Whether to perform data distortion during training.""")
 
 # Basic parameters describing the evaluation run
 tf.app.flags.DEFINE_integer('eval_interval_secs', 120, """How often to run model evaluation.""")
 tf.app.flags.DEFINE_integer('num_examples', 6400, """Number of examples to run.""")
 tf.app.flags.DEFINE_boolean('run_once', False, """Whether to run evalulation only once.""")
 tf.app.flags.DEFINE_string('output_labels', "precision @1; precision @5", """Labels to give the output of the NN. """)
+tf.app.flags.DEFINE_boolean('eval_distort', False, """Whether to perform data distortion during evaluation.""")
 
 # Basic parameters describing the data set.
 tf.app.flags.DEFINE_integer('NUM_CLASSES', 27, """Number of classes in training/evaluation data.""")

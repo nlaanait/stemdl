@@ -100,6 +100,8 @@ class ConvNet(object):
                 if layer_params['type'] == 'fully_connected':
                     out = self._linear(input=out, name=scope.name+'_preactiv', params=layer_params)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
+                    if layer_params['dropout']:
+                        out = self._dropout(input=out, name=scope.name+'_dropout')
                     if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] == 'linear_output':
@@ -203,10 +205,10 @@ class ConvNet(object):
         features = params['features']
         kernel_shape = list(params['kernel']) + [input.shape[1].value, features]
         init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
-        # kernel = self._cpu_variable_init('weights', shape=kernel_shape,
-        #                                  initializer=tf.truncated_normal_initializer(stddev=init_val))
         kernel = self._cpu_variable_init('weights', shape=kernel_shape,
-                                         initializer=tf.uniform_unit_scaling_initializer(factor=1.43))
+                                         initializer=tf.random_normal_initializer(mean=0.0,stddev=init_val))
+        # kernel = self._cpu_variable_init('weights', shape=kernel_shape,
+        #                                  initializer=tf.uniform_unit_scaling_initializer(factor=1.43))
         output = tf.nn.conv2d(input, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
 
         # Keep tabs on the number of weights and memory
@@ -223,7 +225,7 @@ class ConvNet(object):
         :return:
         """
         bias_shape = input.shape[-1].value
-        bias = self._cpu_variable_init('bias', shape=bias_shape, initializer=tf.constant_initializer(1.e-3))
+        bias = self._cpu_variable_init('bias', shape=bias_shape, initializer=tf.zeros_initializer())
         output = tf.nn.bias_add(input, bias)
 
         # Keep tabs on the number of bias parameters and memory
@@ -275,26 +277,41 @@ class ConvNet(object):
         dim_input = input_reshape.shape[1].value
         # print(dim_input,list(params['weights']))
         weights_shape = [dim_input, params['weights']]
+        init_val = np.sqrt(2/weights_shape[0])
         bias_shape = [params['bias']]
-        if params['type'] == 'fully_connected' and params['activation'] == 'tanh':
-            weights = self._cpu_variable_init('weights', shape=weights_shape,
-                                              initializer=tf.uniform_unit_scaling_initializer(factor=1.15),
-                                              regularize=params['regularize'])
-        if params['type'] == 'fully_connected' and params['activation'] == 'relu':
-            weights = self._cpu_variable_init('weights', shape=weights_shape,
-                                              initializer=tf.uniform_unit_scaling_initializer(factor=1.43),
-                                              regularize=params['regularize'])
-        if params['type'] == 'linear_output':
-            weights = self._cpu_variable_init('weights', shape=weights_shape,
-                                              initializer=tf.uniform_unit_scaling_initializer(factor=1.0))
+        weights = self._cpu_variable_init('weights', shape=weights_shape,
+                                            initializer=tf.random_normal_initializer(mean=0.0, stddev=init_val),
+                                            regularize=params['regularize'])
+        # if params['type'] == 'fully_connected' and params['activation'] == 'tanh':
+        #     weights = self._cpu_variable_init('weights', shape=weights_shape,
+        #                                       initializer=tf.uniform_unit_scaling_initializer(factor=1.15),
+        #                                       regularize=params['regularize'])
+        # if params['type'] == 'fully_connected' and params['activation'] == 'relu':
+        #     weights = self._cpu_variable_init('weights', shape=weights_shape,
+        #                                       initializer=tf.uniform_unit_scaling_initializer(factor=1.43),
+        #                                       regularize=params['regularize'])
+        # if params['type'] == 'linear_output':
+        #     weights = self._cpu_variable_init('weights', shape=weights_shape,
+        #                                       initializer=tf.uniform_unit_scaling_initializer(factor=1.0))
 
-        bias = self._cpu_variable_init('bias', bias_shape, initializer=tf.constant_initializer(1.e-3))
+        bias = self._cpu_variable_init('bias', bias_shape, initializer=tf.constant_initializer(0.0))
         output = tf.nn.bias_add(tf.matmul(input_reshape, weights), bias, name=name)
 
         # Keep tabs on the number of weights and memory
         self.num_weights += bias_shape[0] + np.cumprod(weights_shape)[-1]
         self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
         return output
+
+    def _dropout(self, input=None, params=None, name=None):
+        """
+        Performs dropout
+        :param input:
+        :param params:
+        :param name:
+        :return:
+        """
+        keep_prob = tf.constant(0.5)
+        return tf.nn.dropout(input,keep_prob=keep_prob)
 
     @staticmethod
     def _activate(input=None, params=None, name=None):
