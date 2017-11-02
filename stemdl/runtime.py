@@ -153,11 +153,11 @@ def get_optimizer(flags, hyper_params, global_step):
         opt = tf.train.GradientDescentOptimizer(LEARNING_RATE)
         return opt
     if hyper_params['optimization'] == 'Momentum':
-        opt = tf.train.MomentumOptimizer(LEARNING_RATE, momentum= 0.9)
+        opt = tf.train.MomentumOptimizer(LEARNING_RATE, momentum= hyper_params['momentum'])
         return opt
 
     # Default is ADAM
-    opt = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE)
+    opt = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE, beta1= hyper_params['momentum'])
     return opt
 
 

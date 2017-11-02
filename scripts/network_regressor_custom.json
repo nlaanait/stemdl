@@ -1,251 +1,251 @@
 {
 	"conv1": {
+		"padding": "SAME",
+		"activation": "relu",
+		"features": 64,
+		"stride": [
+			1,
+			1
+		],
+		"type": "convolutional",
+		"batch_norm": false,
 		"kernel": [
 			9,
 			9
-		],
-		"activation": "relu",
-		"batch_norm": true,
-		"stride": [
-			1,
-			1
-		],
-		"features": 64,
-		"type": "convolutional",
-		"padding": "SAME"
+		]
 	},
 	"conv2": {
-		"kernel": [
-			7,
-			7
-		],
+		"padding": "SAME",
 		"activation": "relu",
-		"batch_norm": true,
+		"features": 64,
 		"stride": [
 			1,
 			1
 		],
-		"features": 64,
 		"type": "convolutional",
-		"padding": "SAME"
+		"batch_norm": false,
+		"kernel": [
+			7,
+			7
+		]
 	},
 	"conv3": {
-		"kernel": [
-			7,
-			7
-		],
+		"padding": "SAME",
 		"activation": "relu",
-		"batch_norm": true,
+		"features": 64,
 		"stride": [
 			1,
 			1
 		],
-		"features": 64,
 		"type": "convolutional",
-		"padding": "SAME"
+		"batch_norm": false,
+		"kernel": [
+			7,
+			7
+		]
 	},
 	"conv4": {
-		"kernel": [
-			7,
-			7
-		],
+		"padding": "SAME",
 		"activation": "relu",
-		"batch_norm": true,
+		"features": 64,
 		"stride": [
 			1,
 			1
 		],
-		"features": 64,
 		"type": "convolutional",
-		"padding": "SAME"
+		"batch_norm": false,
+		"kernel": [
+			7,
+			7
+		]
 	},
 	"conv5": {
-		"kernel": [
-			7,
-			7
-		],
+		"padding": "SAME",
 		"activation": "relu",
-		"batch_norm": true,
+		"features": 64,
 		"stride": [
 			1,
 			1
 		],
-		"features": 64,
 		"type": "convolutional",
-		"padding": "SAME"
+		"batch_norm": false,
+		"kernel": [
+			7,
+			7
+		]
 	},
 	"pool1": {
-		"kernel": [
+		"padding": "SAME",
+		"stride": [
 			2,
 			2
 		],
 		"type": "pooling",
-		"padding": "SAME",
 		"pool_type": "avg",
-		"stride": [
+		"kernel": [
 			2,
 			2
 		]
 	},
 	"conv6": {
-		"kernel": [
-			3,
-			3
-		],
+		"padding": "SAME",
 		"activation": "relu",
-		"batch_norm": true,
+		"features": 64,
 		"stride": [
 			1,
 			1
 		],
-		"features": 64,
 		"type": "convolutional",
-		"padding": "SAME"
+		"batch_norm": false,
+		"kernel": [
+			3,
+			3
+		]
 	},
 	"conv7": {
-		"kernel": [
-			3,
-			3
-		],
+		"padding": "SAME",
 		"activation": "relu",
-		"batch_norm": true,
+		"features": 64,
 		"stride": [
 			1,
 			1
 		],
-		"features": 64,
 		"type": "convolutional",
-		"padding": "SAME"
+		"batch_norm": false,
+		"kernel": [
+			3,
+			3
+		]
 	},
 	"conv8": {
-		"kernel": [
-			3,
-			3
-		],
+		"padding": "SAME",
 		"activation": "relu",
-		"batch_norm": true,
+		"features": 64,
 		"stride": [
 			1,
 			1
 		],
-		"features": 64,
 		"type": "convolutional",
-		"padding": "SAME"
+		"batch_norm": false,
+		"kernel": [
+			3,
+			3
+		]
 	},
 	"conv9": {
-		"kernel": [
-			3,
-			3
-		],
+		"padding": "SAME",
 		"activation": "relu",
-		"batch_norm": true,
+		"features": 64,
 		"stride": [
 			1,
 			1
 		],
-		"features": 64,
 		"type": "convolutional",
-		"padding": "SAME"
+		"batch_norm": false,
+		"kernel": [
+			3,
+			3
+		]
 	},
 	"conv10": {
-		"kernel": [
-			3,
-			3
-		],
+		"padding": "SAME",
 		"activation": "relu",
-		"batch_norm": true,
+		"features": 64,
 		"stride": [
 			1,
 			1
 		],
-		"features": 64,
 		"type": "convolutional",
-		"padding": "SAME"
+		"batch_norm": false,
+		"kernel": [
+			3,
+			3
+		]
 	},
 	"pool2": {
-		"kernel": [
+		"padding": "SAME",
+		"stride": [
 			2,
 			2
 		],
 		"type": "pooling",
-		"padding": "SAME",
 		"pool_type": "avg",
-		"stride": [
+		"kernel": [
 			2,
 			2
 		]
 	},
 	"conv11": {
-		"kernel": [
-			3,
-			3
-		],
+		"padding": "SAME",
 		"activation": "relu",
-		"batch_norm": true,
+		"features": 64,
 		"stride": [
 			1,
 			1
 		],
-		"features": 64,
 		"type": "convolutional",
-		"padding": "SAME"
+		"batch_norm": false,
+		"kernel": [
+			3,
+			3
+		]
 	},
 	"conv12": {
-		"kernel": [
-			3,
-			3
-		],
+		"padding": "SAME",
 		"activation": "relu",
-		"batch_norm": true,
+		"features": 64,
 		"stride": [
 			1,
 			1
 		],
-		"features": 64,
 		"type": "convolutional",
-		"padding": "SAME"
+		"batch_norm": false,
+		"kernel": [
+			3,
+			3
+		]
 	},
 	"conv13": {
-		"kernel": [
-			3,
-			3
-		],
+		"padding": "SAME",
 		"activation": "relu",
-		"batch_norm": true,
+		"features": 64,
 		"stride": [
 			1,
 			1
 		],
-		"features": 64,
 		"type": "convolutional",
-		"padding": "SAME"
+		"batch_norm": false,
+		"kernel": [
+			3,
+			3
+		]
 	},
 	"pool3": {
-		"kernel": [
+		"padding": "SAME",
+		"stride": [
 			2,
 			2
 		],
 		"type": "pooling",
-		"padding": "SAME",
 		"pool_type": "avg",
-		"stride": [
+		"kernel": [
 			2,
 			2
 		]
 	},
 	"fc_1": {
-		"weights": 512,
-		"activation": "tanh",
-		"bias": 512,
 		"regularize": true,
+		"bias": 512,
+		"dropout": false,
+		"activation": "tanh",
 		"type": "fully_connected",
-		"dropout": false
+		"weights": 512
 	},
 	"linear_output": {
-		"weights": 3,
+		"regularize": false,
+		"bias": 3,
 		"type": "linear_output",
 		"dropout": false,
-		"bias": 3,
-		"regularize": false
+		"weights": 3
 	}
 }
