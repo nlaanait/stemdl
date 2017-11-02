@@ -205,6 +205,7 @@ class ConvNet(object):
         features = params['features']
         kernel_shape = list(params['kernel']) + [input.shape[1].value, features]
         init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
+        print('stddev: %2.3f' % init_val)
         kernel = self._cpu_variable_init('weights', shape=kernel_shape,
                                          initializer=tf.random_normal_initializer(mean=0.0,stddev=init_val))
         # kernel = self._cpu_variable_init('weights', shape=kernel_shape,
@@ -277,11 +278,12 @@ class ConvNet(object):
         dim_input = input_reshape.shape[1].value
         # print(dim_input,list(params['weights']))
         weights_shape = [dim_input, params['weights']]
-        init_val = np.sqrt(2/weights_shape[0])
+        init_val = max(np.sqrt(2.0/params['weights']), 0.01)
+        print('stddev: %s' % format(init_val))
         bias_shape = [params['bias']]
-        weights = self._cpu_variable_init('weights', shape=weights_shape,
-                                            initializer=tf.random_normal_initializer(mean=0.0, stddev=init_val),
-                                            regularize=params['regularize'])
+        # weights = self._cpu_variable_init('weights', shape=weights_shape,
+        #                                     initializer=tf.random_normal_initializer(mean=0.0, stddev=init_val),
+        #                                     regularize=params['regularize'])
         # if params['type'] == 'fully_connected' and params['activation'] == 'tanh':
         #     weights = self._cpu_variable_init('weights', shape=weights_shape,
         #                                       initializer=tf.uniform_unit_scaling_initializer(factor=1.15),
@@ -290,9 +292,13 @@ class ConvNet(object):
         #     weights = self._cpu_variable_init('weights', shape=weights_shape,
         #                                       initializer=tf.uniform_unit_scaling_initializer(factor=1.43),
         #                                       regularize=params['regularize'])
-        # if params['type'] == 'linear_output':
-        #     weights = self._cpu_variable_init('weights', shape=weights_shape,
-        #                                       initializer=tf.uniform_unit_scaling_initializer(factor=1.0))
+        if params['type'] == 'linear_output':
+            weights = self._cpu_variable_init('weights', shape=weights_shape,
+                                              initializer=tf.random_normal_initializer(mean=0.0, stddev=init_val))
+        else:
+            weights = self._cpu_variable_init('weights', shape=weights_shape,
+                                              initializer=tf.random_normal_initializer(mean=0.0, stddev=init_val),
+                                              regularize=params['regularize'])
 
         bias = self._cpu_variable_init('bias', bias_shape, initializer=tf.constant_initializer(0.0))
         output = tf.nn.bias_add(tf.matmul(input_reshape, weights), bias, name=name)
@@ -510,15 +516,11 @@ class ConvNet(object):
           Variable Tensor
         """
         with tf.device('/cpu:0'):
-            # var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
             if regularize:
                 var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable,
                                       regularizer=self._weight_decay)
                 return var
-                # weight_decay = tf.get_variable(name='weight_decay', shape=[1], initializer=tf.ones_initializer(),
-                #                                trainable=False) * self.hyper_params['weight_decay']
-                # weight_loss = tf.multiply(tf.nn.l2_loss(var), weight_decay, name='weight_loss')
-                # tf.add_to_collection('losses', weight_loss)
+
             var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
         return var
 
@@ -526,6 +528,6 @@ class ConvNet(object):
         return tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay'])
 
 # TODO: implement ResNet
-# TODO: ResNet should inherit Net
+# TODO: ResNet should inherit ConvNet
 class ResNet(object):
     pass
