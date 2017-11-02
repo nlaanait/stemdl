@@ -73,6 +73,7 @@ hyper_params_regression = {'network_type': 'regressor', #'network_type': 'classi
                            'warm_up_max_learning_rate': 1e-3,
                            'weight_decay': 5.e-4,
                            'moving_average_decay': 0.9999,
+                           'momentum': 0.9,
                            'loss_function': {'type': 'Huber',
                                              'residual_num_epochs_decay': 3,
                                              'residual_initial': 5.0,
@@ -90,7 +91,8 @@ hyper_params_classification = {'network_type': 'classifier', #'network_type': 'c
                            'num_epochs_in_warm_up': 100,
                            'warm_up_max_learning_rate': 1e-3,
                            'weight_decay': 1.e-4,
-                           'moving_average_decay': 0.9999
+                           'moving_average_decay': 0.9999,
+                           'momentum': 0.9
                            }
 # Classification
 #TODO
