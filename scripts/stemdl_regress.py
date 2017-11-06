@@ -1,5 +1,5 @@
 """
-Created on 10/8/17.
+Created on 10/23/17.
 @author: Numan Laanait.
 email: laanaitn@ornl.gov
 """
@@ -9,11 +9,9 @@ import argparse
 import sys
 import os
 
-# stemdl:
 import inputs
 import runtime
 import io_utils
-
 
 """
 These FLAGS define variables for a particular TF workflow and are not expected to change.

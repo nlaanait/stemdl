@@ -33,7 +33,8 @@ class DatasetTFRecords(object):
                 'label': tf.FixedLenFeature([], tf.string),
             })
         # decode from byte and reshape label and image
-        label = tf.decode_raw(features['label'], tf.float64)
+        label_dtype = tf.as_dtype(self.flags.LABEL_DTYPE)
+        label = tf.decode_raw(features['label'], label_dtype)
         label.set_shape(self.flags.NUM_CLASSES)
         image = tf.decode_raw(features['image_raw'], tf.float16)
         image.set_shape([self.flags.IMAGE_HEIGHT * self.flags.IMAGE_WIDTH * self.flags.IMAGE_DEPTH])
@@ -74,7 +75,11 @@ class DatasetTFRecords(object):
         # Display the training images in the Tensorboard visualizer.
         tf.summary.image('Train_Images', images, max_outputs=1)
 
-        # change to NCHW format
+        # resize images using the new flags
+        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])        
+   
+
+	# change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
 
         return images, labels
@@ -112,6 +117,13 @@ class DatasetTFRecords(object):
 
         # Display the training images in the visualizer.
         tf.summary.image('Test_Images', images, max_outputs=1)
+	
+	# resize images using the new flags
+        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])        
+
+        # change to NCHW format
+        images = tf.transpose(images, perm=[0, 3, 1, 2])
+
         return images, labels
 
     @staticmethod
@@ -131,10 +143,10 @@ class DatasetTFRecords(object):
         # Apply random global affine transformations
         if geometric:
             # Setting bounds and generating random values for scaling and rotations
-            scale_X = np.random.normal(1.0, 0.02, size=1)
-            scale_Y = np.random.normal(1.0, 0.02, size=1)
-            theta_angle = np.random.normal(0., 0.2, size=1)
-            nu_angle = np.random.normal(0., 0.2, size=1)
+            scale_X = np.random.normal(1.0, 0.08, size=1)
+            scale_Y = np.random.normal(1.0, 0.08, size=1)
+            theta_angle = np.random.normal(0., 1, size=1)
+            nu_angle = np.random.normal(0., 1, size=1)
 
             # Constructing transfomation matrix
             a_0 = scale_X * np.cos(np.deg2rad(theta_angle))
