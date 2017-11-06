@@ -55,6 +55,7 @@ class ConvNet(object):
         self.bytesize = 2
         if not self.flags.IMAGE_FP16: self.bytesize = 4
         self.mem = np.cumprod(self.images.get_shape())[-1]*self.bytesize/1024 #(in KB)
+        self.flops = 0
 
     def build_model(self, summaries=False):
         """
@@ -212,6 +213,13 @@ class ConvNet(object):
         # Keep tabs on the number of weights and memory
         self.num_weights += np.cumprod(kernel_shape)[-1]
         self.mem += np.cumprod(output.get_shape())[-1]*self.bytesize / 1024
+        # batch * width * height * in_channels * kern_h * kern_w * features
+        # at each location in the image:
+        ops_per_conv = 2 * np.cumprod(params['kernel'] + [input.shape[1].value])
+        # number of convolutions on the image for a single filter / output channel (stride brings down the number)
+        convs_per_filt = np.cumprod([input.shape[2].value, input.shape[3].value]) // np.cumprod(params['stride'])
+        # final = num images * filters * convs/filter * ops/conv
+        self.flops += np.cumprod([params['features'], input.shape[0].value, convs_per_filt, ops_per_conv])
 
         return output, kernel
 
@@ -229,6 +237,7 @@ class ConvNet(object):
         # Keep tabs on the number of bias parameters and memory
         self.num_weights += bias_shape
         self.mem += bias_shape*self.bytesize / 1024
+        self.flops += bias_shape
         return output
 
     def _batch_norm(self, input=None):
@@ -294,6 +303,9 @@ class ConvNet(object):
         # Keep tabs on the number of weights and memory
         self.num_weights += bias_shape[0] + np.cumprod(weights_shape)[-1]
         self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
+        # [batch x features] * [features, nodes] + nodes
+        # batch * nodes * 2 * features + nodes <- 2 comes in for the dot prod + sum
+        self.flops += np.cumprod(input.get_shape().as_list() + [2, params['weights']]) + params['weights']
         return output
 
     @staticmethod
@@ -325,6 +337,16 @@ class ConvNet(object):
 
         # Keep tabs on memory
         self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
+
+        # at each location in the image:
+        # avg: 1 to sum each of the N element, 1 op for avg
+        # max: N max() operations
+        ops_per_pool = 1 * np.cumprod(params['kernel'] + [input.shape[1].value])
+        # number of pools on the image for a single filter / output channel (stride brings down the number)
+        num_pools = np.cumprod([input.shape[2].value, input.shape[3].value]) // np.cumprod(params['stride'])
+        # final = num images * filters * convs/filter * ops/conv
+        self.flops += num_pools * ops_per_pool
+
         return output
 
     # Summary helper methods
@@ -507,6 +529,7 @@ class ConvNet(object):
 
     def _weight_decay(self, tensor):
         return tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay'])
+
 
 # TODO: implement ResNet
 class ResNet(ConvNet):
