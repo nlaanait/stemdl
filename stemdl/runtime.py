@@ -181,10 +181,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
     """
     # Check if training is a restart from checkpoint
     ckpt = tf.train.get_checkpoint_state(flags.train_dir)
-    if ckpt is not None:
-        last_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
-    else:
+    if ckpt is None:
         last_step = 0
+    else:
+        last_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
 
     # Only neural net ops will live on GPU.
     # Everything else (variable initialization, placement, updates) is on the host.
