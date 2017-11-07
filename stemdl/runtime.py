@@ -17,13 +17,14 @@ from collections import OrderedDict
 
 class _LoggerHook(tf.train.SessionRunHook):
     """Logs loss and runtime stats."""
-    def __init__(self, flags, total_loss, num_gpus):
+    def __init__(self, flags, total_loss, num_gpus, last_step=0):
         self.flags = flags
         self.total_loss = total_loss
         self.num_gpus = num_gpus
+        self.last_step = last_step
 
     def begin(self):
-        self._step = -1
+        self._step = -1 + self.last_step
         self._start_time = time.time()
         self.epoch = 0.
 
@@ -178,6 +179,12 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
     :param data_path: string, path to data.
     :return: None
     """
+    # Check if training is a restart from checkpoint
+    ckpt = tf.train.get_checkpoint_state(flags.train_dir)
+    if ckpt is not None:
+        last_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+    else:
+        last_step = 0
 
     # Only neural net ops will live on GPU.
     # Everything else (variable initialization, placement, updates) is on the host.
@@ -283,7 +290,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
         #calculate average loss and setup logger
         avg_total_loss = tf.reduce_mean(worker_total_loss)
-        logHook = _LoggerHook(flags, avg_total_loss, num_GPUS)
+        logHook = _LoggerHook(flags, avg_total_loss, num_GPUS, last_step=last_step)
 
         # Stats and summaries
         run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
@@ -295,6 +302,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                                                hooks=[tf.train.StopAtStepHook(last_step=flags.max_steps),
                                                       tf.train.NanTensorHook(avg_total_loss),logHook], config=config,
                                                save_summaries_steps=None, save_summaries_secs=None) as mon_sess:
+            #TODO: global step resets to 0 when the session restarts, considering reading from checkpoint name
             while not mon_sess.should_stop():
                 if logHook._step % flags.save_frequency == 0:
                     # Train, Record stats and save summaries

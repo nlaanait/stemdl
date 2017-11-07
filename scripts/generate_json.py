@@ -35,8 +35,8 @@ linear_ouput = OrderedDict({'type': 'linear_output','weights': 3,'bias': 3,'regu
 layer_params_list = [conv_layer_1] + [conv_layer_2]*4 + [pool_avg] + [conv_layer_3]*5 + [pool_avg] + \
                      [conv_layer_3]*3 + [pool_avg] + [fully_connected] + [linear_ouput]
 
-################
-# VGG-16 #
+##############
+# VGG-16     #
 ##############
 
 # layer_keys_list = ['conv1', 'conv2', 'pool1', 'conv3', 'conv4','pool2', 'conv5','conv6', 'conv7','conv8','pool3', 'conv9', 'conv10','conv11','conv12', 'pool3','conv13', 'conv14', 'conv15', 'conv16','pool4', 'fc_1','fc_2', 'fc_3', 'linear_output']
