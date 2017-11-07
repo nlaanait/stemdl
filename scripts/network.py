@@ -4,6 +4,7 @@ Created on 10/8/17.
 email: laanaitn@ornl.gov
 """
 
+from collections import OrderedDict
 import re
 import tensorflow as tf
 import numpy as np
@@ -270,6 +271,7 @@ class ConvNet(object):
                                             is_training=False)
         # Keep tabs on the number of weights
         self.num_weights += beta.shape[0].value + gamma.shape[0].value
+        # consistently ignored by most papers / websites for FLOPS calculation
         return output
 
     def _linear(self, input=None, params=None, name=None):
@@ -317,6 +319,8 @@ class ConvNet(object):
         :param name: scope.name
         :return:
         """
+        # self.flops += 2 * np.cumprod(input.get_shape().as_list())
+
         if params['activation'] == 'tanh':
             return tf.nn.tanh(input, name=name)
 
@@ -542,7 +546,7 @@ class ResNet(ConvNet):
             out = self._add_bias(input=out, params=layer_params)
         return out
 
-    def _do_naive_residual(self, out, layer_params, scope_name):
+    def _do_residual_1(self, out, layer_params, scope_name):
         # https://arxiv.org/pdf/1512.03385.pdf
         # input >> weight >> BN >> ReLU >> Weight >> BN >> Add Input >> RelU
         # hidden layer 1
@@ -566,7 +570,7 @@ class ResNet(ConvNet):
         out = self._activate(input=out, name=scope_name+'_shortcut', params=layer_params)
         return out
 
-    def _do_new_residual(self, out, layer_params, scope_name):
+    def _do_residual_2(self, out, layer_params, scope_name):
         # https://arxiv.org/pdf/1603.05027.pdf
         # Input >> BN >> Relu >> weight >> BN >> ReLU >> Weight >> Add Input
         with tf.variable_scope("_pre_conv1"):
@@ -586,6 +590,54 @@ class ResNet(ConvNet):
                 out, _ = self._conv(input=out, params=shortcut_parms)
         # Now add the hidden with input
         return tf.add(out, hidden)
+
+    def _add_branches(self, hidden, out):
+        if out.get_shape().as_list()[1] != hidden.get_shape().as_list()[1]:
+            # Need to do a 1x1 conv layer on the input to increase the number of channels:
+            shortcut_parms = {"kernel": [1, 1], "stride": [1, 1], "padding": "SAME",
+                              "features": hidden.get_shape().as_list()[1], "batch_norm": True}
+            with tf.variable_scope("_shortcut"):
+                out, _ = self._conv(input=out, params=shortcut_parms)
+        # Now add the hidden with input
+        return tf.add(out, hidden)
+
+    def _do_residual(self, out, res_block_params, scope_name):
+        """
+        Careful, layer_params here is itself an OrderedDictionary of OrderedDictioanries (hopefully all conv layers)
+        :param out:
+        :param layer_params:
+        :param scope_name:
+        :return:
+        """
+        # https://arxiv.org/pdf/1603.05027.pdf
+        # Input >> BN >> Relu >> weight >> BN >> ReLU >> Weight >> Add Input
+        with tf.variable_scope("_pre_conv1"):
+            hidden = self._batch_norm(input=out)
+        hidden = self._activate(input=hidden, name=scope_name + '_pre_conv1')
+
+        print('\tlooking for conv layers in these parms:', res_block_params.keys())
+        # First find the names of all conv layers inside
+        layer_ids = []
+        for parm_name in res_block_params.keys():
+            if isinstance(res_block_params[parm_name], OrderedDict):
+                if res_block_params[parm_name]['type'] == 'convolutional':
+                    layer_ids.append(parm_name)
+        print('\tinternal layers:', layer_ids)
+
+        # Up to N-1th layer: weight >> BN >> ReLU
+        for layer_name in layer_ids[:-1]:
+            with tf.variable_scope(layer_name):
+                layer_params = res_block_params[layer_name]
+                hidden, _ = self._conv(input=hidden, params=layer_params)
+                hidden = self._batch_norm(input=hidden)
+            hidden = self._activate(input=hidden, name=scope_name + '_' + layer_name, params=layer_params)
+
+        # last layer: Weight ONLY
+        with tf.variable_scope(layer_ids[-1]):
+            hidden, _ = self._conv(input=hidden, params=res_block_params[layer_name])
+
+        # Now add the two branches
+        return self._add_branches(hidden, out)
 
     def build_model(self, summaries=False):
         """
@@ -618,16 +670,8 @@ class ResNet(ConvNet):
                 in_shape = out.get_shape()
 
                 if layer_params['type'] == 'residual':
-                    # It is recommended in literature to turn on batch norm:
-                    if not layer_params['batch_norm']:
-                        print('Turning on batch norm for residual layer:' + layer_name)
-                        layer_params['batch_norm'] = True
-                    res_func = self._do_new_residual
-                    if 'mode' not in layer_params:
-                        layer_params['mode'] == 'new'
-                    if layer_params['mode'] == 'naive':
-                        res_func = self._do_naive_residual
-                    out = res_func(out, layer_params, scope.name)
+
+                    out = self._do_residual(out, layer_params, scope.name)
                     # Continue any summary
                     if self.summary: self._activation_summary(out)
 
