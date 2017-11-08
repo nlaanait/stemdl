@@ -555,66 +555,22 @@ class ConvNet(object):
 # TODO: implement ResNet
 class ResNet(ConvNet):
 
-    def _do_conv(self, out, layer_params):
-        out, _ = self._conv(input=out, params=layer_params)
-        if layer_params['batch_norm']:
-            out = self._batch_norm(input=out)
-        else:
-            out = self._add_bias(input=out, params=layer_params)
-        return out
-
-    """ 
-    def _do_residual_1(self, out, layer_params, scope_name):
-        # https://arxiv.org/pdf/1512.03385.pdf
-        # input >> weight >> BN >> ReLU >> Weight >> BN >> Add Input >> RelU
-        # hidden layer 1
-        with tf.variable_scope("_conv1"):
-            hidden = self._do_conv(out, layer_params)
-        hidden = self._activate(input=hidden, name=scope_name+'_layer1', params=layer_params)
-        # hidden layer 2
-        with tf.variable_scope("_conv2"):
-            hidden = self._do_conv(hidden, layer_params)
-        # Now we need to account for the situation when the output and input sizes do not match
-        # [batch_size, channels, im_size, im_size]
-        if out.get_shape().as_list()[1] != hidden.get_shape().as_list()[1]:
-            # Need to do a 1x1 conv layer on the input to increase the number of channels:
-            shortcut_parms = {"kernel": [1, 1], "stride": [1, 1], "padding": "SAME",
-                              "features": hidden.get_shape().as_list()[1], "batch_norm": True}
-            with tf.variable_scope("_shortcut"):
-                out = self._do_conv(out, shortcut_parms)
-        # Now add the hidden with input
-        out = tf.add(out, hidden)
-        # Now activate
-        out = self._activate(input=out, name=scope_name+'_shortcut', params=layer_params)
-        return out
-
-    def _do_residual_2(self, out, layer_params, scope_name):
-        # https://arxiv.org/pdf/1603.05027.pdf
-        # Input >> BN >> Relu >> weight >> BN >> ReLU >> Weight >> Add Input
-        with tf.variable_scope("_pre_conv1"):
-            hidden = self._batch_norm(input=out)
-        hidden = self._activate(input=hidden, name=scope_name+'_pre_conv1', params=layer_params)
-        with tf.variable_scope("_conv1"):
-            hidden, _ = self._conv(input=hidden, params=layer_params)
-            hidden = self._batch_norm(input=hidden)
-        hidden = self._activate(input=hidden, name=scope_name+'_conv1', params=layer_params)
-        with tf.variable_scope("_conv2"):
-            hidden, _ = self._conv(input=hidden, params=layer_params)
-        if out.get_shape().as_list()[1] != hidden.get_shape().as_list()[1]:
-            # Need to do a 1x1 conv layer on the input to increase the number of channels:
-            shortcut_parms = {"kernel": [1, 1], "stride": [1, 1], "padding": "SAME",
-                              "features": hidden.get_shape().as_list()[1], "batch_norm": True}
-            with tf.variable_scope("_shortcut"):
-                out, _ = self._conv(input=out, params=shortcut_parms)
-        # Now add the hidden with input
-        return tf.add(out, hidden)
-    """
-
     def _add_branches(self, hidden, out, verbose=True):
+        """
+        Adds two 4D tensors ensuring that the number of channels is consistent
+
+        :param hidden: 4D tensor, one branch of inputs in the final step of a ResNet (more number of channels)
+        :param out: 4D tensor, another branch of inputs in the final step of a ResNet (fewer number of channels)
+        :param verbose: bool, (Optional) - whether or not to print statements.
+        :return: 4D tensor, output of the addition
+        """
         if out.get_shape().as_list()[1] != hidden.get_shape().as_list()[1]:
             # Need to do a 1x1 conv layer on the input to increase the number of channels:
             shortcut_parms = {"kernel": [1, 1], "stride": [1, 1], "padding": "SAME",
                               "features": hidden.get_shape().as_list()[1], "batch_norm": True}
+            if verbose:
+                print('Doing 1x1 conv on output to bring channels from %d to %d' % (out.get_shape().as_list()[1],
+                                                                                    hidden.get_shape().as_list()[1]))
             with tf.variable_scope("_shortcut"):
                 out, _ = self._conv(input=out, params=shortcut_parms)
         # ops just for the addition operation
@@ -627,15 +583,19 @@ class ResNet(ConvNet):
 
     def _do_residual(self, out, res_block_params, scope_name, verbose=True):
         """
-        Careful, layer_params here is itself an OrderedDictionary of OrderedDictioanries (hopefully all conv layers)
-        :param out:
-        :param layer_params:
-        :param scope_name:
-        :return:
+        Unit residual block consisting of arbitrary number of convolutional layers, each specified by its own
+        OrderedDictionary in the parameters.
+        Implementation here based on: https://arxiv.org/pdf/1603.05027.pdf
+        Input >> BN >> Relu >> weight >> BN >> ReLU >> Weight >> Add Input
+
+        :param out: 4D tensor, Input to the residual block
+        :param res_block_params: OrderedDictionary, Parameters for the residual block
+        :param scope_name: str, name of the layer
+        :param verbose: bool, (Optional) - whether or not to print statements.
+        :return: 4D tensor, output of the residual block
         """
         ops_in = self.ops
-        # https://arxiv.org/pdf/1603.05027.pdf
-        # Input >> BN >> Relu >> weight >> BN >> ReLU >> Weight >> Add Input
+
         with tf.variable_scope("_pre_conv1"):
             hidden = self._batch_norm(input=out)
         hidden = self._activate(input=hidden, name=scope_name + '_pre_conv1')
@@ -661,9 +621,11 @@ class ResNet(ConvNet):
                 hidden = self._batch_norm(input=hidden)
             hidden = self._activate(input=hidden, name=scope_name + '_' + layer_name, params=layer_params)
 
+        if verbose:
+            print('weight ONLY on layer: ' + layer_ids[-1])
         # last layer: Weight ONLY
         with tf.variable_scope(layer_ids[-1]):
-            hidden, _ = self._conv(input=hidden, params=res_block_params[layer_name])
+            hidden, _ = self._conv(input=hidden, params=res_block_params[layer_ids[-1]])
 
         # Now add the two branches
         ret_val = self._add_branches(hidden, out)
@@ -711,7 +673,11 @@ class ResNet(ConvNet):
                     if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] == 'convolutional':
-                    out = self._do_conv(out, layer_params)
+                    out, _ = self._conv(input=out, params=layer_params)
+                    if layer_params['batch_norm']:
+                        out = self._batch_norm(input=out)
+                    else:
+                        out = self._add_bias(input=out, params=layer_params)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
                     if self.summary: self._activation_summary(out)
 
