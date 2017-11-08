@@ -518,7 +518,7 @@ class ConvNet(object):
         Returns:
           Variable Tensor
         """
-        with tf.device('/cpu:0'):
+        with tf.device(self.flags.CPU_ID):
             # var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
             if regularize:
                 var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable,

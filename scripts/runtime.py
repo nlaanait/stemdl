@@ -183,7 +183,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
     # Everything else (variable initialization, placement, updates) is on the host.
     # Start building the graph
 
-    with tf.Graph().as_default(), tf.device('/cpu:0'):
+    with tf.Graph().as_default(), tf.device(flags.CPU_ID):
         global_step = tf.contrib.framework.get_or_create_global_step()
 
         # Setup data stream
@@ -325,7 +325,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
         :return: None
     """
     if num_GPUS == 0:
-        device = '/cpu:0'
+        device = flags.CPU_ID
         cpu_bound = True
     else:
         device = '/gpu:%d' % (num_GPUS - 1)
@@ -417,7 +417,7 @@ def eval_regress(flags, saver, summary_writer, eval_ops, summary_op, cpu_bound=T
                             log_device_placement=flags.log_device_placement)
 
     if cpu_bound:
-        device = '/cpu:0'
+        device = flags.CPU_ID
         config.device_count= {'GPU': 0}
         config.gpu_options.allow_growth = True
         config.gpu_options.per_process_gpu_memory_fraction = 0.001
@@ -530,7 +530,7 @@ def eval_classify(flags, saver, summary_writer, eval_ops, summary_op, labels, cp
                             log_device_placement=flags.log_device_placement)
 
     if cpu_bound:
-        device = '/cpu:0'
+        device = flags.CPU_ID
         config.device_count = {'GPU': 0}
         config.gpu_options.allow_growth = True
         config.gpu_options.per_process_gpu_memory_fraction = 0.001

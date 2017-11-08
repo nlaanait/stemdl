@@ -67,6 +67,8 @@ def main(argv):
                         '\nPowers of 2 are processed more efficiently.\nDefault 64.', nargs='?', default=64)
     parser.add_argument('--resize_pixels', type=int, help='size of images used for training.\nDefault 64',
                         nargs='?', default=64)
+    parser.add_argument('--cpu_id', type=int, help='Which CPU to use in a multi-CPU machine.\nDefault 0',
+                        nargs='1', default=0)
 
     args = parser.parse_args()
 
@@ -97,6 +99,9 @@ def main(argv):
     # Update flags:
     tf.app.flags.DEFINE_integer('RESIZE_HEIGHT', args.resize_pixels, """RESIZE HEIGHT""")
     tf.app.flags.DEFINE_integer('RESIZE_WIDTH', args.resize_pixels, """RESIZE WIDTH""")
+    #tf.app.flags.DEFINE_integer('CPU_ID', args.cpu_id, """CPU_ID""")
+    tf.app.flags.DEFINE_string('CPU_ID', '/cpu:'+str(args.cpu_id), """CPU_ID""")
+    print('Requested the use of CPU:', '/cpu:'+str(args.cpu_id))
 
     # train or evaluate
     if args.mode[0] == 'train':
