@@ -68,7 +68,7 @@ def main(argv):
     parser.add_argument('--resize_pixels', type=int, help='size of images used for training.\nDefault 64',
                         nargs='?', default=64)
     parser.add_argument('--cpu_id', type=int, help='Which CPU to use in a multi-CPU machine.\nDefault 0',
-                        nargs='1', default=0)
+                        nargs='?', default=0)
 
     args = parser.parse_args()
 
