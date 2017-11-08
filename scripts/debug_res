@@ -7,7 +7,8 @@ batch=32
 gpus=1
 mode=train
 resize=64
+cpuid=1
 checkpt=$model-batch-$batch-gpus-$gpus-imsize-$resize-$mode
-echo python stemdl_classify.py --data_path $data --checkpt_dir $checkpt --network_config $net --hyper_params $hyp --num_gpus $gpus --batch_size $batch --mode $mode --resize_pixels $resize
-python stemdl_classify.py --data_path $data --checkpt_dir $checkpt --network_config $net --hyper_params $hyp --num_gpus $gpus --batch_size $batch --mode $mode --resize_pixels $resize
+echo python stemdl_classify.py --data_path $data --checkpt_dir $checkpt --network_config $net --hyper_params $hyp --num_gpus $gpus --batch_size $batch --mode $mode --resize_pixels $resize --cpu_id $cpuid
+python stemdl_classify.py --data_path $data --checkpt_dir $checkpt --network_config $net --hyper_params $hyp --num_gpus $gpus --batch_size $batch --mode $mode --resize_pixels $resize --cpu_id $cpuid
 rm -r $checkpt
