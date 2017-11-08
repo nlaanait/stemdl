@@ -57,6 +57,7 @@ class ConvNet(object):
         if not self.flags.IMAGE_FP16: self.bytesize = 4
         self.mem = np.cumprod(self.images.get_shape())[-1]*self.bytesize/1024 #(in KB)
         self.flops = 0
+        self.model_output = None
 
     def build_model(self, summaries=False):
         """
@@ -665,7 +666,13 @@ class ResNet(ConvNet):
             hidden, _ = self._conv(input=hidden, params=res_block_params[layer_name])
 
         # Now add the two branches
-        return self._add_branches(hidden, out)
+        ret_val = self._add_branches(hidden, out)
+
+        if verbose:
+            flops_out = self.flops
+            print('\tresnet ops = %3.2e' % (flops_out - flops_in))
+
+        return ret_val
 
     def build_model(self, summaries=False):
         """
@@ -737,7 +744,11 @@ class ResNet(ConvNet):
         self.model_output = out
 
     def _print_layer_specs(self, params, scope, input_shape, output_shape):
-        if params['type'] == 'residual':
+        if params['type'] == 'pooling':
+            print('%s --- output: %s, kernel: %s, stride: %s' %
+                  (scope.name, format(output_shape), format(params['kernel']),
+                   format(params['stride'])))
+        elif params['type'] == 'residual':
             mem_in_MB = np.cumprod(output_shape)[-1] * self.bytesize / 1024**2
             print('Residual Layer: ' + scope.name)
             for parm_name in params.keys():
