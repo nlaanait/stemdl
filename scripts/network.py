@@ -194,7 +194,7 @@ class ConvNet(object):
         return cross_entropy_mean
 
     # Network layers helper methods
-    def _conv(self, input=None, params=None):
+    def _conv(self, input=None, params=None, verbose=True):
         """
         Builds 2-D convolutional layer
         :param input: as it says
@@ -216,11 +216,16 @@ class ConvNet(object):
         self.mem += np.cumprod(output.get_shape())[-1]*self.bytesize / 1024
         # batch * width * height * in_channels * kern_h * kern_w * features
         # at each location in the image:
-        ops_per_conv = 2 * np.cumprod(params['kernel'] + [input.shape[1].value])
+        ops_per_conv = 2 * np.prod(params['kernel'] + [input.shape[1].value])
         # number of convolutions on the image for a single filter / output channel (stride brings down the number)
-        convs_per_filt = np.cumprod([input.shape[2].value, input.shape[3].value]) // np.cumprod(params['stride'])
+        convs_per_filt = np.prod([input.shape[2].value, input.shape[3].value]) // np.prod(params['stride'])
         # final = num images * filters * convs/filter * ops/conv
-        self.flops += np.cumprod([params['features'], input.shape[0].value, convs_per_filt, ops_per_conv])
+        this_ops = np.prod([params['features'], input.shape[0].value, convs_per_filt, ops_per_conv])
+        if verbose:
+            print('\t%d ops/conv, %d convs/filter, %d filters, %d examples = %3.2e ops' % (ops_per_conv, convs_per_filt,
+                                                                              params['features'], input.shape[0].value,
+                                                                              this_ops))
+        self.flops += this_ops
 
         return output, kernel
 
@@ -274,7 +279,7 @@ class ConvNet(object):
         # consistently ignored by most papers / websites for FLOPS calculation
         return output
 
-    def _linear(self, input=None, params=None, name=None):
+    def _linear(self, input=None, params=None, name=None, verbose=True):
         """
         Linear layer
         :param input:
@@ -305,13 +310,16 @@ class ConvNet(object):
         # Keep tabs on the number of weights and memory
         self.num_weights += bias_shape[0] + np.cumprod(weights_shape)[-1]
         self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
-        # [batch x features] * [features, nodes] + nodes
+        # equation = W * X + b
+        # equation = [batch x features] * [features, nodes] + nodes
         # batch * nodes * 2 * features + nodes <- 2 comes in for the dot prod + sum
-        self.flops += np.cumprod(input.get_shape().as_list() + [2, params['weights']]) + params['weights']
+        this_ops = np.prod(input.get_shape().as_list() + [2, params['weights']]) + params['weights']
+        if verbose:
+            print('\t%3.2e ops' % (this_ops))
+        self.flops += this_ops
         return output
 
-    @staticmethod
-    def _activate(input=None, params=None, name=None):
+    def _activate(self, input=None, params=None, name=None, verbose=True):
         """
         Activation
         :param input: as it says
@@ -319,14 +327,18 @@ class ConvNet(object):
         :param name: scope.name
         :return:
         """
-        # self.flops += 2 * np.cumprod(input.get_shape().as_list())
+        this_ops = 2 * np.prod(input.get_shape().as_list())
+        if verbose:
+            print('\tactivation = %3.2e ops' % (this_ops))
+        self.flops += this_ops
 
-        if params['activation'] == 'tanh':
-            return tf.nn.tanh(input, name=name)
+        if params is not None:
+            if params['activation'] == 'tanh':
+                return tf.nn.tanh(input, name=name)
 
         return tf.nn.relu(input, name=name)
 
-    def _pool(self, input=None, params=None, name=None):
+    def _pool(self, input=None, params=None, name=None, verbose=True):
         """
         Pooling
         :param params: dict, must specify type of pooling (max, average), stride, and kernel size
@@ -345,10 +357,14 @@ class ConvNet(object):
         # at each location in the image:
         # avg: 1 to sum each of the N element, 1 op for avg
         # max: N max() operations
-        ops_per_pool = 1 * np.cumprod(params['kernel'] + [input.shape[1].value])
+        ops_per_pool = 1 * np.prod(params['kernel'] + [input.shape[1].value])
         # number of pools on the image for a single filter / output channel (stride brings down the number)
-        num_pools = np.cumprod([input.shape[2].value, input.shape[3].value]) // np.cumprod(params['stride'])
+        num_pools = np.prod([input.shape[2].value, input.shape[3].value]) // np.prod(params['stride'])
         # final = num images * filters * convs/filter * ops/conv
+        if verbose:
+            print('\t%d ops/pool, %d pools = %3.2e ops' % (ops_per_pool, num_pools,
+                                                           num_pools * ops_per_pool))
+
         self.flops += num_pools * ops_per_pool
 
         return output
@@ -546,6 +562,7 @@ class ResNet(ConvNet):
             out = self._add_bias(input=out, params=layer_params)
         return out
 
+    """ 
     def _do_residual_1(self, out, layer_params, scope_name):
         # https://arxiv.org/pdf/1512.03385.pdf
         # input >> weight >> BN >> ReLU >> Weight >> BN >> Add Input >> RelU
@@ -590,18 +607,24 @@ class ResNet(ConvNet):
                 out, _ = self._conv(input=out, params=shortcut_parms)
         # Now add the hidden with input
         return tf.add(out, hidden)
+    """
 
-    def _add_branches(self, hidden, out):
+    def _add_branches(self, hidden, out, verbose=True):
         if out.get_shape().as_list()[1] != hidden.get_shape().as_list()[1]:
             # Need to do a 1x1 conv layer on the input to increase the number of channels:
             shortcut_parms = {"kernel": [1, 1], "stride": [1, 1], "padding": "SAME",
                               "features": hidden.get_shape().as_list()[1], "batch_norm": True}
             with tf.variable_scope("_shortcut"):
                 out, _ = self._conv(input=out, params=shortcut_parms)
+        # ops just for the addition operation
+        this_ops = np.prod(out.get_shape().as_list())
+        if verbose:
+            print('\tops for adding shortcut: %3.2e' % (this_ops))
+        self.flops += this_ops
         # Now add the hidden with input
         return tf.add(out, hidden)
 
-    def _do_residual(self, out, res_block_params, scope_name):
+    def _do_residual(self, out, res_block_params, scope_name, verbose=True):
         """
         Careful, layer_params here is itself an OrderedDictionary of OrderedDictioanries (hopefully all conv layers)
         :param out:
@@ -609,23 +632,28 @@ class ResNet(ConvNet):
         :param scope_name:
         :return:
         """
+        flops_in = self.flops
         # https://arxiv.org/pdf/1603.05027.pdf
         # Input >> BN >> Relu >> weight >> BN >> ReLU >> Weight >> Add Input
         with tf.variable_scope("_pre_conv1"):
             hidden = self._batch_norm(input=out)
         hidden = self._activate(input=hidden, name=scope_name + '_pre_conv1')
 
-        print('\tlooking for conv layers in these parms:', res_block_params.keys())
         # First find the names of all conv layers inside
         layer_ids = []
         for parm_name in res_block_params.keys():
             if isinstance(res_block_params[parm_name], OrderedDict):
                 if res_block_params[parm_name]['type'] == 'convolutional':
                     layer_ids.append(parm_name)
-        print('\tinternal layers:', layer_ids)
-
+        """
+        if verbose:
+            print('internal layers:' + str(layer_ids))
+            print('Working on the first N-1 layers')
+        """
         # Up to N-1th layer: weight >> BN >> ReLU
         for layer_name in layer_ids[:-1]:
+            if verbose:
+                print('weight >> BN >> ReLU on layer: ' + layer_name)
             with tf.variable_scope(layer_name):
                 layer_params = res_block_params[layer_name]
                 hidden, _ = self._conv(input=hidden, params=layer_params)
@@ -700,8 +728,10 @@ class ResNet(ConvNet):
                 out_shape = out.get_shape()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
 
-        print('Total # of layers: %d,  weights: %2.1e, memory: %s MB \n' % (len(self.network), self.num_weights,
-                                                                         format(self.mem/1024)))
+        print('Total # of layers: %d,  weights: %2.1e, memory: %s MB, FLOPS: %3.2e \n' % (len(self.network),
+                                                                                          self.num_weights,
+                                                                                          format(self.mem/1024),
+                                                                                          self.flops))
 
         # reference the output
         self.model_output = out
@@ -709,8 +739,14 @@ class ResNet(ConvNet):
     def _print_layer_specs(self, params, scope, input_shape, output_shape):
         if params['type'] == 'residual':
             mem_in_MB = np.cumprod(output_shape)[-1] * self.bytesize / 1024**2
-            print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB, algorithm: %s' %
-                  (scope.name, format(output_shape), format(params['kernel']),
-                   format(params['stride']), format(self.num_weights), format(mem_in_MB), params['mode']))
+            print('Residual Layer: ' + scope.name)
+            for parm_name in params.keys():
+                if isinstance(params[parm_name], OrderedDict):
+                    if params[parm_name]['type'] == 'convolutional':
+                        conv_parms = params[parm_name]
+                        print('\t%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB' %
+                              (parm_name, format(output_shape), format(conv_parms['kernel']),
+                               format(conv_parms['stride']), format(self.num_weights), format(0)))
+
         else:
             super(ResNet, self)._print_layer_specs(params, scope, input_shape, output_shape)
