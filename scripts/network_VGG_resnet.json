@@ -343,21 +343,7 @@
 			7
 		]
 	},
-	"fc_1": {
-		"activation": "relu",
-		"type": "fully_connected",
-		"bias": 4096,
-		"weights": 4096,
-		"regularize": false
-	},
-	"fc_2": {
-		"activation": "relu",
-		"type": "fully_connected",
-		"bias": 4096,
-		"weights": 4096,
-		"regularize": false
-	},
-	"fc_3": {
+	"fc": {
 		"activation": "relu",
 		"type": "fully_connected",
 		"bias": 1000,
