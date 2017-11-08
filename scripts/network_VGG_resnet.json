@@ -4,20 +4,53 @@
 		"padding": "SAME",
 		"features": 64,
 		"kernel": [
-			7,
-			7
+			3,
+			3
 		],
 		"activation": "relu",
 		"type": "convolutional",
 		"stride": [
-			2,
-			2
+			1,
+			1
 		]
 	},
-	"pool1": {
+	"res1": {
+		"type": "residual",
+		"conv1": {
+		"batch_norm": false,
+		"padding": "SAME",
+		"features": 64,
 		"kernel": [
 			3,
 			3
+		],
+		"activation": "relu",
+		"type": "convolutional",
+		"stride": [
+			1,
+			1
+		]
+		},
+		"conv2": {
+		"batch_norm": false,
+		"padding": "SAME",
+		"features": 64,
+		"kernel": [
+			3,
+			3
+		],
+		"activation": "relu",
+		"type": "convolutional",
+		"stride": [
+			1,
+			1
+		]
+		}
+	},
+	"pool1": {
+		"kernel": [
+			2,
+			2
 		],
 		"pool_type": "max",
 		"type": "pooling",
@@ -27,36 +60,53 @@
 			2
 		]
 	},
-	"res1": {
-		"batch_norm": false,
-		"padding": "SAME",
-		"features": 64,
-		"kernel": [
-			3,
-			3
-		],
-		"activation": "relu",
-		"type": "residual",
-		"stride": [
-			1,
-			1
-		],
-		"mode": "new"
-	},
-	"res2": {
-		"batch_norm": false,
-		"padding": "SAME",
-		"features": 128,
-		"kernel": [
-			3,
-			3
-		],
-		"activation": "relu",
-		"type": "residual",
-		"stride": [
-			1,
-			1
-		]
+	"res2_bottleneck": {
+		"type":"residual",
+		"conv1": {
+			"batch_norm": false,
+			"padding": "SAME",
+			"features": 64,
+			"kernel": [
+				1,
+				1
+			],
+			"activation": "relu",
+			"type": "convolutional",
+			"stride": [
+				1,
+				1
+			]
+		},
+		"conv2": {
+			"batch_norm": false,
+			"padding": "SAME",
+			"features": 64,
+			"kernel": [
+				3,
+				3
+			],
+			"activation": "relu",
+			"type": "convolutional",
+			"stride": [
+				1,
+				1
+			]
+		},
+		"conv3": {
+			"batch_norm": false,
+			"padding": "SAME",
+			"features": 128,
+			"kernel": [
+				1,
+				1
+			],
+			"activation": "relu",
+			"type": "convolutional",
+			"stride": [
+				1,
+				1
+			]
+		}
 	},
 	"pool2": {
 		"kernel": [
@@ -277,7 +327,21 @@
 			2
 		]
 	},
-	"fc": {
+	"fc_1": {
+		"activation": "relu",
+		"type": "fully_connected",
+		"bias": 4096,
+		"weights": 4096,
+		"regularize": false
+	},
+	"fc_2": {
+		"activation": "relu",
+		"type": "fully_connected",
+		"bias": 4096,
+		"weights": 4096,
+		"regularize": false
+	},
+	"fc_3": {
 		"activation": "relu",
 		"type": "fully_connected",
 		"bias": 1000,
