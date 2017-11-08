@@ -56,7 +56,7 @@ class ConvNet(object):
         self.bytesize = 2
         if not self.flags.IMAGE_FP16: self.bytesize = 4
         self.mem = np.cumprod(self.images.get_shape())[-1]*self.bytesize/1024 #(in KB)
-        self.flops = 0
+        self.ops = 0
         self.model_output = None
 
     def build_model(self, summaries=False):
@@ -226,7 +226,7 @@ class ConvNet(object):
             print('\t%d ops/conv, %d convs/filter, %d filters, %d examples = %3.2e ops' % (ops_per_conv, convs_per_filt,
                                                                               params['features'], input.shape[0].value,
                                                                               this_ops))
-        self.flops += this_ops
+        self.ops += this_ops
 
         return output, kernel
 
@@ -244,7 +244,7 @@ class ConvNet(object):
         # Keep tabs on the number of bias parameters and memory
         self.num_weights += bias_shape
         self.mem += bias_shape*self.bytesize / 1024
-        self.flops += bias_shape
+        self.ops += bias_shape
         return output
 
     def _batch_norm(self, input=None):
@@ -277,7 +277,7 @@ class ConvNet(object):
                                             is_training=False)
         # Keep tabs on the number of weights
         self.num_weights += beta.shape[0].value + gamma.shape[0].value
-        # consistently ignored by most papers / websites for FLOPS calculation
+        # consistently ignored by most papers / websites for ops calculation
         return output
 
     def _linear(self, input=None, params=None, name=None, verbose=True):
@@ -317,7 +317,7 @@ class ConvNet(object):
         this_ops = np.prod(input.get_shape().as_list() + [2, params['weights']]) + params['weights']
         if verbose:
             print('\t%3.2e ops' % (this_ops))
-        self.flops += this_ops
+        self.ops += this_ops
         return output
 
     def _activate(self, input=None, params=None, name=None, verbose=True):
@@ -331,7 +331,7 @@ class ConvNet(object):
         this_ops = 2 * np.prod(input.get_shape().as_list())
         if verbose:
             print('\tactivation = %3.2e ops' % (this_ops))
-        self.flops += this_ops
+        self.ops += this_ops
 
         if params is not None:
             if params['activation'] == 'tanh':
@@ -366,7 +366,7 @@ class ConvNet(object):
             print('\t%d ops/pool, %d pools = %3.2e ops' % (ops_per_pool, num_pools,
                                                            num_pools * ops_per_pool))
 
-        self.flops += num_pools * ops_per_pool
+        self.ops += num_pools * ops_per_pool
 
         return output
 
@@ -621,7 +621,7 @@ class ResNet(ConvNet):
         this_ops = np.prod(out.get_shape().as_list())
         if verbose:
             print('\tops for adding shortcut: %3.2e' % (this_ops))
-        self.flops += this_ops
+        self.ops += this_ops
         # Now add the hidden with input
         return tf.add(out, hidden)
 
@@ -633,7 +633,7 @@ class ResNet(ConvNet):
         :param scope_name:
         :return:
         """
-        flops_in = self.flops
+        ops_in = self.ops
         # https://arxiv.org/pdf/1603.05027.pdf
         # Input >> BN >> Relu >> weight >> BN >> ReLU >> Weight >> Add Input
         with tf.variable_scope("_pre_conv1"):
@@ -669,8 +669,8 @@ class ResNet(ConvNet):
         ret_val = self._add_branches(hidden, out)
 
         if verbose:
-            flops_out = self.flops
-            print('\tresnet ops = %3.2e' % (flops_out - flops_in))
+            ops_out = self.ops
+            print('\tresnet ops = %3.2e' % (ops_out - ops_in))
 
         return ret_val
 
@@ -735,10 +735,10 @@ class ResNet(ConvNet):
                 out_shape = out.get_shape()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
 
-        print('Total # of layers: %d,  weights: %2.1e, memory: %s MB, FLOPS: %3.2e \n' % (len(self.network),
+        print('Total # of layers: %d,  weights: %2.1e, memory: %s MB, ops: %3.2e \n' % (len(self.network),
                                                                                           self.num_weights,
                                                                                           format(self.mem/1024),
-                                                                                          self.flops))
+                                                                                          self.ops))
 
         # reference the output
         self.model_output = out
