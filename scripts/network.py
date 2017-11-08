@@ -113,15 +113,33 @@ class ConvNet(object):
                                                                          'tf.app.flags. Check flags or network_config.json'
                     if self.summary: self._activation_summary(out)
 
+                if layer_params['type'] not in ['convolutional', 'pooling', 'fully_connected', 'linear_output']:
+                    out = self._compound_layer(out, layer_params, scope.name)
+                    # Continue any summary
+                    if self.summary: self._activation_summary(out)
+
                 # print layer specs and generate Tensorboard summaries
                 out_shape = out.get_shape()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
 
-        print('Total # of layers: %d,  weights: %2.1e, memory: %s MB \n' % (len(self.network), self.num_weights,
-                                                                         format(self.mem/1024)))
+        print('Total # of layers: %d,  weights: %2.1e, memory: %s MB, ops: %3.2e \n' % (len(self.network),
+                                                                                        self.num_weights,
+                                                                                        format(self.mem / 1024),
+                                                                                        self.ops))
 
         # reference the output
         self.model_output = out
+
+    def _compound_layer(self, out, layer_params, scope_name):
+        """
+        Handles the computation of more complex layer types such as Residual blocks, Inception, etc.
+
+        :param out: 4D tensor, Input to the layer
+        :param layer_params: OrderedDictionary, Parameters for the layer
+        :param scope_name: str, name of the layer
+        :return: 4D tensor, output of the layer
+        """
+        pass
 
     def get_loss(self):
         with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
@@ -552,7 +570,6 @@ class ConvNet(object):
         return tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay'])
 
 
-# TODO: implement ResNet
 class ResNet(ConvNet):
 
     def _add_branches(self, hidden, out, verbose=True):
@@ -581,7 +598,11 @@ class ResNet(ConvNet):
         # Now add the hidden with input
         return tf.add(out, hidden)
 
-    def _do_residual(self, out, res_block_params, scope_name, verbose=True):
+    def _compound_layer(self, out, layer_params, scope_name):
+        if layer_params['type'] == 'residual':
+            return self._residual_block(out, layer_params, scope_name)
+
+    def _residual_block(self, out, res_block_params, scope_name, verbose=True):
         """
         Unit residual block consisting of arbitrary number of convolutional layers, each specified by its own
         OrderedDictionary in the parameters.
@@ -635,79 +656,6 @@ class ResNet(ConvNet):
             print('\tresnet ops = %3.2e' % (ops_out - ops_in))
 
         return ret_val
-
-    def build_model(self, summaries=False):
-        """
-        Here we build the model.
-        :param summaries: bool, flag to print out summaries.
-        """
-        # Initiate 1st layer
-        print('Building ResNet on %s...' % self.scope)
-        print('input: ---, dim: %s memory: %s MB' %(format(self.images.get_shape()), format(self.mem/1024)))
-        layer_name, layer_params = list(self.network.items())[0]
-        with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
-            out, kernel = self._conv(input=self.images, params=layer_params)
-            if layer_params['batch_norm']:
-                out = self._batch_norm(input=out)
-            else:
-                out = self._add_bias(input=out, params=layer_params)
-            out = self._activate(input=out, name=scope.name, params=layer_params)
-            in_shape = self.images.get_shape()
-            # Tensorboard Summaries
-            if self.summary:
-                self._activation_summary(out)
-                self._activation_image_summary(out)
-                self._kernel_image_summary(kernel)
-
-            self._print_layer_specs(layer_params, scope, in_shape, out.get_shape())
-
-        # Initiate the remaining layers
-        for layer_name, layer_params in list(self.network.items())[1:]:
-            with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
-                in_shape = out.get_shape()
-
-                if layer_params['type'] == 'residual':
-
-                    out = self._do_residual(out, layer_params, scope.name)
-                    # Continue any summary
-                    if self.summary: self._activation_summary(out)
-
-                if layer_params['type'] == 'convolutional':
-                    out, _ = self._conv(input=out, params=layer_params)
-                    if layer_params['batch_norm']:
-                        out = self._batch_norm(input=out)
-                    else:
-                        out = self._add_bias(input=out, params=layer_params)
-                    out = self._activate(input=out, name=scope.name, params=layer_params)
-                    if self.summary: self._activation_summary(out)
-
-                if layer_params['type'] == 'pooling':
-                    out = self._pool(input=out, name=scope.name, params=layer_params)
-
-                if layer_params['type'] == 'fully_connected':
-                    out = self._linear(input=out, name=scope.name+'_preactiv', params=layer_params)
-                    out = self._activate(input=out, name=scope.name, params=layer_params)
-                    if self.summary: self._activation_summary(out)
-
-                if layer_params['type'] == 'linear_output':
-                    in_shape = out.get_shape()
-                    out = self._linear(input=out, name=scope.name, params=layer_params)
-                    assert out.get_shape()[-1] == self.flags.OUTPUT_DIM, 'Dimensions of the linear output layer' + \
-                                                                         'do not match the expected output set in' + \
-                                                                         'tf.app.flags. Check flags or network_config.json'
-                    if self.summary: self._activation_summary(out)
-
-                # print layer specs and generate Tensorboard summaries
-                out_shape = out.get_shape()
-                self._print_layer_specs(layer_params, scope, in_shape, out_shape)
-
-        print('Total # of layers: %d,  weights: %2.1e, memory: %s MB, ops: %3.2e \n' % (len(self.network),
-                                                                                          self.num_weights,
-                                                                                          format(self.mem/1024),
-                                                                                          self.ops))
-
-        # reference the output
-        self.model_output = out
 
     def _print_layer_specs(self, params, scope, input_shape, output_shape):
         if params['type'] == 'pooling':
