@@ -1,6 +1,6 @@
 export CUDA_VISIBLE_DEVICES="7"
 data=/usr/atom_ai/data/oxide_pertiltpattern_1deg_GP_train_85x120.tfrecords
-net=network_VGG_resnet.json
+net=network_ResNet_18.json
 hyp=hyper_params_classifier_VGG16.json
 model=ResNet
 batch=32
