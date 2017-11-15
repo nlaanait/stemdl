@@ -18,10 +18,11 @@ import inputs
 
 class _LoggerHook(tf.train.SessionRunHook):
     """Logs loss and runtime stats."""
-    def __init__(self, flags, total_loss, num_gpus):
+    def __init__(self, flags, total_loss, num_gpus, net_ops):
         self.flags = flags
         self.total_loss = total_loss
         self.num_gpus = num_gpus
+        self.net_ops = net_ops * num_gpus
 
     def begin(self):
         self._step = -1
@@ -44,9 +45,9 @@ class _LoggerHook(tf.train.SessionRunHook):
             elapsed_epochs = self.num_gpus * self._step * self.flags.batch_size * 1.0 / self.flags.NUM_EXAMPLES_PER_EPOCH
             self.epoch += elapsed_epochs
             format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
-                          'sec/batch/gpu)')
+                          'sec/batch/gpu), flops = %3.2e')
             print(format_str % (datetime.now(), self._step, elapsed_epochs, loss_value,
-                                examples_per_sec, sec_per_batch))
+                                examples_per_sec, sec_per_batch, self.net_ops/duration))
 
 
 def _add_loss_summaries(total_loss, losses, flags, summaries=False):
@@ -283,7 +284,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
         #calculate average loss and setup logger
         avg_total_loss = tf.reduce_mean(worker_total_loss)
-        logHook = _LoggerHook(flags, avg_total_loss, num_GPUS)
+        logHook = _LoggerHook(flags, avg_total_loss, num_GPUS, n_net.ops)
 
         # Stats and summaries
         run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
