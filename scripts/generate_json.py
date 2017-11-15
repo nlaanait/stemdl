@@ -127,6 +127,65 @@ sequence = [('conv0', conv_0, 1), ('pool0', pool_0, 1),
 resnet_34_names, resnet_34_parms = build_network(sequence)
 io_utils.write_json_network_config('network_ResNet_34.json', resnet_34_names, resnet_34_parms)
 
+# ###########
+# ResNet-50 #
+# ###########
+
+
+def bneck_res_block(conv_layer, chans_1, chans_2):
+    bn_in = modify_layer(conv_layer, {'features': chans_1, 'kernel': [1, 1], 'stride': [1, 1]})
+    conv_layer = modify_layer(conv_layer, {'features': chans_1, 'kernel': [3, 3], 'stride': [3, 3]})
+    bn_out = modify_layer(bn_in, {'features': chans_2})
+    return OrderedDict({'type': 'residual',
+                        'conv1': bn_in,
+                        'conv2': conv_layer,
+                        'conv3': bn_out})
+
+bn_res_1 = bneck_res_block(std_conv, 64, 256)
+bn_res_2 = bneck_res_block(std_conv, 128, 512)
+bn_res_3 = bneck_res_block(std_conv, 256, 1024)
+bn_res_4 = bneck_res_block(std_conv, 512, 2048)
+
+sequence = [('conv0', conv_0, 1), ('pool0', pool_0, 1),
+            ('res1', bn_res_1, 3), ('pool1', max_pool_2, 1),
+            ('res2', bn_res_2, 4), ('pool2', max_pool_2, 1),
+            ('res3', bn_res_3, 6), ('pool3', max_pool_2, 1),
+            ('res4', bn_res_4, 3), ('pool4', avg_pool_7, 1),
+            ('fc', fully_connected, 1), ('linear_output', linear_output, 1)]
+
+resnet_50_names, resnet_50_parms = build_network(sequence)
+io_utils.write_json_network_config('network_ResNet_50.json', resnet_50_names, resnet_50_parms)
+
+
+# ############
+# ResNet-101 #
+# ############
+
+sequence = [('conv0', conv_0, 1), ('pool0', pool_0, 1),
+            ('res1', bn_res_1, 3), ('pool1', max_pool_2, 1),
+            ('res2', bn_res_2, 4), ('pool2', max_pool_2, 1),
+            ('res3', bn_res_3, 23), ('pool3', max_pool_2, 1),
+            ('res4', bn_res_4, 3), ('pool4', avg_pool_7, 1),
+            ('fc', fully_connected, 1), ('linear_output', linear_output, 1)]
+
+resnet_101_names, resnet_101_parms = build_network(sequence)
+io_utils.write_json_network_config('network_ResNet_101.json', resnet_101_names, resnet_101_parms)
+
+
+# ############
+# ResNet-152 #
+# ############
+
+sequence = [('conv0', conv_0, 1), ('pool0', pool_0, 1),
+            ('res1', bn_res_1, 3), ('pool1', max_pool_2, 1),
+            ('res2', bn_res_2, 8), ('pool2', max_pool_2, 1),
+            ('res3', bn_res_3, 36), ('pool3', max_pool_2, 1),
+            ('res4', bn_res_4, 3), ('pool4', avg_pool_7, 1),
+            ('fc', fully_connected, 1), ('linear_output', linear_output, 1)]
+
+resnet_152_names, resnet_152_parms = build_network(sequence)
+io_utils.write_json_network_config('network_ResNet_152.json', resnet_152_names, resnet_152_parms)
+
 
 #################################
 # templates for hyper-parameters #
