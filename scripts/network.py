@@ -55,8 +55,9 @@ class ConvNet(object):
             self.reuse = True
         self.bytesize = 2
         if not self.flags.IMAGE_FP16: self.bytesize = 4
-        self.mem = np.cumprod(self.images.get_shape())[-1]*self.bytesize/1024 #(in KB)
+        self.mem = np.cumprod(self.images.get_shape())[-1]*self.bytesize/1024  # (in KB)
         self.ops = 0
+        self.initializer = self._get_initializer(hyper_params.get('initializer', None))
         self.model_output = None
 
     def build_model(self, summaries=False):
@@ -141,6 +142,74 @@ class ConvNet(object):
         """
         pass
 
+    @staticmethod
+    def _get_initializer(params):
+        """
+        Returns an Initializer object for initializing weights
+
+        Note - good reference:
+         - https://github.com/tensorflow/tensorflow/blob/r1.4/tensorflow/python/keras/_impl/keras/initializers.py
+        :param params: dictionary
+        :return: initializer object
+        """
+        if params is not None:
+            if isinstance(params, dict):
+                params_copy = params.copy()
+                name = str(params_copy.pop('type').lower())
+                if name == 'uniform_unit_scaling':
+                    print('using ' + name + ' initializer')
+                    # Random walk initialization (currently in the code).
+                    return tf.uniform_unit_scaling_initializer(**params_copy)
+                elif name == 'truncated_normal':
+                    print('using ' + name + ' initializer')
+                    return tf.truncated_normal_initializer(**params_copy)
+                elif name == 'variance_scaling':
+                    print('using ' + name + ' initializer')
+                    return tf.contrib.layers.variance_scaling_initializer(**params_copy)
+                elif name == 'random_normal':
+                    print('using ' + name + ' initializer')
+                    # Normalized Initialization ( eq. 16 in Glorot et al.).
+                    return tf.random_normal_initializer(**params_copy)
+                elif name == 'random_uniform':
+                    print('using ' + name + ' initializer')
+                    return tf.random_uniform_initializer(**params_copy)
+                elif name == 'xavier':  # Glorot uniform initializer, also called Xavier
+                    # http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf
+                    print('using ' + name + ' initializer')
+                    return tf.contrib.layers.xavier_initializer(**params_copy)
+                elif name in ['he', 'lecun']:
+                    """
+                    Note that tf.variance_scaling_initializer and tf.contrib.layers.variance_scaling_initializer
+                    take the same kinds of parameters with different names and formats.
+                    
+                    However, tf.variance_scaling_initializer doesn't seem to be available on TF 1.2.1 on the DGX1
+                    """
+                    params_copy['factor'] = params_copy.pop('scale', 1)
+                    params_copy['uniform'] = params_copy.pop('distribution', True)
+                    if 'uniform' in params_copy:
+                        if isinstance(params_copy['uniform'], str):
+                            if params_copy['uniform'].lower() == 'uniform':
+                                params_copy['uniform'] = True
+                            else:
+                                params_copy['uniform'] = False
+                    if name == 'he':
+                        # He et al., http://arxiv.org/abs/1502.01852
+                        _ = params_copy.pop('factor', None)  # force it to be 2.0 (default anyway)
+                        _ = params_copy.pop('mode', None)  # force it to be 'FAN_IN' (default anyway)
+                        # uniform parameter is False by default -> normal distribution
+                        print('using ' + name + ' initializer')
+                        return tf.contrib.layers.variance_scaling_initializer(factor=2.0, mode='FAN_IN', **params_copy)
+                    elif name == 'lecun':
+                        _ = params_copy.pop('factor', None)  # force it to be 1.0
+                        _ = params_copy.pop('mode', None)  # force it to be 'FAN_IN' (default anyway)
+                        # uniform parameter is False by default -> normal distribution
+                        print('using ' + name + ' initializer')
+                        return tf.contrib.layers.variance_scaling_initializer(factor=1.0, mode='FAN_IN', **params_copy)
+                    print('Requested initializer: ' + name + ' has not yet been implemented.')
+        # default = Xavier:
+        print('Using default Xavier instead')
+        return tf.contrib.layers.xavier_initializer()
+
     def get_loss(self):
         with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
             if self.net_type == 'regressor':
@@ -223,11 +292,17 @@ class ConvNet(object):
         stride_shape = [1,1]+list(params['stride'])
         features = params['features']
         kernel_shape = list(params['kernel']) + [input.shape[1].value, features]
-        init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
-        # kernel = self._cpu_variable_init('weights', shape=kernel_shape,
-        #                                  initializer=tf.truncated_normal_initializer(stddev=init_val))
-        kernel = self._cpu_variable_init('weights', shape=kernel_shape,
-                                         initializer=tf.uniform_unit_scaling_initializer(factor=1.43))
+
+        # Fine tunining the initializer:
+        conv_initializer = self.initializer
+        if isinstance(conv_initializer, tf.truncated_normal_initializer):
+            init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
+            conv_initializer.stddev = init_val
+        elif isinstance(conv_initializer, tf.uniform_unit_scaling_initializer):
+            conv_initializer.factor = 1.43
+        # TODO: make and modify local copy only
+
+        kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
         output = tf.nn.conv2d(input, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
 
         # Keep tabs on the number of weights and memory
@@ -311,18 +386,23 @@ class ConvNet(object):
         # print(dim_input,list(params['weights']))
         weights_shape = [dim_input, params['weights']]
         bias_shape = [params['bias']]
-        if params['type'] == 'fully_connected' and params['activation'] == 'tanh':
-            weights = self._cpu_variable_init('weights', shape=weights_shape,
-                                              initializer=tf.uniform_unit_scaling_initializer(factor=1.15),
-                                              regularize=params['regularize'])
-        if params['type'] == 'fully_connected' and params['activation'] == 'relu':
-            weights = self._cpu_variable_init('weights', shape=weights_shape,
-                                              initializer=tf.uniform_unit_scaling_initializer(factor=1.43),
-                                              regularize=params['regularize'])
-        if params['type'] == 'linear_output':
-            weights = self._cpu_variable_init('weights', shape=weights_shape,
-                                              initializer=tf.uniform_unit_scaling_initializer(factor=1.0))
 
+        if params['type'] == 'linear_output':
+            params['regularize'] = False
+
+        # Fine tunining the initializer:
+        lin_initializer = self.initializer
+        if isinstance(lin_initializer, tf.uniform_unit_scaling_initializer):
+            if params['type'] == 'fully_connected':
+                if params['activation'] == 'tanh':
+                    lin_initializer.factor = 1.15
+                elif params['activation'] == 'relu':
+                    lin_initializer.factor = 1.43
+            elif params['type'] == 'linear_output':
+                lin_initializer.factor = 1.0
+
+        weights = self._cpu_variable_init('weights', shape=weights_shape, initializer=lin_initializer,
+                                          regularize=params['regularize'])
         bias = self._cpu_variable_init('bias', bias_shape, initializer=tf.constant_initializer(1.e-3))
         output = tf.nn.bias_add(tf.matmul(input_reshape, weights), bias, name=name)
 
