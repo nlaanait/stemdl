@@ -139,8 +139,8 @@ class DatasetTFRecords(object):
 
         # 1. Apply random global affine transformations, sampled from a normal distributions.
         # Setting bounds and generating random values for scaling and rotations
-        scale_X = np.random.normal(1.0, 0.08, size=1)
-        scale_Y = np.random.normal(1.0, 0.08, size=1)
+        scale_X = np.random.normal(1.0, 0.05, size=1)
+        scale_Y = np.random.normal(1.0, 0.05, size=1)
         theta_angle = np.random.normal(0., 1, size=1)
         nu_angle = np.random.normal(0., 1, size=1)
 
@@ -158,8 +158,8 @@ class DatasetTFRecords(object):
         # Transform
         aff_image = tf.contrib.image.transform(image, affine_transform,
                                            interpolation='BILINEAR')
-    # 2. Apply isotropic scaling, sampled from a uniform distribution.
-        zoom_factor = np.random.uniform(low=0.88, high= 1.12)
+        # 2. Apply isotropic scaling, sampled from a normal distribution.
+        zoom_factor = np.random.normal(1.0, 0.05, size=1)
         crop_y_size, crop_x_size = self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH
         size = tf.constant(value=[int(np.round(crop_y_size / zoom_factor)),
                                   int(np.round(crop_x_size / zoom_factor))], dtype=tf.int32)

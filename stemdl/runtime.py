@@ -184,10 +184,15 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
     if ckpt is None:
         last_step = 0
     else:
-        last_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+        last_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
 
     # Only neural net ops will live on GPU.
     # Everything else (variable initialization, placement, updates) is on the host.
+
+    ##################################
+    # Building Model and replicating #
+    ##################################
+
     # Start building the graph
     graph = tf.Graph()
     with graph.as_default(), tf.device('/cpu:0'):
@@ -258,7 +263,12 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         worker_grads.append(grads_vars)
 
                         # Accumulate extra non-standard operations across workers
-                        worker_ops.append(n_net.get_misc_ops())
+                        # Only include worker_0
+                        if summary: worker_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+
+    #######################################
+    # Synchronizing across model replicas #
+    #######################################
 
         # average over gradients.
         avg_gradients = _average_gradients(worker_grads)
@@ -276,13 +286,17 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         summary_merged = tf.summary.merge_all()
 
         # Track the moving averages of all trainable variables.
-        variable_averages = tf.train.ExponentialMovingAverage(
-            hyper_params['moving_average_decay'], global_step)
+        variable_averages = tf.train.ExponentialMovingAverage(hyper_params['moving_average_decay'], global_step)
         variable_averages_op = variable_averages.apply(tf.trainable_variables())
 
         # Gather all training related ops into a single one.
-        with tf.control_dependencies([apply_gradient_op, variable_averages_op, tf.group(*worker_ops)]):
-            train_op = tf.no_op(name='train')
+        with tf.control_dependencies([apply_gradient_op, variable_averages_op]):
+            with tf.control_dependencies(worker_ops):
+                train_op = tf.no_op(name='train')
+
+        ###############################
+        # Setting up training session #
+        ###############################
 
         # Config file for tf.Session()
         config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
@@ -301,8 +315,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         with tf.train.MonitoredTrainingSession(checkpoint_dir=flags.train_dir,
                                                hooks=[tf.train.StopAtStepHook(last_step=flags.max_steps),
                                                       tf.train.NanTensorHook(avg_total_loss),logHook], config=config,
-                                               save_summaries_steps=None, save_summaries_secs=None) as mon_sess:
-            #TODO: global step resets to 0 when the session restarts, considering reading from checkpoint name
+                                               save_summaries_steps=None, save_summaries_secs=None,
+                                               save_checkpoint_secs=300) as mon_sess:
             while not mon_sess.should_stop():
                 if logHook._step % flags.save_frequency == 0:
                     # Train, Record stats and save summaries
