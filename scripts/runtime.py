@@ -45,7 +45,7 @@ class _LoggerHook(tf.train.SessionRunHook):
             elapsed_epochs = self.num_gpus * self._step * self.flags.batch_size * 1.0 / self.flags.NUM_EXAMPLES_PER_EPOCH
             self.epoch += elapsed_epochs
             format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
-                          'sec/batch/gpu), flops = %3.2e')
+                          'sec/batch/gpu), total flops = %3.2e')
             print(format_str % (datetime.now(), self._step, elapsed_epochs, loss_value,
                                 examples_per_sec, sec_per_batch, self.net_ops/duration))
 
