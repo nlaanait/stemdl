@@ -98,7 +98,7 @@ class ConvNet(object):
                 if layer_params['type'] == 'convolutional':
                     out, _ = self._conv(input=out, params=layer_params)
                     if layer_params['batch_norm']:
-                        out = self._batch_norm(input=out)
+                        out = self._batch_norm(input=out, reuse=self.reuse, scope=scope)
                     else:
                         out = self._add_bias(input=out, params=layer_params)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
@@ -352,7 +352,7 @@ class ConvNet(object):
         self.ops += bias_shape
         return output
 
-    def _batch_norm(self, input=None):
+    def _batch_norm(self, input=None, reuse=None, scope=None):
         """
         Batch normalization
         :param input: as it says
@@ -360,28 +360,21 @@ class ConvNet(object):
         """
         # Initializing hyper_parameters
         shape = [input.shape[1].value]
-        beta = self._cpu_variable_init('beta', shape=shape, initializer=tf.zeros_initializer())
-        gamma = self._cpu_variable_init('gamma', shape=shape,initializer=tf.ones_initializer())
+        # beta = self._cpu_variable_init('beta', shape=shape, initializer=tf.zeros_initializer())
+        # gamma = self._cpu_variable_init('gamma', shape=shape,initializer=tf.ones_initializer())
+
         if self.operation == 'train':
-            output, mean, variance = tf.nn.fused_batch_norm(input, gamma, beta, None, None, 1.e-3, data_format='NCHW',
-                                                            is_training=True)
-            moving_mean = self._cpu_variable_init('moving_mean', shape=shape,
-                                                  initializer=tf.zeros_initializer(), trainable=False)
-            moving_variance = self._cpu_variable_init('moving_variance', shape=shape,
-                                                      initializer=tf.ones_initializer(), trainable=False)
-            self.misc_ops.append(moving_averages.assign_moving_average(
-                moving_mean, mean, 0.9))
-            self.misc_ops.append(moving_averages.assign_moving_average(
-                moving_variance, variance, 0.9))
+            output = tf.contrib.layers.batch_norm(input, decay=self.hyper_params["batch_norm"]["decay"],
+                                                  epsilon=self.hyper_params["batch_norm"]["epsilon"],
+                                                  center=True, scale=True, is_training=True, reuse=reuse,
+                                                  scope=scope, data_format='NCHW', fused=True)
         if self.operation == 'eval':
-            mean = self._cpu_variable_init('moving_mean', shape=shape, \
-                                           initializer=tf.zeros_initializer(), trainable=False)
-            variance = self._cpu_variable_init('moving_variance', shape=shape, \
-                                               initializer=tf.ones_initializer(), trainable=False)
-            output, _, _ = tf.nn.fused_batch_norm(input, gamma, beta, mean, variance, epsilon=1.e-3, data_format='NCHW',
-                                            is_training=False)
+            output = tf.contrib.layers.batch_norm(input, decay=self.hyper_params["batch_norm"]["decay"],
+                                                  epsilon=self.hyper_params["batch_norm"]["epsilon"],
+                                                  center=True, scale=True, is_training=False, reuse=reuse,
+                                                  scope=scope, data_format='NCHW', fused=True)
         # Keep tabs on the number of weights
-        self.num_weights += beta.shape[0].value + gamma.shape[0].value
+        self.num_weights += 2 * shape[0]  # scale and offset (beta, gamma)
         # consistently ignored by most papers / websites for ops calculation
         return output
 
