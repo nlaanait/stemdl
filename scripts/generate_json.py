@@ -5,7 +5,8 @@ email: laanaitn@ornl.gov
 """
 
 from collections import OrderedDict
-import json
+import sys
+sys.path.append('../')
 from stemdl import io_utils
 
 

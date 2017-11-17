@@ -8,10 +8,9 @@ import tensorflow as tf
 import argparse
 import sys
 import os
-
-import inputs
-import runtime
-import io_utils
+sys.path.append('../')
+from stemdl import runtime
+from stemdl import io_utils
 
 """
 These FLAGS define variables for a particular TF workflow and are not expected to change.

@@ -9,10 +9,9 @@ import argparse
 import sys
 import os
 
-# stemdl:
-import inputs
-import runtime
-import io_utils
+sys.path.append('../')
+from stemdl import runtime
+from stemdl import io_utils
 
 
 """
