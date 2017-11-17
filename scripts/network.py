@@ -58,6 +58,12 @@ class ConvNet(object):
         self.mem = np.cumprod(self.images.get_shape())[-1]*self.bytesize/1024  # (in KB)
         self.ops = 0
         self.initializer = self._get_initializer(hyper_params.get('initializer', None))
+        if "batch_norm" in self.hyper_params:
+            self.hyper_params["batch_norm"]["decay"] = self.hyper_params["batch_norm"].get("decay", 0.995)
+            self.hyper_params["batch_norm"]["epsilon"] = self.hyper_params["batch_norm"].get("epsilon", 1E-5)
+        else:
+            # default params
+            self.hyper_params["batch_norm"] = {"epsilon": 1E-5, "decay": 0.995}
         self.model_output = None
 
     def build_model(self, summaries=False):
@@ -300,6 +306,12 @@ class ConvNet(object):
             conv_initializer.stddev = init_val
         elif isinstance(conv_initializer, tf.uniform_unit_scaling_initializer):
             conv_initializer.factor = 1.43
+        elif isinstance(conv_initializer, tf.random_normal_initializer):
+            init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
+            if verbose:
+                print('stddev: %s' % format(init_val))
+            conv_initializer.mean = 0.0
+            conv_initializer.stddev = init_val
         # TODO: make and modify local copy only
 
         kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
@@ -390,7 +402,7 @@ class ConvNet(object):
         if params['type'] == 'linear_output':
             params['regularize'] = False
 
-        # Fine tunining the initializer:
+        # Fine tuning the initializer:
         lin_initializer = self.initializer
         if isinstance(lin_initializer, tf.uniform_unit_scaling_initializer):
             if params['type'] == 'fully_connected':
@@ -400,6 +412,12 @@ class ConvNet(object):
                     lin_initializer.factor = 1.43
             elif params['type'] == 'linear_output':
                 lin_initializer.factor = 1.0
+        elif isinstance(lin_initializer, tf.random_normal_initializer):
+            init_val = max(np.sqrt(2.0 / params['weights']), 0.01)
+            if verbose:
+                print('stddev: %s' % format(init_val))
+            lin_initializer.mean = 0.0
+            lin_initializer.stddev = init_val
 
         weights = self._cpu_variable_init('weights', shape=weights_shape, initializer=lin_initializer,
                                           regularize=params['regularize'])
