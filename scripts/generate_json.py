@@ -18,12 +18,12 @@ layer_keys_list = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'pool1', 'conv6'
                    'fc_1', 'linear_output']
 
 # parameters dictionary
-conv_layer_1 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [9, 9], 'features': 64,
-                            'activation': 'relu', 'padding': 'SAME','batch_norm': False})
-conv_layer_2 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [7, 7], 'features': 64,
-                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': False})
-conv_layer_3 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 64,
-                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': False})
+conv_layer_1 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [7, 7], 'features': 64,
+                            'activation': 'relu', 'padding': 'SAME','batch_norm': True, 'regularize': True})
+conv_layer_2 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 64,
+                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'regularize': True})
+conv_layer_3 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 128,
+                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'regularize': True})
 
 pool_avg = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'avg','padding':'SAME'})
 pool_max = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})

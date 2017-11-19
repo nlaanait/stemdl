@@ -7,6 +7,7 @@ email: laanaitn@ornl.gov
 import re
 import tensorflow as tf
 import numpy as np
+from tensorflow.python.training import moving_averages
 
 
 # If a model is trained with multiple GPUs, prefix all Op names with worker_name
@@ -129,9 +130,8 @@ class ConvNet(object):
                 self._calculate_loss_classifier()
 
     def get_misc_ops(self):
-        # ops = tf.group(*self.misc_ops)
-        # return ops
-        return self.misc_ops
+        ops = tf.group(*self.misc_ops)
+        return ops
 
     # Loss calculation and regularization helper methods
     def _calculate_loss_regressor(self, params):
@@ -235,17 +235,28 @@ class ConvNet(object):
         """
         # Initializing hyper_parameters
         shape = [input.shape[1].value]
-        # beta = self._cpu_variable_init('beta', shape=shape, initializer=tf.zeros_initializer())
-        # gamma = self._cpu_variable_init('gamma', shape=shape,initializer=tf.ones_initializer())
+        beta = self._cpu_variable_init('beta', shape=shape, initializer=tf.zeros_initializer())
+        gamma = self._cpu_variable_init('gamma', shape=shape,initializer=tf.ones_initializer())
         #TODO: pull decay and epsilon parameters out of here and add them to hyperparams.json
+        epsilon = 1.e-3
+        decay = 0.9
         if self.operation == 'train':
-            output = tf.contrib.layers.batch_norm(input, decay=0.995, center=True, scale=True, epsilon=1.e-5,
-                                                  is_training=True, reuse=reuse, scope=scope, data_format='NCHW',
-                                                  fused=True)
+            output, mean, variance = tf.nn.fused_batch_norm(input, gamma, beta, None, None, epsilon, data_format='NCHW',
+                                                            is_training=True)
+            moving_mean = self._cpu_variable_init('moving_mean', shape=shape,
+                                                  initializer=tf.zeros_initializer(), trainable=False)
+            moving_variance = self._cpu_variable_init('moving_variance', shape=shape,
+                                                      initializer=tf.ones_initializer(), trainable=False)
+            self.misc_ops.append(moving_averages.assign_moving_average(
+                moving_mean, mean, decay))
+            self.misc_ops.append(moving_averages.assign_moving_average(
+                moving_variance, variance, decay))
+
         if self.operation == 'eval':
-            output = tf.contrib.layers.batch_norm(input, decay=0.995, center=True, scale=True, epsilon=1.e-5,
-                                                  is_training=False, reuse=reuse, scope=scope, data_format='NCHW',
-                                                  fused=True)
+            mean = tf.get_variable('moving_mean', shape=shape)
+            variance = tf.get_variable('moving_variance', shape=shape)
+            output, _, _ = tf.nn.fused_batch_norm(input, gamma, beta, mean, variance, epsilon=1.e-3, data_format='NCHW',
+                                                  is_training=False)
         # Keep tabs on the number of weights
         self.num_weights += 2*shape[0] # scale and offset (beta, gamma)
         return output
