@@ -263,8 +263,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         worker_grads.append(grads_vars)
 
                         # Accumulate extra non-standard operations across workers
-                        # Only include worker_0
-                        if summary: worker_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+                        worker_ops.append(n_net.get_misc_ops())
 
     #######################################
     # Synchronizing across model replicas #
@@ -290,9 +289,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         variable_averages_op = variable_averages.apply(tf.trainable_variables())
 
         # Gather all training related ops into a single one.
-        with tf.control_dependencies([apply_gradient_op, variable_averages_op]):
-            with tf.control_dependencies(worker_ops):
-                train_op = tf.no_op(name='train')
+        with tf.control_dependencies([apply_gradient_op, variable_averages_op, tf.group(*worker_ops)]):
+            train_op = tf.no_op(name='train')
 
         ###############################
         # Setting up training session #
@@ -388,7 +386,6 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
             eval_ops = OrderedDict()
             eval_ops['prediction'] = prediction
             if hyper_params['network_type'] == 'regressor':
-                # labels = tf.cast(labels, tf.float64)
                 MSE_op = tf.losses.mean_squared_error(labels, predictions=prediction, reduction=tf.losses.Reduction.NONE)
                 eval_ops['errors'] = [MSE_op]
                 eval_ops['errors_labels'] = 'Mean-Squared Error'
@@ -400,11 +397,8 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 eval_ops['errors'] = [in_top_1_op, in_top_5_op]
                 eval_ops['errors_labels'] = ['Top-1 Precision', 'Top-5 Precision']
 
-            # Restore the moving average versions of all learned variables for eval
-            variable_averages = tf.train.ExponentialMovingAverage(
-                hyper_params['moving_average_decay'])
-            variables_to_restore = variable_averages.variables_to_restore()
-            saver = tf.train.Saver(variables_to_restore)
+            # Initiate restore object
+            saver = tf.train.Saver()
 
             # Build the summary operation based on the TF collection of Summaries.
             summary_op = tf.summary.merge_all()
@@ -493,6 +487,15 @@ def eval_regress(flags, saver, summary_writer, eval_ops, summary_op, labels, cpu
                 sorted_errors = np.reshape(sorted_errors,(-1, flags.OUTPUT_DIM))
                 angles_arr = np.reshape(angles_arr, (-1, flags.OUTPUT_DIM))
                 predictions = np.reshape(predictions, (-1, flags.OUTPUT_DIM))
+
+                # saved_vars = []
+                # for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
+                #     if 'moving_' in var.name:
+                #         saved_vars.append(var)
+                #
+                # print([var.name for var in saved_vars])
+                # output = sess.run(saved_vars)
+                # print(output)
 
                 # Get mean error
                 mean_errors = np.mean(sorted_errors,axis=0)
