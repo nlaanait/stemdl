@@ -39,6 +39,8 @@ class DatasetTFRecords(object):
         image = tf.decode_raw(features['image_raw'], tf.float16)
         image.set_shape([self.flags.IMAGE_HEIGHT * self.flags.IMAGE_WIDTH * self.flags.IMAGE_DEPTH])
         image = tf.reshape(image, [self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH, self.flags.IMAGE_DEPTH])
+        # standardize the image to [-1.,1.]
+        image = tf.image.per_image_standardization(image)
         return image, label
 
     def train_images_labels_batch(self, image_raw, label, distort=False, noise_min=0., noise_max=0.3,
@@ -76,16 +78,15 @@ class DatasetTFRecords(object):
         tf.summary.image('Train_Images', images, max_outputs=1)
 
         # resize images using the new flags
-        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])        
-   
+        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])
 
-	# change to NCHW format
+        # change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
 
         return images, labels
 
     def eval_images_labels_batch(self, image_raw, label, distort= False, noise_min=0., noise_max=0.3,
-                                 random_glimpses=False, geometric=False):
+                                 random_glimpses=True, geometric=False):
         """
         Returns: batch of images and labels to test on.
         """
@@ -98,9 +99,9 @@ class DatasetTFRecords(object):
         else:
             image = image_raw
 
-        # if running with half-precision we cast to float16
+        # if running with half-precision we cast back to float16
         if self.flags.IMAGE_FP16:
-            image = tf.cast(image, tf.float16)
+            image = tf.image.convert_image_dtype(image, tf.float16)
         else:
             image = tf.cast(image, tf.float32)
 
@@ -112,13 +113,13 @@ class DatasetTFRecords(object):
                                                 min_after_dequeue=100,
                                                 name='shuffle_batch')
 
-        #extract glimpses from evaluation batch
+        # extract glimpses from evaluation batch
         images = self._getGlimpses(images, random=random_glimpses)
 
         # Display the training images in the visualizer.
         tf.summary.image('Test_Images', images, max_outputs=1)
-	
-	# resize images using the new flags
+
+        # resize images using the new flags
         images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])        
 
         # change to NCHW format
@@ -126,8 +127,7 @@ class DatasetTFRecords(object):
 
         return images, labels
 
-    @staticmethod
-    def _distort(image, noise_min, noise_max, geometric=False):
+    def _distort(self, image, noise_min, noise_max, geometric=False):
         """
         Performs distortions on an image: noise + global affine transformations.
         Args:
@@ -141,37 +141,52 @@ class DatasetTFRecords(object):
         """
 
         # Apply random global affine transformations
-        if geometric:
-            # Setting bounds and generating random values for scaling and rotations
-            scale_X = np.random.normal(1.0, 0.04, size=1)
-            scale_Y = np.random.normal(1.0, 0.04, size=1)
-            theta_angle = np.random.normal(0., 0.5, size=1)
-            nu_angle = np.random.normal(0., 0.5, size=1)
+        # if geometric:
 
-            # Constructing transfomation matrix
-            a_0 = scale_X * np.cos(np.deg2rad(theta_angle))
-            a_1 = -scale_Y * np.sin(np.deg2rad(theta_angle + nu_angle))
-            a_2 = 0.
-            b_0 = scale_X * np.sin(np.deg2rad(theta_angle))
-            b_1 = scale_Y * np.cos(np.deg2rad(theta_angle + nu_angle))
-            b_2 = 0.
-            c_0 = 0.
-            c_1 = 0.
-            affine_transform = tf.constant(np.array([a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1]).flatten(),
-                                           dtype=tf.float32)
-            # Transform
-            image = tf.contrib.image.transform(image, affine_transform,
+        # 1. Apply random global affine transformations, sampled from a normal distributions.
+        # Setting bounds and generating random values for scaling and rotations
+        scale_X = np.random.normal(1.0, 0.08, size=1)
+        scale_Y = np.random.normal(1.0, 0.08, size=1)
+        theta_angle = np.random.normal(0., 1, size=1)
+        nu_angle = np.random.normal(0., 1, size=1)
+
+        # Constructing transfomation matrix
+        a_0 = scale_X * np.cos(np.deg2rad(theta_angle))
+        a_1 = -scale_Y * np.sin(np.deg2rad(theta_angle + nu_angle))
+        a_2 = 0.
+        b_0 = scale_X * np.sin(np.deg2rad(theta_angle))
+        b_1 = scale_Y * np.cos(np.deg2rad(theta_angle + nu_angle))
+        b_2 = 0.
+        c_0 = 0.
+        c_1 = 0.
+        affine_transform = tf.constant(np.array([a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1]).flatten(),
+                                       dtype=tf.float32)
+        # Transform
+        aff_image = tf.contrib.image.transform(image, affine_transform,
                                                interpolation='BILINEAR')
+        # 2. Apply isotropic scaling, sampled from a uniform distribution.
+        zoom_factor = np.random.uniform(low=0.88, high= 1.12)
+        crop_y_size, crop_x_size = self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH
+        size = tf.constant(value=[int(np.round(crop_y_size / zoom_factor)),
+                                  int(np.round(crop_x_size / zoom_factor))], dtype=tf.int32)
+        cen_y = np.ones((1,), dtype=np.float32) * int(self.flags.IMAGE_HEIGHT / 2)
+        cen_x = np.ones((1,), dtype=np.float32) * int(self.flags.IMAGE_WIDTH / 2)
+        offsets = tf.stack([cen_y, cen_x], axis=1)
+        scaled_image = tf.expand_dims(aff_image, axis=0)
+        scaled_image = tf.image.extract_glimpse(scaled_image, size, offsets,
+                                                centered=False,
+                                                normalized=False,
+                                                uniform_noise=False)
+        scaled_image = tf.reshape(scaled_image, (scaled_image.shape[1].value, scaled_image.shape[2].value,
+                                                 scaled_image.shape[3].value))
+        scaled_image = tf.image.resize_images(scaled_image, (self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH))
 
         # Apply noise
         alpha = tf.random_uniform([1], minval=noise_min, maxval=noise_max)
-        noise = tf.random_uniform(image.shape, dtype=tf.float32)
-        image = (1 - alpha[0]) * image + alpha[0] * noise
+        noise = tf.random_uniform(scaled_image.shape, dtype=tf.float32)
+        trans_image = (1 - alpha[0]) * scaled_image + alpha[0] * noise
 
-        # normalize
-        image = tf.image.per_image_standardization(image)
-
-        return image
+        return trans_image
 
     def _getGlimpses(self, batch_images, **kwargs):
         """
