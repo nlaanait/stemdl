@@ -98,7 +98,7 @@ class ConvNet(object):
                 if layer_params['type'] == 'convolutional':
                     out, _ = self._conv(input=out, params=layer_params)
                     if layer_params['batch_norm']:
-                        out = self._batch_norm(input=out, reuse=self.reuse, scope=scope)
+                        out = self._batch_norm(input=out)
                     else:
                         out = self._add_bias(input=out, params=layer_params)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
@@ -110,6 +110,9 @@ class ConvNet(object):
                 if layer_params['type'] == 'fully_connected':
                     out = self._linear(input=out, name=scope.name+'_preactiv', params=layer_params)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
+                    keep_prob = layer_params.get('dropout', None)
+                    if keep_prob is not None:
+                        out = self._dropout(input=out, name=scope.name+ '_dropout')
                     if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] == 'linear_output':
@@ -222,13 +225,6 @@ class ConvNet(object):
                 self._calculate_loss_regressor(self.hyper_params['loss_function'])
             if self.net_type == 'classifier':
                 self._calculate_loss_classifier()
-        # # Calculate total loss
-        # losses = tf.get_collection(tf.GraphKeys.LOSSES, self.scope)
-        # regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-        # total_loss = tf.add_n(losses+regularization)
-        # # Moving average of loss and summaries
-        # loss_ops = self._add_loss_summaries(total_loss,losses)
-        # return total_loss, loss_ops
 
     def get_misc_ops(self):
         ops = tf.group(*self.misc_ops)
@@ -252,7 +248,7 @@ class ConvNet(object):
             min_residual = params['residual_minimum']
             decay_residual = params['residual_decay_factor']
             residual_tol = tf.train.exponential_decay(initial_residual, self.global_step, decay_steps,
-                                                      decay_residual,staircase=False)
+                                                      decay_residual, staircase=False)
             # cap the residual cutoff to some min value.
             residual_tol = tf.maximum(residual_tol, tf.constant(min_residual))
             if self.summary:
@@ -343,7 +339,7 @@ class ConvNet(object):
         :return:
         """
         bias_shape = input.shape[-1].value
-        bias = self._cpu_variable_init('bias', shape=bias_shape, initializer=tf.constant_initializer(1.e-3))
+        bias = self._cpu_variable_init('bias', shape=bias_shape, initializer=tf.zeros_initializer())
         output = tf.nn.bias_add(input, bias)
 
         # Keep tabs on the number of bias parameters and memory
@@ -352,7 +348,7 @@ class ConvNet(object):
         self.ops += bias_shape
         return output
 
-    def _batch_norm(self, input=None, reuse=None, scope=None):
+    def _batch_norm(self, input=None):
         """
         Batch normalization
         :param input: as it says
@@ -360,19 +356,28 @@ class ConvNet(object):
         """
         # Initializing hyper_parameters
         shape = [input.shape[1].value]
-        # beta = self._cpu_variable_init('beta', shape=shape, initializer=tf.zeros_initializer())
-        # gamma = self._cpu_variable_init('gamma', shape=shape,initializer=tf.ones_initializer())
+        beta = self._cpu_variable_init('beta', shape=shape, initializer=tf.zeros_initializer())
+        gamma = self._cpu_variable_init('gamma', shape=shape, initializer=tf.ones_initializer())
 
+        epsilon = self.hyper_params["batch_norm"]["epsilon"]
+        decay = self.hyper_params["batch_norm"]["decay"]
         if self.operation == 'train':
-            output = tf.contrib.layers.batch_norm(input, decay=self.hyper_params["batch_norm"]["decay"],
-                                                  epsilon=self.hyper_params["batch_norm"]["epsilon"],
-                                                  center=True, scale=True, is_training=True, reuse=reuse,
-                                                  scope=scope, data_format='NCHW', fused=True)
+            output, mean, variance = tf.nn.fused_batch_norm(input, gamma, beta, None, None, epsilon, data_format='NCHW',
+                                                            is_training=True)
+            moving_mean = self._cpu_variable_init('moving_mean', shape=shape,
+                                                  initializer=tf.zeros_initializer(), trainable=False)
+            moving_variance = self._cpu_variable_init('moving_variance', shape=shape,
+                                                      initializer=tf.ones_initializer(), trainable=False)
+            self.misc_ops.append(moving_averages.assign_moving_average(
+                moving_mean, mean, decay))
+            self.misc_ops.append(moving_averages.assign_moving_average(
+                moving_variance, variance, decay))
+
         if self.operation == 'eval':
-            output = tf.contrib.layers.batch_norm(input, decay=self.hyper_params["batch_norm"]["decay"],
-                                                  epsilon=self.hyper_params["batch_norm"]["epsilon"],
-                                                  center=True, scale=True, is_training=False, reuse=reuse,
-                                                  scope=scope, data_format='NCHW', fused=True)
+            mean = tf.get_variable('moving_mean', shape=shape)
+            variance = tf.get_variable('moving_variance', shape=shape)
+            output, _, _ = tf.nn.fused_batch_norm(input, gamma, beta, mean, variance, epsilon=1.e-3, data_format='NCHW',
+                                                  is_training=False)
         # Keep tabs on the number of weights
         self.num_weights += 2 * shape[0]  # scale and offset (beta, gamma)
         # consistently ignored by most papers / websites for ops calculation
@@ -428,6 +433,18 @@ class ConvNet(object):
             print('\t%3.2e ops' % (this_ops))
         self.ops += this_ops
         return output
+
+    def _dropout(self, input=None, params=None, name=None):
+        """
+        Performs dropout
+        :param input:
+        :param params:
+        :param name:
+        :return:
+        """
+        # TODO: Avoid hardcoding hyperparameters like this.
+        keep_prob = tf.constant(0.5)
+        return tf.nn.dropout(input, keep_prob=keep_prob)
 
     def _activate(self, input=None, params=None, name=None, verbose=True):
         """
@@ -645,15 +662,11 @@ class ConvNet(object):
           Variable Tensor
         """
         with tf.device(self.flags.CPU_ID):
-            # var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
             if regularize:
                 var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable,
                                       regularizer=self._weight_decay)
                 return var
-                # weight_decay = tf.get_variable(name='weight_decay', shape=[1], initializer=tf.ones_initializer(),
-                #                                trainable=False) * self.hyper_params['weight_decay']
-                # weight_loss = tf.multiply(tf.nn.l2_loss(var), weight_decay, name='weight_loss')
-                # tf.add_to_collection('losses', weight_loss)
+
             var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
         return var
 
