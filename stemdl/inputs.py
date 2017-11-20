@@ -143,10 +143,10 @@ class DatasetTFRecords(object):
         # Apply random global affine transformations
         if geometric:
             # Setting bounds and generating random values for scaling and rotations
-            scale_X = np.random.normal(1.0, 0.08, size=1)
-            scale_Y = np.random.normal(1.0, 0.08, size=1)
-            theta_angle = np.random.normal(0., 1, size=1)
-            nu_angle = np.random.normal(0., 1, size=1)
+            scale_X = np.random.normal(1.0, 0.04, size=1)
+            scale_Y = np.random.normal(1.0, 0.04, size=1)
+            theta_angle = np.random.normal(0., 0.5, size=1)
+            nu_angle = np.random.normal(0., 0.5, size=1)
 
             # Constructing transfomation matrix
             a_0 = scale_X * np.cos(np.deg2rad(theta_angle))
