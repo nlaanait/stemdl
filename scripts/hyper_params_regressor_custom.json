@@ -16,5 +16,13 @@
 		"type": "MSE"
 	},
 	"num_epochs_per_decay": 20,
-	"moving_average_decay": 0.9999
+	"moving_average_decay": 0.9999,
+	"momentum": 0.9,
+	"batch_norm": {
+		"epsilon": 1E-5,
+		"decay":0.995
+	},
+	"initializer": {
+		"type": "uniform_unit_scaling"
+	}
 }
