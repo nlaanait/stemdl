@@ -26,6 +26,7 @@ tf.app.flags.DEFINE_integer('max_steps', 1000000,"""Number of batches to run."""
 tf.app.flags.DEFINE_integer('num_epochs', 500,"""Number of Data Epochs to do training""")
 tf.app.flags.DEFINE_integer('NUM_EXAMPLES_PER_EPOCH', 729000,"""Number of examples in training data.""")
 tf.app.flags.DEFINE_string('worker_name', 'worker', """Name of gpu worker to append to each device ops, scope, etc...""")
+tf.app.flags.DEFINE_boolean('train_distort', True, """Whether to perform data distortion during training.""")
 
 # Basic parameters describing the evaluation run
 tf.app.flags.DEFINE_integer('eval_interval_secs', 30, """How often to run model evaluation.""")
@@ -33,6 +34,7 @@ tf.app.flags.DEFINE_integer('num_examples', 6400, """Number of examples to run."
 tf.app.flags.DEFINE_boolean('run_once', True, """Whether to run evalulation only once.""")
 tf.app.flags.DEFINE_string('output_labels', 'alpha; beta; gamma', """Whether the predictions of the neural net are labeled and reported
  separately.""")
+tf.app.flags.DEFINE_boolean('eval_distort', False, """Whether to perform data distortion during evaluation.""")
 
 # Basic parameters describing the data set.
 tf.app.flags.DEFINE_integer('NUM_CLASSES', 3, """Number of classes in training/evaluation data.""")
@@ -42,6 +44,8 @@ tf.app.flags.DEFINE_integer('IMAGE_WIDTH', 120, """IMAGE WIDTH""")
 tf.app.flags.DEFINE_integer('IMAGE_DEPTH', 1, """IMAGE DEPTH""")
 tf.app.flags.DEFINE_integer('CROP_HEIGHT', 60, """CROP HEIGHT""")
 tf.app.flags.DEFINE_integer('CROP_WIDTH', 80, """CROP WIDTH""")
+tf.app.flags.DEFINE_integer('RESIZE_HEIGHT', 224, """RESIZE HEIGHT""")
+tf.app.flags.DEFINE_integer('RESIZE_WIDTH', 224, """RESIZE WIDTH""")
 tf.app.flags.DEFINE_boolean('IMAGE_FP16', False, """ Whether to use half-precision format for images.""")
 tf.app.flags.DEFINE_string('LABEL_DTYPE', 'float64', """ precision of label.""")
 FLAGS = tf.app.flags.FLAGS
@@ -64,6 +68,8 @@ def main(argv):
                         nargs='?', default=1)
     parser.add_argument('--batch_size', type=int, help='number of images per batch to propagate through the network.'+\
                         '\nPowers of 2 are processed more efficiently.\nDefault 64.', nargs='?', default=64)
+    parser.add_argument('--cpu_id', type=int, help='Which CPU to use in a multi-CPU machine.\nDefault 0',
+                        nargs='?', default=0)
 
     args = parser.parse_args()
 
@@ -89,7 +95,9 @@ def main(argv):
     hyper_params = io_utils.load_json_hyper_params(args.hyper_params[0])
 
     # Create logfile to redirect all print statements
-    sys.stdout = open(args.mode[0] + '.log', mode='w')
+    # sys.stdout = open(args.mode[0] + '.log', mode='w')
+
+    tf.app.flags.DEFINE_string('CPU_ID', '/cpu:' + str(args.cpu_id), """CPU_ID""")
 
     # train or evaluate
     if args.mode[0] == 'train':
