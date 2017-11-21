@@ -1,0 +1,13 @@
+export CUDA_VISIBLE_DEVICES="4,5"
+data=/usr/atom_ai/data/oxide_perangles_GP_train_85x120.tfrecords
+net=network_ResNet_18_custom.json
+hyp=hyper_params_regressor_custom.json
+model=ResNet18
+batch=64
+gpus=2
+mode=train
+cpuid=1
+script=stemdl_regress.py
+checkpt=$model-batch-$batch-gpus-$gpus-$mode
+echo python $script --data_path $data --checkpt_dir $checkpt --network_config $net --hyper_params $hyp --num_gpus $gpus --batch_size $batch --mode $mode --cpu_id $cpuid
+python $script --data_path $data --checkpt_dir $checkpt --network_config $net --hyper_params $hyp --num_gpus $gpus --batch_size $batch --mode $mode --cpu_id $cpuid
