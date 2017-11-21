@@ -77,7 +77,8 @@ class ConvNet(object):
         layer_name, layer_params = list(self.network.items())[0]
         with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
             out, kernel = self._conv(input=self.images, params=layer_params)
-            if layer_params['batch_norm']:
+            do_bn = layer_params.get('batch_norm', False)
+            if do_bn:
                 out = self._batch_norm(input=out)
             else:
                 out = self._add_bias(input=out, params=layer_params)
@@ -97,7 +98,8 @@ class ConvNet(object):
                 in_shape = out.get_shape()
                 if layer_params['type'] == 'convolutional':
                     out, _ = self._conv(input=out, params=layer_params)
-                    if layer_params['batch_norm']:
+                    do_bn = layer_params.get('batch_norm', False)
+                    if do_bn:
                         out = self._batch_norm(input=out)
                     else:
                         out = self._add_bias(input=out, params=layer_params)
