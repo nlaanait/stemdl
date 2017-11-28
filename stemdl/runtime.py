@@ -18,14 +18,15 @@ import inputs
 
 class _LoggerHook(tf.train.SessionRunHook):
     """Logs loss and runtime stats."""
-    def __init__(self, flags, total_loss, num_gpus, net_ops):
+    def __init__(self, flags, total_loss, num_gpus, net_ops, last_step=0):
         self.flags = flags
         self.total_loss = total_loss
         self.num_gpus = num_gpus
+        self.last_step = last_step
         self.net_ops = net_ops * num_gpus
 
     def begin(self):
-        self._step = -1
+        self._step = -1 + self.last_step
         self._start_time = time.time()
         self.epoch = 0.
 
@@ -180,12 +181,23 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
     :param data_path: string, path to data.
     :return: None
     """
+    # Check if training is a restart from checkpoint
+    ckpt = tf.train.get_checkpoint_state(flags.train_dir)
+    if ckpt is None:
+        last_step = 0
+    else:
+        last_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
 
     # Only neural net ops will live on GPU.
     # Everything else (variable initialization, placement, updates) is on the host.
-    # Start building the graph
 
-    with tf.Graph().as_default(), tf.device(flags.CPU_ID):
+    ##################################
+    # Building Model and replicating #
+    ##################################
+
+    # Start building the graph
+    graph = tf.Graph()
+    with graph.as_default(), tf.device(flags.CPU_ID):
         global_step = tf.contrib.framework.get_or_create_global_step()
 
         # Setup data stream
@@ -255,6 +267,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                         # Accumulate extra non-standard operations across workers
                         worker_ops.append(n_net.get_misc_ops())
 
+    #######################################
+    # Synchronizing across model replicas #
+    #######################################
+
         # average over gradients.
         avg_gradients = _average_gradients(worker_grads)
 
@@ -271,13 +287,16 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         summary_merged = tf.summary.merge_all()
 
         # Track the moving averages of all trainable variables.
-        variable_averages = tf.train.ExponentialMovingAverage(
-            hyper_params['moving_average_decay'], global_step)
+        variable_averages = tf.train.ExponentialMovingAverage(hyper_params['moving_average_decay'], global_step)
         variable_averages_op = variable_averages.apply(tf.trainable_variables())
 
         # Gather all training related ops into a single one.
         with tf.control_dependencies([apply_gradient_op, variable_averages_op, tf.group(*worker_ops)]):
             train_op = tf.no_op(name='train')
+
+        ###############################
+        # Setting up training session #
+        ###############################
 
         # Config file for tf.Session()
         config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
@@ -285,7 +304,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
         #calculate average loss and setup logger
         avg_total_loss = tf.reduce_mean(worker_total_loss)
-        logHook = _LoggerHook(flags, avg_total_loss, num_GPUS, n_net.ops)
+        logHook = _LoggerHook(flags, avg_total_loss, num_GPUS, n_net.ops, last_step=last_step)
 
         # Stats and summaries
         run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
@@ -296,7 +315,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         with tf.train.MonitoredTrainingSession(checkpoint_dir=flags.train_dir,
                                                hooks=[tf.train.StopAtStepHook(last_step=flags.max_steps),
                                                       tf.train.NanTensorHook(avg_total_loss),logHook], config=config,
-                                               save_summaries_steps=None, save_summaries_secs=None) as mon_sess:
+                                               save_summaries_steps=None, save_summaries_secs=None,
+                                               save_checkpoint_secs=300) as mon_sess:
             while not mon_sess.should_stop():
                 if logHook._step % flags.save_frequency == 0:
                     # Train, Record stats and save summaries
@@ -368,7 +388,6 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
             eval_ops = OrderedDict()
             eval_ops['prediction'] = prediction
             if hyper_params['network_type'] == 'regressor':
-                # labels = tf.cast(labels, tf.float64)
                 MSE_op = tf.losses.mean_squared_error(labels, predictions=prediction, reduction=tf.losses.Reduction.NONE)
                 eval_ops['errors'] = [MSE_op]
                 eval_ops['errors_labels'] = 'Mean-Squared Error'
@@ -380,11 +399,8 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 eval_ops['errors'] = [in_top_1_op, in_top_5_op]
                 eval_ops['errors_labels'] = ['Top-1 Precision', 'Top-5 Precision']
 
-            # Restore the moving average versions of all learned variables for eval
-            variable_averages = tf.train.ExponentialMovingAverage(
-                hyper_params['moving_average_decay'])
-            variables_to_restore = variable_averages.variables_to_restore()
-            saver = tf.train.Saver(variables_to_restore)
+            # Initiate restore object
+            saver = tf.train.Saver()
 
             # Build the summary operation based on the TF collection of Summaries.
             summary_op = tf.summary.merge_all()
@@ -474,6 +490,15 @@ def eval_regress(flags, saver, summary_writer, eval_ops, summary_op, labels, cpu
                 angles_arr = np.reshape(angles_arr, (-1, flags.OUTPUT_DIM))
                 predictions = np.reshape(predictions, (-1, flags.OUTPUT_DIM))
 
+                # saved_vars = []
+                # for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
+                #     if 'moving_' in var.name:
+                #         saved_vars.append(var)
+                #
+                # print([var.name for var in saved_vars])
+                # output = sess.run(saved_vars)
+                # print(output)
+
                 # Get mean error
                 mean_errors = np.mean(sorted_errors,axis=0)
 
@@ -500,7 +525,7 @@ def eval_regress(flags, saver, summary_writer, eval_ops, summary_op, labels, cpu
             except Exception as e:
                 coord.request_stop(e)
 
-                # Kill the input queue threads
+            # Kill the input queue threads
             coord.request_stop()
             coord.join(threads, stop_grace_period_secs=1)
 
@@ -594,13 +619,14 @@ def eval_classify(flags, saver, summary_writer, eval_ops, summary_op, labels, cp
                 # Get time it took to evaluate
                 print('Took %.3f seconds to evaluate %d images' % (time.time() - start_time, flags.num_examples))
 
-                # Save precisions to disk
+                # TODO: Save precisions to disk
                 if save_to_disk:
-                    fname = '%s_%s.npy' % ('top_1_precision_per_class', format(datetime.now()).split(' ')[-1])
-                    np.save(os.path.join(flags.eval_dir, fname), sorted_errors[0], allow_pickle=False)
-
-                    fname = '%s_%s.npy' % ('top_5_precision_per_class', format(datetime.now()).split(' ')[-1])
-                    np.save(os.path.join(flags.eval_dir, fname), sorted_errors[1], allow_pickle=False)
+                    pass
+                    # fname = '%s_%s.npy' % ('top_1_precision_per_class', format(datetime.now()).split(' ')[-1])
+                    # np.save(os.path.join(flags.eval_dir, fname), sorted_errors[0], allow_pickle=False)
+                    #
+                    # fname = '%s_%s.npy' % ('top_5_precision_per_class', format(datetime.now()).split(' ')[-1])
+                    # np.save(os.path.join(flags.eval_dir, fname), sorted_errors[1], allow_pickle=False)
 
                 # Print Model Outputs and Summarize in Tensorboard
                 summary = tf.Summary()
