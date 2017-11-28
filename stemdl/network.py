@@ -126,7 +126,7 @@ class ConvNet(object):
                     if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] not in ['convolutional', 'pooling', 'fully_connected', 'linear_output']:
-                    out = self._compound_layer(out, layer_params, scope.name)
+                    out = self._compound_layer(out, layer_params, scope)
                     # Continue any summary
                     if self.summary: self._activation_summary(out)
 
@@ -144,13 +144,13 @@ class ConvNet(object):
         # reference the output
         self.model_output = out
 
-    def _compound_layer(self, out, layer_params, scope_name):
+    def _compound_layer(self, out, layer_params, scope):
         """
         Handles the computation of more complex layer types such as Residual blocks, Inception, etc.
 
         :param out: 4D tensor, Input to the layer
         :param layer_params: OrderedDictionary, Parameters for the layer
-        :param scope_name: str, name of the layer
+        :param scope: str, name of the layer
         :return: 4D tensor, output of the layer
         """
         pass
@@ -696,21 +696,21 @@ class ResNet(ConvNet):
             if verbose:
                 print('Doing 1x1 conv on output to bring channels from %d to %d' % (out.get_shape().as_list()[1],
                                                                                     hidden.get_shape().as_list()[1]))
-            with tf.variable_scope("_shortcut"):
+            with tf.variable_scope("shortcut", reuse=self.reuse) as scope:
                 out, _ = self._conv(input=out, params=shortcut_parms)
         # ops just for the addition operation
         this_ops = np.prod(out.get_shape().as_list())
         if verbose:
-            print('\tops for adding shortcut: %3.2e' % (this_ops))
+            print('\tops for adding shortcut: %3.2e' % this_ops)
         self.ops += this_ops
         # Now add the hidden with input
         return tf.add(out, hidden)
 
     def _compound_layer(self, out, layer_params, scope_name):
         if layer_params['type'] == 'residual':
-            return self._residual_block(out, layer_params, scope_name)
+            return self._residual_block(out, layer_params)
 
-    def _residual_block(self, out, res_block_params, scope_name, verbose=True):
+    def _residual_block(self, out, res_block_params, verbose=True):
         """
         Unit residual block consisting of arbitrary number of convolutional layers, each specified by its own
         OrderedDictionary in the parameters.
@@ -719,15 +719,14 @@ class ResNet(ConvNet):
 
         :param out: 4D tensor, Input to the residual block
         :param res_block_params: OrderedDictionary, Parameters for the residual block
-        :param scope_name: str, name of the layer
         :param verbose: bool, (Optional) - whether or not to print statements.
         :return: 4D tensor, output of the residual block
         """
         ops_in = self.ops
 
-        with tf.variable_scope("_pre_conv1"):
+        with tf.variable_scope("pre_conv1", reuse=self.reuse) as sub_scope:
             hidden = self._batch_norm(input=out)
-        hidden = self._activate(input=hidden, name=scope_name + '_pre_conv1')
+            hidden = self._activate(input=hidden, name=sub_scope.name)
 
         # First find the names of all conv layers inside
         layer_ids = []
@@ -744,16 +743,16 @@ class ResNet(ConvNet):
         for layer_name in layer_ids[:-1]:
             if verbose:
                 print('weight >> BN >> ReLU on layer: ' + layer_name)
-            with tf.variable_scope(layer_name):
+            with tf.variable_scope(layer_name, reuse=self.reuse) as sub_scope:
                 layer_params = res_block_params[layer_name]
                 hidden, _ = self._conv(input=hidden, params=layer_params)
                 hidden = self._batch_norm(input=hidden)
-            hidden = self._activate(input=hidden, name=scope_name + '_' + layer_name, params=layer_params)
+                hidden = self._activate(input=hidden, name=sub_scope.name, params=layer_params)
 
         if verbose:
             print('weight ONLY on layer: ' + layer_ids[-1])
         # last layer: Weight ONLY
-        with tf.variable_scope(layer_ids[-1]):
+        with tf.variable_scope(layer_ids[-1], reuse=self.reuse) as sub_scope:
             hidden, _ = self._conv(input=hidden, params=res_block_params[layer_ids[-1]])
 
         # Now add the two branches
