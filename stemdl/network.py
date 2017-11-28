@@ -100,7 +100,7 @@ class ConvNet(object):
                     out, _ = self._conv(input=out, params=layer_params)
                     do_bn = layer_params.get('batch_norm', False)
                     if do_bn:
-                        out = self._batch_norm(input=out)
+                        out = self._batch_norm(input=out, reuse=self.reuse, scope=scope)
                     else:
                         out = self._add_bias(input=out, params=layer_params)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
@@ -352,7 +352,7 @@ class ConvNet(object):
         self.ops += bias_shape
         return output
 
-    def _batch_norm(self, input=None):
+    def _batch_norm(self, input=None, reuse=None, scope=None):
         """
         Batch normalization
         :param input: as it says
@@ -434,7 +434,7 @@ class ConvNet(object):
         # batch * nodes * 2 * features + nodes <- 2 comes in for the dot prod + sum
         this_ops = np.prod(input.get_shape().as_list() + [2, params['weights']]) + params['weights']
         if verbose:
-            print('\t%3.2e ops' % (this_ops))
+            print('\t%3.2e ops' % this_ops)
         self.ops += this_ops
         return output
 
@@ -460,7 +460,7 @@ class ConvNet(object):
         """
         this_ops = 2 * np.prod(input.get_shape().as_list())
         if verbose:
-            print('\tactivation = %3.2e ops' % (this_ops))
+            print('\tactivation = %3.2e ops' % this_ops)
         self.ops += this_ops
 
         if params is not None:
