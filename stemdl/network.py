@@ -131,6 +131,8 @@ class ConvNet(object):
                     if self.summary: self._activation_summary(out)
 
                 # print layer specs and generate Tensorboard summaries
+                if out is None:
+                    raise NotImplementedError('Layer type: ' + layer_params['type'] + ' was not implemented!')
                 out_shape = out.get_shape()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
 
