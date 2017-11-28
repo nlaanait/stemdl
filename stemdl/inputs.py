@@ -120,7 +120,7 @@ class DatasetTFRecords(object):
         tf.summary.image('Test_Images', images, max_outputs=1)
 
         # resize images using the new flags
-        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])        
+        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])
 
         # change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
@@ -174,9 +174,9 @@ class DatasetTFRecords(object):
         offsets = tf.stack([cen_y, cen_x], axis=1)
         scaled_image = tf.expand_dims(aff_image, axis=0)
         scaled_image = tf.image.extract_glimpse(scaled_image, size, offsets,
-                                                centered=False,
-                                                normalized=False,
-                                                uniform_noise=False)
+                                         centered=False,
+                                         normalized=False,
+                                         uniform_noise=False)
         scaled_image = tf.reshape(scaled_image, (scaled_image.shape[1].value, scaled_image.shape[2].value,
                                                  scaled_image.shape[3].value))
         scaled_image = tf.image.resize_images(scaled_image, (self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH))

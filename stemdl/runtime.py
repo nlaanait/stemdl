@@ -9,11 +9,10 @@ from datetime import datetime
 import tensorflow as tf
 import re
 import numpy as np
+from . import network
+from . import inputs
 import os
 from collections import OrderedDict
-
-import network
-import inputs
 
 
 class _LoggerHook(tf.train.SessionRunHook):
@@ -332,6 +331,321 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
             summary_writer.close()
 
+
+def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
+    """
+        Evaluate the network for a number of steps.
+        # 1. load the neural net from the checkpoint directory.
+        # 2. Evaluate neural net predictions.
+        # 3. repeat.
+        :param network_config: OrderedDict, network configuration
+        :param hyper_params: OrderedDict, hyper_parameters
+        :param flags: tf.app.flags
+        :param num_GPUS: int, default 1.
+        :param data_path: string, path to data.
+        :return: None
+    """
+    if num_GPUS == 0:
+        device = '/cpu:0'
+        cpu_bound = True
+    else:
+        device = '/gpu:%d' % (num_GPUS - 1)
+        gpu_id = num_GPUS - 1
+        cpu_bound = False
+
+    with tf.device(device):
+        with tf.Graph().as_default() as g:
+            # Setup data stream
+            with tf.name_scope('Input_Eval') as _:
+                filename_queue = tf.train.string_input_producer([data_path])
+                # pass the filename_queue to the inputs classes to decode
+                dset = inputs.DatasetTFRecords(filename_queue, flags)
+                image, label = dset.decode_image_label()
+                # distort images and generate examples batch
+                images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.05, noise_max=0.25,
+                                                               distort=flags.eval_distort, random_glimpses='normal',
+                                                               geometric=False)
+
+            with tf.variable_scope(tf.get_variable_scope(), reuse=None):
+
+                # Build the model and forward propagate
+                # Force the evaluation of MSE if doing regression
+                if hyper_params['network_type'] == 'regressor':
+                    hyper_params['loss_function']['type'] = 'MSE'
+
+                # Setup Neural Net
+                n_net = network.ConvNet('worker_0/', flags, 0, hyper_params, network_config, images, labels,
+                                        operation='eval', summary=False)
+
+                # Build it and propagate images through it.
+                n_net.build_model()
+
+                # get the output and the error
+                prediction = n_net.model_output
+
+            # Initialize a dictionary of evaluation ops
+            eval_ops = OrderedDict()
+            eval_ops['prediction'] = prediction
+            if hyper_params['network_type'] == 'regressor':
+                MSE_op = tf.losses.mean_squared_error(labels, predictions=prediction, reduction=tf.losses.Reduction.NONE)
+                eval_ops['errors'] = [MSE_op]
+                eval_ops['errors_labels'] = 'Mean-Squared Error'
+            if hyper_params['network_type'] == 'classifier':
+                # Calculate top-1 and top-5 error
+                labels = tf.argmax(labels, axis=1)
+                in_top_1_op = tf.cast(tf.nn.in_top_k(prediction, labels, 1), tf.float32)
+                in_top_5_op = tf.cast(tf.nn.in_top_k(prediction, labels, 5), tf.float32)
+                eval_ops['errors'] = [in_top_1_op, in_top_5_op]
+                eval_ops['errors_labels'] = ['Top-1 Precision', 'Top-5 Precision']
+
+            # Initiate restore object
+            saver = tf.train.Saver()
+
+            # Build the summary operation based on the TF collection of Summaries.
+            summary_op = tf.summary.merge_all()
+            summary_writer = tf.summary.FileWriter(flags.eval_dir, g)
+
+            while True:
+                if hyper_params['network_type'] == 'classifier':
+                    eval_classify(flags, saver, summary_writer, eval_ops, summary_op, labels, cpu_bound=cpu_bound,
+                                  gpu_id=gpu_id, save_to_disk=True)
+                else:
+                    eval_regress(flags, saver, summary_writer, eval_ops, summary_op,labels, cpu_bound=cpu_bound,
+                                  gpu_id=gpu_id, save_to_disk=True)
+                if flags.run_once:
+                    break
+                time.sleep(flags.eval_interval_secs)
+
+
+def eval_regress(flags, saver, summary_writer, eval_ops, summary_op, labels, cpu_bound=True, gpu_id=0, save_to_disk=True):
+    """
+    Helper function to eval() for regression tasks: preprocess predictions, save summaries, and start queue runners.
+    :param flags: tf.app.flags
+    :param saver: tf.train.Saver object, restores neural net model.
+    :param summary_writer: a tf.summary.FileWriter, writes tensorboard summaries to disk.
+    :param eval_ops: tf.op, evaluation ops.
+    :param summary_op: tf.op, summary operations.
+    :param cpu_bound: bool, whether to run evaluation solely on the host, default True.
+    :param gpu_id: int, device id where to run evaluation, default 0.
+    :param save_to_disk: bool, whether to save to disk.
+    :return: None
+    """
+    # Config file for tf.Session()
+    config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
+                            log_device_placement=flags.log_device_placement)
+
+    if cpu_bound:
+        device = '/cpu:0'
+        config.device_count= {'GPU': 0}
+        config.gpu_options.allow_growth = True
+        config.gpu_options.per_process_gpu_memory_fraction = 0.001
+    else:
+        device = '/gpu:%d' % gpu_id
+
+    with tf.device(device):
+        with tf.Session(config=config) as sess:
+            # Restore Model from checkpoint
+            ckpt = tf.train.get_checkpoint_state(flags.train_dir)
+            if ckpt and ckpt.model_checkpoint_path:
+                saver.restore(sess, ckpt.model_checkpoint_path)
+                # Assuming model_checkpoint_path looks something like:
+                # train/model.ckpt-0,
+                # Extract global_step
+                global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+            else:
+                print('No valid Checkpoint File was found!!')
+                return
+
+            # TODO: Extend tf.MonitoredTrainSession for evaluations session to minimize all this garbage collection.
+
+            # Start the queue runners for the input stream.
+            coord = tf.train.Coordinator()
+            try:
+                threads = []
+                for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
+                    threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
+                                                     start=True))
+
+                num_evals = int(np.ceil(flags.num_examples / flags.batch_size))
+                step = 0
+
+                # Allocate arrays
+                sorted_errors = np.array([])
+                predictions = np.array([])
+                angles_arr = np.array([])
+
+                # Begin evaluation
+                start_time = time.time()
+                while step < num_evals and not coord.should_stop():
+                    # evaluate predictions
+                    angle, predic, err = sess.run([labels, eval_ops['prediction'], eval_ops['errors']])
+                    sorted_errors = np.append(sorted_errors, err)
+                    angles_arr = np.append(angles_arr, angle)
+                    predictions = np.append(predictions, predic)
+                    step += 1
+
+                # Reformatting the output arrays
+                sorted_errors = np.reshape(sorted_errors,(-1, flags.OUTPUT_DIM))
+                angles_arr = np.reshape(angles_arr, (-1, flags.OUTPUT_DIM))
+                predictions = np.reshape(predictions, (-1, flags.OUTPUT_DIM))
+
+                # saved_vars = []
+                # for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
+                #     if 'moving_' in var.name:
+                #         saved_vars.append(var)
+                #
+                # print([var.name for var in saved_vars])
+                # output = sess.run(saved_vars)
+                # print(output)
+
+                # Get mean error
+                mean_errors = np.mean(sorted_errors,axis=0)
+
+                # Get time it took to evaluate
+                print('Took %.3f seconds to evaluate %d images' % (time.time() - start_time, flags.num_examples))
+
+                # Save predictions and labels to disk
+                if save_to_disk:
+                    fname = '%s_%s.npy' % ('predictions', format(datetime.now()).split(' ')[-1])
+                    np.save(os.path.join(flags.eval_dir, fname), predictions, allow_pickle=False)
+                    fname = '%s_%s.npy' % ('angles', format(datetime.now()).split(' ')[-1])
+                    np.save(os.path.join(flags.eval_dir, fname), angles_arr, allow_pickle=False)
+
+                # Print Model Outputs and Summarize in Tensorboard
+                summary = tf.Summary()
+                summary.ParseFromString(sess.run(summary_op))
+                output_labels = flags.output_labels.split(';')
+                for mean_error, output_label in zip(mean_errors, output_labels):
+                    print('%s: %s = %.3f' % (datetime.now(), format(output_label), mean_error))
+                    summary.value.add(tag=output_label, simple_value=mean_error)
+
+                summary_writer.add_summary(summary, global_step)
+
+            except Exception as e:
+                coord.request_stop(e)
+
+            # Kill the input queue threads
+            coord.request_stop()
+            coord.join(threads, stop_grace_period_secs=1)
+
+
+def eval_classify(flags, saver, summary_writer, eval_ops, summary_op, labels, cpu_bound=True,
+                 gpu_id=0, save_to_disk=True):
+    """
+    Helper function to eval() for classification tasks: preprocess predictions, save summaries, and start queue runners.
+    :param flags: tf.app.flags
+    :param saver: tf.train.Saver object, restores neural net model.
+    :param summary_writer: a tf.summary.FileWriter, writes tensorboard summaries to disk.
+    :param eval_ops: tf.op, evaluation ops.
+    :param summary_op: tf.op, summary operations.
+    :param labels: tf.tensor, labels
+    :param cpu_bound: bool, whether to run evaluation solely on the host, default True.
+    :param gpu_id: int, device id where to run evaluation, default 0.
+    :param save_to_disk: bool, whether to save to disk.
+    :return: None
+    """
+    # Config file for tf.Session()
+    config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
+                            log_device_placement=flags.log_device_placement)
+
+    if cpu_bound:
+        device = '/cpu:0'
+        config.device_count = {'GPU': 0}
+        config.gpu_options.allow_growth = True
+        config.gpu_options.per_process_gpu_memory_fraction = 0.001
+    else:
+        device = '/gpu:%d' % gpu_id
+
+    with tf.device(device):
+        with tf.Session(config=config) as sess:
+            # Restore Model from checkpoint
+            ckpt = tf.train.get_checkpoint_state(flags.train_dir)
+            if ckpt and ckpt.model_checkpoint_path:
+                saver.restore(sess, ckpt.model_checkpoint_path)
+                # Assuming model_checkpoint_path looks something like:
+                # train/model.ckpt-0,
+                # Extract global_step
+                global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+            else:
+                print('No valid Checkpoint File was found!!')
+                return
+
+            # TODO: Extend tf.MonitoredTrainSession for evaluations session to minimize all this garbage collection.
+
+            # Start the queue runners for the input stream.
+            coord = tf.train.Coordinator()
+            try:
+                threads = []
+                for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
+                    threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
+                                                     start=True))
+
+                num_evals = int(np.ceil(flags.num_examples / flags.batch_size))
+                step = 0
+
+                # In the case of multiple outputs, we sort the predictions per output.
+                # Allocate arrays
+                sorted_errors = [np.zeros(shape=(flags.NUM_CLASSES,)) for _ in enumerate(eval_ops['errors'])]
+                true_counts = [0 for _ in enumerate(eval_ops['errors'])]
+
+
+                # Begin evaluation
+                start_time = time.time()
+                while step < num_evals and not coord.should_stop():
+                    # evaluate predictions
+                    errors_outputs = sess.run(eval_ops['errors'])
+                    # figure out classes present in batch
+                    classes = np.array(sess.run([labels])).flatten()
+                    uniq_cls, uniq_indx, uniq_cts = np.unique(classes, return_index=True, return_counts=True)
+                    # collect errors
+                    for i, _ in enumerate( eval_ops['errors']):
+                        # Get total of correct predictions
+                        true_counts[i] += np.sum(errors_outputs[i])
+                        # Sort predictions amongst classes
+                        zeroes = np.zeros_like(sorted_errors[i])
+                        zeroes[uniq_cls] = errors_outputs[i][uniq_indx]
+                        sorted_errors[i] += zeroes
+                    step += 1
+
+                # Total sample count
+                total_sample_count = step*flags.batch_size
+
+                # Averaging over the output arrays
+                for i, _ in enumerate(eval_ops['errors']):
+                    true_counts[i] /= float(total_sample_count)
+                    sorted_errors[i] /= float(step)
+
+                # Get time it took to evaluate
+                print('Took %.3f seconds to evaluate %d images' % (time.time() - start_time, flags.num_examples))
+
+                # TODO: Save precisions to disk
+                if save_to_disk:
+                    pass
+                    # fname = '%s_%s.npy' % ('top_1_precision_per_class', format(datetime.now()).split(' ')[-1])
+                    # np.save(os.path.join(flags.eval_dir, fname), sorted_errors[0], allow_pickle=False)
+                    #
+                    # fname = '%s_%s.npy' % ('top_5_precision_per_class', format(datetime.now()).split(' ')[-1])
+                    # np.save(os.path.join(flags.eval_dir, fname), sorted_errors[1], allow_pickle=False)
+
+                # Print Model Outputs and Summarize in Tensorboard
+                summary = tf.Summary()
+                summary.ParseFromString(sess.run(summary_op))
+                output_labels = flags.output_labels.split(';')
+                for true_count, output_label in zip(true_counts, output_labels):
+                    print('%s: %s = %.3f' % (datetime.now(), format(output_label), true_count))
+                    summary.value.add(tag=output_label, simple_value=true_count)
+
+                summary_writer.add_summary(summary, global_step)
+
+            except Exception as e:
+                coord.request_stop(e)
+
+            # Kill the input queue threads
+            coord.request_stop()
+            coord.join(threads, stop_grace_period_secs=1)
+
+
+def set_flags(checkpt_dir, eval_dir, batch_size=64, data_dir=None):
 
 def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
     """

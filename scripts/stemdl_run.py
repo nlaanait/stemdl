@@ -4,14 +4,13 @@ Created on 10/8/17.
 email: laanaitn@ornl.gov
 """
 
+from stemdl import inputs
+from stemdl import runtime
+from stemdl import io_utils
 import tensorflow as tf
 import argparse
 import sys
 import os
-
-sys.path.append('../')
-from stemdl import runtime
-from stemdl import io_utils
 
 
 """

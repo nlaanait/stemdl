@@ -399,6 +399,8 @@ class ConvNet(object):
         dim_input = input_reshape.shape[1].value
         # print(dim_input,list(params['weights']))
         weights_shape = [dim_input, params['weights']]
+        init_val = max(np.sqrt(2.0/params['weights']), 0.01)
+        print('stddev: %s' % format(init_val))
         bias_shape = [params['bias']]
 
         if params['type'] == 'linear_output':
@@ -654,6 +656,7 @@ class ConvNet(object):
         return None
 
     # Variable placement, initialization, regularization
+    # TODO: use local device setter to choose where variables are stored, i.e. cpu or gpu. instead of hardwired to cpu.
     def _cpu_variable_init(self, name, shape, initializer, trainable=True, regularize=False):
         """Helper to create a Variable stored on CPU memory.
 

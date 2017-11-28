@@ -8,7 +8,6 @@ import tensorflow as tf
 import argparse
 import sys
 import os
-sys.path.append('../')
 from stemdl import runtime
 from stemdl import io_utils
 
@@ -41,8 +40,10 @@ tf.app.flags.DEFINE_integer('OUTPUT_DIM', 27, """Dimension of the Network's Outp
 tf.app.flags.DEFINE_integer('IMAGE_HEIGHT', 85, """IMAGE HEIGHT""")
 tf.app.flags.DEFINE_integer('IMAGE_WIDTH', 120, """IMAGE WIDTH""")
 tf.app.flags.DEFINE_integer('IMAGE_DEPTH', 1, """IMAGE DEPTH""")
-tf.app.flags.DEFINE_integer('CROP_HEIGHT', 64, """CROP HEIGHT""")
-tf.app.flags.DEFINE_integer('CROP_WIDTH', 64, """CROP WIDTH""")
+tf.app.flags.DEFINE_integer('CROP_HEIGHT', 60, """CROP HEIGHT""")
+tf.app.flags.DEFINE_integer('CROP_WIDTH', 80, """CROP WIDTH""")
+tf.app.flags.DEFINE_integer('RESIZE_HEIGHT', 60, """RESIZE HEIGHT""")
+tf.app.flags.DEFINE_integer('RESIZE_WIDTH', 80, """RESIZE WIDTH""")
 tf.app.flags.DEFINE_boolean('IMAGE_FP16', False, """ Whether to use half-precision format for images.""")
 tf.app.flags.DEFINE_string('LABEL_DTYPE', 'int64', """ precision of label.""")
 FLAGS = tf.app.flags.FLAGS
@@ -65,8 +66,6 @@ def main(argv):
                         nargs='?', default=1)
     parser.add_argument('--batch_size', type=int, help='number of images per batch to propagate through the network.'+\
                         '\nPowers of 2 are processed more efficiently.\nDefault 64.', nargs='?', default=64)
-    parser.add_argument('--resize_pixels', type=int, help='size of images used for training.\nDefault 64',
-                        nargs='?', default=64)
     parser.add_argument('--cpu_id', type=int, help='Which CPU to use in a multi-CPU machine.\nDefault 0',
                         nargs='?', default=0)
 
@@ -97,8 +96,6 @@ def main(argv):
     #sys.stdout = open(args.mode[0] + '.log', mode='r+')
 
     # Update flags:
-    tf.app.flags.DEFINE_integer('RESIZE_HEIGHT', args.resize_pixels, """RESIZE HEIGHT""")
-    tf.app.flags.DEFINE_integer('RESIZE_WIDTH', args.resize_pixels, """RESIZE WIDTH""")
     tf.app.flags.DEFINE_string('CPU_ID', '/cpu:'+str(args.cpu_id), """CPU_ID""")
     print('Requested the use of CPU: ' + '/cpu:' + str(args.cpu_id))
 
