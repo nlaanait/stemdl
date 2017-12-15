@@ -73,6 +73,8 @@ def main(argv):
     parser.add_argument('--batch_size', type=int, help='number of images per batch to propagate through the network.' + \
                                                        '\nPowers of 2 are processed more efficiently.\nDefault 64.',
                         nargs='?', default=64)
+    parser.add_argument('--cpu_id', type=int, help='Which CPU to use in a multi-CPU machine.\nDefault 0',
+                        nargs='?', default=0)
 
     args = parser.parse_args()
 
@@ -99,6 +101,8 @@ def main(argv):
 
     # Create logfile to redirect all print statements
     # sys.stdout = open(args.mode[0] + '.log', mode='w')
+
+    tf.app.flags.DEFINE_string('CPU_ID', '/cpu:' + str(args.cpu_id), """CPU_ID""")
 
     # train or evaluate
     if args.mode[0] == 'train':
