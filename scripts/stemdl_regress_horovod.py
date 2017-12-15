@@ -102,7 +102,7 @@ def main(argv):
 
     # train or evaluate
     if args.mode[0] == 'train':
-        runtime.train_hrvd(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
+        runtime.train_horovod(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
     if args.mode[0] == 'eval':
         runtime.eval(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
 
