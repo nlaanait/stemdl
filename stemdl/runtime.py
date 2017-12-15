@@ -430,7 +430,7 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
         total_loss = tf.add_n(losses + regularization, name='total_loss')
 
         # Generate summaries for the losses and get corresponding op
-        loss_averages_op = _add_loss_summaries(total_loss, losses, flags, summaries=summary)
+        loss_averages_op = _add_loss_summaries(total_loss, losses, flags, summaries=False)
 
         # get summaries, except for the one produced by string_input_producer
         # TODO: figure out the summaries nonsense.
