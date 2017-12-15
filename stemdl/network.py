@@ -1,9 +1,10 @@
 """
 Created on 10/8/17.
-@author: Numan Laanait.
-email: laanaitn@ornl.gov
+@author: Numan Laanait, Suhas Somnath
+email: laanaitn@ornl.gov, somnaths@ornl.gov
 """
 
+from collections import OrderedDict
 import re
 import tensorflow as tf
 import numpy as np
@@ -54,7 +55,16 @@ class ConvNet(object):
             self.reuse = True
         self.bytesize = 2
         if not self.flags.IMAGE_FP16: self.bytesize = 4
-        self.mem = np.cumprod(self.images.get_shape())[-1]*self.bytesize/1024 #(in KB)
+        self.mem = np.cumprod(self.images.get_shape())[-1]*self.bytesize/1024  # (in KB)
+        self.ops = 0
+        self.initializer = self._get_initializer(hyper_params.get('initializer', None))
+        if "batch_norm" in self.hyper_params:
+            self.hyper_params["batch_norm"]["decay"] = self.hyper_params["batch_norm"].get("decay", 0.995)
+            self.hyper_params["batch_norm"]["epsilon"] = self.hyper_params["batch_norm"].get("epsilon", 1E-5)
+        else:
+            # default params
+            self.hyper_params["batch_norm"] = {"epsilon": 1E-5, "decay": 0.995}
+        self.model_output = None
 
     def build_model(self, summaries=False):
         """
@@ -67,7 +77,8 @@ class ConvNet(object):
         layer_name, layer_params = list(self.network.items())[0]
         with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
             out, kernel = self._conv(input=self.images, params=layer_params)
-            if layer_params['batch_norm']:
+            do_bn = layer_params.get('batch_norm', False)
+            if do_bn:
                 out = self._batch_norm(input=out)
             else:
                 out = self._add_bias(input=out, params=layer_params)
@@ -87,7 +98,8 @@ class ConvNet(object):
                 in_shape = out.get_shape()
                 if layer_params['type'] == 'convolutional':
                     out, _ = self._conv(input=out, params=layer_params)
-                    if layer_params['batch_norm']:
+                    do_bn = layer_params.get('batch_norm', False)
+                    if do_bn:
                         out = self._batch_norm(input=out, reuse=self.reuse, scope=scope)
                     else:
                         out = self._add_bias(input=out, params=layer_params)
@@ -100,8 +112,9 @@ class ConvNet(object):
                 if layer_params['type'] == 'fully_connected':
                     out = self._linear(input=out, name=scope.name+'_preactiv', params=layer_params)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
-                    if layer_params['dropout']:
-                        out = self._dropout(input=out, name=scope.name+'_dropout')
+                    keep_prob = layer_params.get('dropout', None)
+                    if keep_prob is not None:
+                        out = self._dropout(input=out, name=scope.name+ '_dropout')
                     if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] == 'linear_output':
@@ -112,15 +125,103 @@ class ConvNet(object):
                                                                          'tf.app.flags. Check flags or network_config.json'
                     if self.summary: self._activation_summary(out)
 
+                if layer_params['type'] not in ['convolutional', 'pooling', 'fully_connected', 'linear_output']:
+                    out = self._compound_layer(out, layer_params, scope)
+                    # Continue any summary
+                    if self.summary: self._activation_summary(out)
+
                 # print layer specs and generate Tensorboard summaries
+                if out is None:
+                    raise NotImplementedError('Layer type: ' + layer_params['type'] + ' was not implemented!')
                 out_shape = out.get_shape()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
 
-        print('Total # of layers: %d,  weights: %2.1e, memory: %s MB \n' % (len(self.network), self.num_weights,
-                                                                         format(self.mem/1024)))
+        print('Total # of layers: %d,  weights: %2.1e, memory: %s MB, ops: %3.2e \n' % (len(self.network),
+                                                                                        self.num_weights,
+                                                                                        format(self.mem / 1024),
+                                                                                        self.ops))
 
         # reference the output
         self.model_output = out
+
+    def _compound_layer(self, out, layer_params, scope):
+        """
+        Handles the computation of more complex layer types such as Residual blocks, Inception, etc.
+
+        :param out: 4D tensor, Input to the layer
+        :param layer_params: OrderedDictionary, Parameters for the layer
+        :param scope: str, name of the layer
+        :return: 4D tensor, output of the layer
+        """
+        pass
+
+    @staticmethod
+    def _get_initializer(params):
+        """
+        Returns an Initializer object for initializing weights
+
+        Note - good reference:
+         - https://github.com/tensorflow/tensorflow/blob/r1.4/tensorflow/python/keras/_impl/keras/initializers.py
+        :param params: dictionary
+        :return: initializer object
+        """
+        if params is not None:
+            if isinstance(params, dict):
+                params_copy = params.copy()
+                name = str(params_copy.pop('type').lower())
+                if name == 'uniform_unit_scaling':
+                    print('using ' + name + ' initializer')
+                    # Random walk initialization (currently in the code).
+                    return tf.uniform_unit_scaling_initializer(**params_copy)
+                elif name == 'truncated_normal':
+                    print('using ' + name + ' initializer')
+                    return tf.truncated_normal_initializer(**params_copy)
+                elif name == 'variance_scaling':
+                    print('using ' + name + ' initializer')
+                    return tf.contrib.layers.variance_scaling_initializer(**params_copy)
+                elif name == 'random_normal':
+                    print('using ' + name + ' initializer')
+                    # Normalized Initialization ( eq. 16 in Glorot et al.).
+                    return tf.random_normal_initializer(**params_copy)
+                elif name == 'random_uniform':
+                    print('using ' + name + ' initializer')
+                    return tf.random_uniform_initializer(**params_copy)
+                elif name == 'xavier':  # Glorot uniform initializer, also called Xavier
+                    # http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf
+                    print('using ' + name + ' initializer')
+                    return tf.contrib.layers.xavier_initializer(**params_copy)
+                elif name in ['he', 'lecun']:
+                    """
+                    Note that tf.variance_scaling_initializer and tf.contrib.layers.variance_scaling_initializer
+                    take the same kinds of parameters with different names and formats.
+                    
+                    However, tf.variance_scaling_initializer doesn't seem to be available on TF 1.2.1 on the DGX1
+                    """
+                    params_copy['factor'] = params_copy.pop('scale', 1)
+                    params_copy['uniform'] = params_copy.pop('distribution', True)
+                    if 'uniform' in params_copy:
+                        if isinstance(params_copy['uniform'], str):
+                            if params_copy['uniform'].lower() == 'uniform':
+                                params_copy['uniform'] = True
+                            else:
+                                params_copy['uniform'] = False
+                    if name == 'he':
+                        # He et al., http://arxiv.org/abs/1502.01852
+                        _ = params_copy.pop('factor', None)  # force it to be 2.0 (default anyway)
+                        _ = params_copy.pop('mode', None)  # force it to be 'FAN_IN' (default anyway)
+                        # uniform parameter is False by default -> normal distribution
+                        print('using ' + name + ' initializer')
+                        return tf.contrib.layers.variance_scaling_initializer(factor=2.0, mode='FAN_IN', **params_copy)
+                    elif name == 'lecun':
+                        _ = params_copy.pop('factor', None)  # force it to be 1.0
+                        _ = params_copy.pop('mode', None)  # force it to be 'FAN_IN' (default anyway)
+                        # uniform parameter is False by default -> normal distribution
+                        print('using ' + name + ' initializer')
+                        return tf.contrib.layers.variance_scaling_initializer(factor=1.0, mode='FAN_IN', **params_copy)
+                    print('Requested initializer: ' + name + ' has not yet been implemented.')
+        # default = Xavier:
+        print('Using default Xavier instead')
+        return tf.contrib.layers.xavier_initializer()
 
     def get_loss(self):
         with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
@@ -151,7 +252,7 @@ class ConvNet(object):
             min_residual = params['residual_minimum']
             decay_residual = params['residual_decay_factor']
             residual_tol = tf.train.exponential_decay(initial_residual, self.global_step, decay_steps,
-                                                      decay_residual,staircase=False)
+                                                      decay_residual, staircase=False)
             # cap the residual cutoff to some min value.
             residual_tol = tf.maximum(residual_tol, tf.constant(min_residual))
             if self.summary:
@@ -187,7 +288,7 @@ class ConvNet(object):
         return cross_entropy_mean
 
     # Network layers helper methods
-    def _conv(self, input=None, params=None):
+    def _conv(self, input=None, params=None, verbose=True):
         """
         Builds 2-D convolutional layer
         :param input: as it says
@@ -197,17 +298,40 @@ class ConvNet(object):
         stride_shape = [1,1]+list(params['stride'])
         features = params['features']
         kernel_shape = list(params['kernel']) + [input.shape[1].value, features]
-        init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
-        print('stddev: %2.3f' % init_val)
-        kernel = self._cpu_variable_init('weights', shape=kernel_shape,
-                                         initializer=tf.random_normal_initializer(mean=0.0,stddev=init_val))
-        # kernel = self._cpu_variable_init('weights', shape=kernel_shape,
-        #                                  initializer=tf.uniform_unit_scaling_initializer(factor=1.43))
+
+        # Fine tunining the initializer:
+        conv_initializer = self.initializer
+        if isinstance(conv_initializer, tf.truncated_normal_initializer):
+            init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
+            conv_initializer.stddev = init_val
+        elif isinstance(conv_initializer, tf.uniform_unit_scaling_initializer):
+            conv_initializer.factor = 1.43
+        elif isinstance(conv_initializer, tf.random_normal_initializer):
+            init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
+            if verbose:
+                print('stddev: %s' % format(init_val))
+            conv_initializer.mean = 0.0
+            conv_initializer.stddev = init_val
+        # TODO: make and modify local copy only
+
+        kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
         output = tf.nn.conv2d(input, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
 
         # Keep tabs on the number of weights and memory
         self.num_weights += np.cumprod(kernel_shape)[-1]
         self.mem += np.cumprod(output.get_shape())[-1]*self.bytesize / 1024
+        # batch * width * height * in_channels * kern_h * kern_w * features
+        # at each location in the image:
+        ops_per_conv = 2 * np.prod(params['kernel'] + [input.shape[1].value])
+        # number of convolutions on the image for a single filter / output channel (stride brings down the number)
+        convs_per_filt = np.prod([input.shape[2].value, input.shape[3].value]) // np.prod(params['stride'])
+        # final = num images * filters * convs/filter * ops/conv
+        this_ops = np.prod([params['features'], input.shape[0].value, convs_per_filt, ops_per_conv])
+        if verbose:
+            print('\t%d ops/conv, %d convs/filter, %d filters, %d examples = %3.2e ops' % (ops_per_conv, convs_per_filt,
+                                                                              params['features'], input.shape[0].value,
+                                                                              this_ops))
+        self.ops += this_ops
 
         return output, kernel
 
@@ -225,6 +349,7 @@ class ConvNet(object):
         # Keep tabs on the number of bias parameters and memory
         self.num_weights += bias_shape
         self.mem += bias_shape*self.bytesize / 1024
+        self.ops += bias_shape
         return output
 
     def _batch_norm(self, input=None, reuse=None, scope=None):
@@ -236,10 +361,10 @@ class ConvNet(object):
         # Initializing hyper_parameters
         shape = [input.shape[1].value]
         beta = self._cpu_variable_init('beta', shape=shape, initializer=tf.zeros_initializer())
-        gamma = self._cpu_variable_init('gamma', shape=shape,initializer=tf.ones_initializer())
-        #TODO: pull decay and epsilon parameters out of here and add them to hyperparams.json
-        epsilon = 1.e-3
-        decay = 0.9
+        gamma = self._cpu_variable_init('gamma', shape=shape, initializer=tf.ones_initializer())
+
+        epsilon = self.hyper_params["batch_norm"]["epsilon"]
+        decay = self.hyper_params["batch_norm"]["decay"]
         if self.operation == 'train':
             output, mean, variance = tf.nn.fused_batch_norm(input, gamma, beta, None, None, epsilon, data_format='NCHW',
                                                             is_training=True)
@@ -258,10 +383,11 @@ class ConvNet(object):
             output, _, _ = tf.nn.fused_batch_norm(input, gamma, beta, mean, variance, epsilon=1.e-3, data_format='NCHW',
                                                   is_training=False)
         # Keep tabs on the number of weights
-        self.num_weights += 2*shape[0] # scale and offset (beta, gamma)
+        self.num_weights += 2 * shape[0]  # scale and offset (beta, gamma)
+        # consistently ignored by most papers / websites for ops calculation
         return output
 
-    def _linear(self, input=None, params=None, name=None):
+    def _linear(self, input=None, params=None, name=None, verbose=True):
         """
         Linear layer
         :param input:
@@ -278,19 +404,40 @@ class ConvNet(object):
         bias_shape = [params['bias']]
 
         if params['type'] == 'linear_output':
-            weights = self._cpu_variable_init('weights', shape=weights_shape,
-                                              initializer=tf.random_normal_initializer(mean=0.0, stddev=init_val))
-        else:
-            weights = self._cpu_variable_init('weights', shape=weights_shape,
-                                              initializer=tf.random_normal_initializer(mean=0.0, stddev=init_val),
-                                              regularize=params['regularize'])
+            params['regularize'] = False
 
-        bias = self._cpu_variable_init('bias', bias_shape, initializer=tf.constant_initializer(0.0))
+        # Fine tuning the initializer:
+        lin_initializer = self.initializer
+        if isinstance(lin_initializer, tf.uniform_unit_scaling_initializer):
+            if params['type'] == 'fully_connected':
+                if params['activation'] == 'tanh':
+                    lin_initializer.factor = 1.15
+                elif params['activation'] == 'relu':
+                    lin_initializer.factor = 1.43
+            elif params['type'] == 'linear_output':
+                lin_initializer.factor = 1.0
+        elif isinstance(lin_initializer, tf.random_normal_initializer):
+            init_val = max(np.sqrt(2.0 / params['weights']), 0.01)
+            if verbose:
+                print('stddev: %s' % format(init_val))
+            lin_initializer.mean = 0.0
+            lin_initializer.stddev = init_val
+
+        weights = self._cpu_variable_init('weights', shape=weights_shape, initializer=lin_initializer,
+                                          regularize=params['regularize'])
+        bias = self._cpu_variable_init('bias', bias_shape, initializer=tf.constant_initializer(1.e-3))
         output = tf.nn.bias_add(tf.matmul(input_reshape, weights), bias, name=name)
 
         # Keep tabs on the number of weights and memory
         self.num_weights += bias_shape[0] + np.cumprod(weights_shape)[-1]
         self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
+        # equation = W * X + b
+        # equation = [batch x features] * [features, nodes] + nodes
+        # batch * nodes * 2 * features + nodes <- 2 comes in for the dot prod + sum
+        this_ops = np.prod(input.get_shape().as_list() + [2, params['weights']]) + params['weights']
+        if verbose:
+            print('\t%3.2e ops' % this_ops)
+        self.ops += this_ops
         return output
 
     def _dropout(self, input=None, params=None, name=None):
@@ -301,11 +448,11 @@ class ConvNet(object):
         :param name:
         :return:
         """
+        # TODO: Avoid hardcoding hyperparameters like this.
         keep_prob = tf.constant(0.5)
-        return tf.nn.dropout(input,keep_prob=keep_prob)
+        return tf.nn.dropout(input, keep_prob=keep_prob)
 
-    @staticmethod
-    def _activate(input=None, params=None, name=None):
+    def _activate(self, input=None, params=None, name=None, verbose=True):
         """
         Activation
         :param input: as it says
@@ -313,12 +460,18 @@ class ConvNet(object):
         :param name: scope.name
         :return:
         """
-        if params['activation'] == 'tanh':
-            return tf.nn.tanh(input, name=name)
+        this_ops = 2 * np.prod(input.get_shape().as_list())
+        if verbose:
+            print('\tactivation = %3.2e ops' % this_ops)
+        self.ops += this_ops
+
+        if params is not None:
+            if params['activation'] == 'tanh':
+                return tf.nn.tanh(input, name=name)
 
         return tf.nn.relu(input, name=name)
 
-    def _pool(self, input=None, params=None, name=None):
+    def _pool(self, input=None, params=None, name=None, verbose=True):
         """
         Pooling
         :param params: dict, must specify type of pooling (max, average), stride, and kernel size
@@ -333,6 +486,20 @@ class ConvNet(object):
 
         # Keep tabs on memory
         self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
+
+        # at each location in the image:
+        # avg: 1 to sum each of the N element, 1 op for avg
+        # max: N max() operations
+        ops_per_pool = 1 * np.prod(params['kernel'] + [input.shape[1].value])
+        # number of pools on the image for a single filter / output channel (stride brings down the number)
+        num_pools = np.prod([input.shape[2].value, input.shape[3].value]) // np.prod(params['stride'])
+        # final = num images * filters * convs/filter * ops/conv
+        if verbose:
+            print('\t%d ops/pool, %d pools = %3.2e ops' % (ops_per_pool, num_pools,
+                                                           num_pools * ops_per_pool))
+
+        self.ops += num_pools * ops_per_pool
+
         return output
 
     # Summary helper methods
@@ -501,7 +668,7 @@ class ConvNet(object):
         Returns:
           Variable Tensor
         """
-        with tf.device('/cpu:0'):
+        with tf.device(self.flags.CPU_ID):
             if regularize:
                 var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable,
                                       regularizer=self._weight_decay)
@@ -510,11 +677,111 @@ class ConvNet(object):
             var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
         return var
 
-
     def _weight_decay(self, tensor):
         return tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay'])
 
-# TODO: implement ResNet
-# TODO: ResNet should inherit ConvNet
-class ResNet(object):
-    pass
+
+class ResNet(ConvNet):
+
+    def _add_branches(self, hidden, out, verbose=True):
+        """
+        Adds two 4D tensors ensuring that the number of channels is consistent
+
+        :param hidden: 4D tensor, one branch of inputs in the final step of a ResNet (more number of channels)
+        :param out: 4D tensor, another branch of inputs in the final step of a ResNet (fewer number of channels)
+        :param verbose: bool, (Optional) - whether or not to print statements.
+        :return: 4D tensor, output of the addition
+        """
+        if out.get_shape().as_list()[1] != hidden.get_shape().as_list()[1]:
+            # Need to do a 1x1 conv layer on the input to increase the number of channels:
+            shortcut_parms = {"kernel": [1, 1], "stride": [1, 1], "padding": "SAME",
+                              "features": hidden.get_shape().as_list()[1], "batch_norm": True}
+            if verbose:
+                print('Doing 1x1 conv on output to bring channels from %d to %d' % (out.get_shape().as_list()[1],
+                                                                                    hidden.get_shape().as_list()[1]))
+            with tf.variable_scope("shortcut", reuse=self.reuse) as scope:
+                out, _ = self._conv(input=out, params=shortcut_parms)
+        # ops just for the addition operation
+        this_ops = np.prod(out.get_shape().as_list())
+        if verbose:
+            print('\tops for adding shortcut: %3.2e' % this_ops)
+        self.ops += this_ops
+        # Now add the hidden with input
+        return tf.add(out, hidden)
+
+    def _compound_layer(self, out, layer_params, scope_name):
+        if layer_params['type'] == 'residual':
+            return self._residual_block(out, layer_params)
+
+    def _residual_block(self, out, res_block_params, verbose=True):
+        """
+        Unit residual block consisting of arbitrary number of convolutional layers, each specified by its own
+        OrderedDictionary in the parameters.
+        Implementation here based on: https://arxiv.org/pdf/1603.05027.pdf
+        Input >> BN >> Relu >> weight >> BN >> ReLU >> Weight >> Add Input
+
+        :param out: 4D tensor, Input to the residual block
+        :param res_block_params: OrderedDictionary, Parameters for the residual block
+        :param verbose: bool, (Optional) - whether or not to print statements.
+        :return: 4D tensor, output of the residual block
+        """
+        ops_in = self.ops
+
+        with tf.variable_scope("pre_conv1", reuse=self.reuse) as sub_scope:
+            hidden = self._batch_norm(input=out)
+            hidden = self._activate(input=hidden, name=sub_scope.name)
+
+        # First find the names of all conv layers inside
+        layer_ids = []
+        for parm_name in res_block_params.keys():
+            if isinstance(res_block_params[parm_name], OrderedDict):
+                if res_block_params[parm_name]['type'] == 'convolutional':
+                    layer_ids.append(parm_name)
+        """
+        if verbose:
+            print('internal layers:' + str(layer_ids))
+            print('Working on the first N-1 layers')
+        """
+        # Up to N-1th layer: weight >> BN >> ReLU
+        for layer_name in layer_ids[:-1]:
+            if verbose:
+                print('weight >> BN >> ReLU on layer: ' + layer_name)
+            with tf.variable_scope(layer_name, reuse=self.reuse) as sub_scope:
+                layer_params = res_block_params[layer_name]
+                hidden, _ = self._conv(input=hidden, params=layer_params)
+                hidden = self._batch_norm(input=hidden)
+                hidden = self._activate(input=hidden, name=sub_scope.name, params=layer_params)
+
+        if verbose:
+            print('weight ONLY on layer: ' + layer_ids[-1])
+        # last layer: Weight ONLY
+        with tf.variable_scope(layer_ids[-1], reuse=self.reuse) as sub_scope:
+            hidden, _ = self._conv(input=hidden, params=res_block_params[layer_ids[-1]])
+
+        # Now add the two branches
+        ret_val = self._add_branches(hidden, out)
+
+        if verbose:
+            ops_out = self.ops
+            print('\tresnet ops = %3.2e' % (ops_out - ops_in))
+
+        return ret_val
+
+    def _print_layer_specs(self, params, scope, input_shape, output_shape):
+        if params['type'] == 'pooling':
+            print('%s --- output: %s, kernel: %s, stride: %s' %
+                  (scope.name, format(output_shape), format(params['kernel']),
+                   format(params['stride'])))
+        elif params['type'] == 'residual':
+            mem_in_MB = np.cumprod(output_shape)[-1] * self.bytesize / 1024**2
+            print('Residual Layer: ' + scope.name)
+            for parm_name in params.keys():
+                if isinstance(params[parm_name], OrderedDict):
+                    if params[parm_name]['type'] == 'convolutional':
+                        conv_parms = params[parm_name]
+                        print('\t%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB' %
+                              (parm_name, format(output_shape), format(conv_parms['kernel']),
+                               format(conv_parms['stride']), format(self.num_weights), format(0)))
+
+        else:
+            super(ResNet, self)._print_layer_specs(params, scope, input_shape, output_shape)

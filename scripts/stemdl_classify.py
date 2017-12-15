@@ -4,14 +4,12 @@ Created on 10/23/17.
 email: laanaitn@ornl.gov
 """
 
-from stemdl import inputs
-from stemdl import runtime
-from stemdl import io_utils
 import tensorflow as tf
 import argparse
 import sys
 import os
-
+from stemdl import runtime
+from stemdl import io_utils
 
 """
 These FLAGS define variables for a particular TF workflow and are not expected to change.
@@ -22,8 +20,8 @@ tf.app.flags.DEFINE_boolean('log_device_placement', False, """Whether to log dev
 tf.app.flags.DEFINE_boolean('allow_soft_placement', True, """Whether to allow variable soft placement on the device-""" +\
                      """ This is needed for multi-gpu runs.""")
 tf.app.flags.DEFINE_integer('log_frequency', 10, """How often to log results to the console.""")
-tf.app.flags.DEFINE_integer('save_frequency', 500, """How often to save summaries to disk.""")
-tf.app.flags.DEFINE_integer('max_steps', 1000000,"""Number of batches to run.""")
+tf.app.flags.DEFINE_integer('save_frequency', 5000, """How often to save summaries to disk.""")
+tf.app.flags.DEFINE_integer('max_steps', 2000,"""Number of batches to run.""")
 tf.app.flags.DEFINE_integer('num_epochs', 500,"""Number of Data Epochs to do training""")
 tf.app.flags.DEFINE_integer('NUM_EXAMPLES_PER_EPOCH', 729000,"""Number of examples in training data.""")
 tf.app.flags.DEFINE_string('worker_name', 'worker', """Name of gpu worker to append to each device ops, scope, etc...""")
@@ -44,6 +42,8 @@ tf.app.flags.DEFINE_integer('IMAGE_WIDTH', 120, """IMAGE WIDTH""")
 tf.app.flags.DEFINE_integer('IMAGE_DEPTH', 1, """IMAGE DEPTH""")
 tf.app.flags.DEFINE_integer('CROP_HEIGHT', 60, """CROP HEIGHT""")
 tf.app.flags.DEFINE_integer('CROP_WIDTH', 80, """CROP WIDTH""")
+tf.app.flags.DEFINE_integer('RESIZE_HEIGHT', 60, """RESIZE HEIGHT""")
+tf.app.flags.DEFINE_integer('RESIZE_WIDTH', 80, """RESIZE WIDTH""")
 tf.app.flags.DEFINE_boolean('IMAGE_FP16', False, """ Whether to use half-precision format for images.""")
 tf.app.flags.DEFINE_string('LABEL_DTYPE', 'int64', """ precision of label.""")
 FLAGS = tf.app.flags.FLAGS
@@ -66,6 +66,8 @@ def main(argv):
                         nargs='?', default=1)
     parser.add_argument('--batch_size', type=int, help='number of images per batch to propagate through the network.'+\
                         '\nPowers of 2 are processed more efficiently.\nDefault 64.', nargs='?', default=64)
+    parser.add_argument('--cpu_id', type=int, help='Which CPU to use in a multi-CPU machine.\nDefault 0',
+                        nargs='?', default=0)
 
     args = parser.parse_args()
 
@@ -92,6 +94,10 @@ def main(argv):
 
      # Create logfile to redirect all print statements
     #sys.stdout = open(args.mode[0] + '.log', mode='r+')
+
+    # Update flags:
+    tf.app.flags.DEFINE_string('CPU_ID', '/cpu:'+str(args.cpu_id), """CPU_ID""")
+    print('Requested the use of CPU: ' + '/cpu:' + str(args.cpu_id))
 
     # train or evaluate
     if args.mode[0] == 'train':

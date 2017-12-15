@@ -64,10 +64,11 @@ class DatasetTFRecords(object):
             image = tf.cast(image, tf.float32)
 
         # Generate batch
+        #TODO: Need to change num_threads so that it's determined from horovod total_rank
         images, labels = tf.train.shuffle_batch([image, label],
                                                 batch_size=self.flags.batch_size,
                                                 capacity=100000,
-                                                num_threads=16,
+                                                num_threads=10,
                                                 min_after_dequeue=10000,
                                                 name='shuffle_batch')
 
@@ -76,6 +77,9 @@ class DatasetTFRecords(object):
 
         # Display the training images in the Tensorboard visualizer.
         tf.summary.image('Train_Images', images, max_outputs=1)
+
+        # resize images using the new flags
+        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])
 
         # change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
@@ -110,11 +114,14 @@ class DatasetTFRecords(object):
                                                 min_after_dequeue=100,
                                                 name='shuffle_batch')
 
-        #extract glimpses from evaluation batch
+        # extract glimpses from evaluation batch
         images = self._getGlimpses(images, random=random_glimpses)
 
         # Display the training images in the visualizer.
         tf.summary.image('Test_Images', images, max_outputs=1)
+
+        # resize images using the new flags
+        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])
 
         # change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])

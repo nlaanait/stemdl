@@ -13,15 +13,17 @@ from . import network
 from . import inputs
 import os
 from collections import OrderedDict
+import horovod.tensorflow as hvd
 
 
 class _LoggerHook(tf.train.SessionRunHook):
     """Logs loss and runtime stats."""
-    def __init__(self, flags, total_loss, num_gpus, last_step=0):
+    def __init__(self, flags, total_loss, num_gpus, net_ops, last_step=0):
         self.flags = flags
         self.total_loss = total_loss
         self.num_gpus = num_gpus
         self.last_step = last_step
+        self.net_ops = net_ops * num_gpus
 
     def begin(self):
         self._step = -1 + self.last_step
@@ -44,9 +46,9 @@ class _LoggerHook(tf.train.SessionRunHook):
             elapsed_epochs = self.num_gpus * self._step * self.flags.batch_size * 1.0 / self.flags.NUM_EXAMPLES_PER_EPOCH
             self.epoch += elapsed_epochs
             format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
-                          'sec/batch/gpu)')
+                          'sec/batch/gpu), total flops = %3.2e')
             print(format_str % (datetime.now(), self._step, elapsed_epochs, loss_value,
-                                examples_per_sec, sec_per_batch))
+                                examples_per_sec, sec_per_batch, self.net_ops/duration))
 
 
 def _add_loss_summaries(total_loss, losses, flags, summaries=False):
@@ -156,9 +158,11 @@ def get_optimizer(flags, hyper_params, global_step):
     if hyper_params['optimization'] == 'Momentum':
         opt = tf.train.MomentumOptimizer(LEARNING_RATE, momentum= hyper_params['momentum'])
         return opt
+    else:
+        # Default is ADAM
+        opt = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE, beta1= hyper_params['momentum'])
 
-    # Default is ADAM
-    opt = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE, beta1= hyper_params['momentum'])
+    opt = hvd.DistributedOptimizer(opt)
     return opt
 
 
@@ -195,7 +199,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
     # Start building the graph
     graph = tf.Graph()
-    with graph.as_default(), tf.device('/cpu:0'):
+    with graph.as_default(), tf.device(flags.CPU_ID):
         global_step = tf.contrib.framework.get_or_create_global_step()
 
         # Setup data stream
@@ -228,7 +232,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                                                                                 format(labels.get_shape())))
 
                         # Setup Neural Net
-                        n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
+                        n_net = network.ResNet(scope, flags, global_step, hyper_params, network_config, images, labels,
                                              operation='train', summary=summary)
 
                         # Build it and propagate images through it.
@@ -302,7 +306,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
         #calculate average loss and setup logger
         avg_total_loss = tf.reduce_mean(worker_total_loss)
-        logHook = _LoggerHook(flags, avg_total_loss, num_GPUS, last_step=last_step)
+        logHook = _LoggerHook(flags, avg_total_loss, num_GPUS, n_net.ops, last_step=last_step)
 
         # Stats and summaries
         run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
@@ -331,6 +335,169 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             summary_writer.close()
 
 
+def train_hrvd(network_config, hyper_params, data_path, flags, num_GPUS=1):
+    """
+    Train the network for a number of steps using horovod
+    # At each step (global_step):
+    # 1. propagate examples through the neural net.
+    # 2. calculate the losses/gradients for each worker.
+    # 3. average over gradients.
+    # 4. update the neural net weights.
+    # 5. repeat.
+    :param network_config: OrderedDict, network configuration
+    :param hyper_params: OrderedDict, hyper_parameters
+    :param flags: tf.app.flags
+    :param num_GPUS: int, default 1.
+    :param data_path: string, path to data.
+    :return: None
+    """
+    # Check if training is a restart from checkpoint
+    ckpt = tf.train.get_checkpoint_state(flags.train_dir)
+    if ckpt is None:
+        last_step = 0
+    else:
+        last_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
+
+    # Only neural net ops will live on GPU.
+    # Everything else (variable initialization, placement, updates) is on the host.
+
+
+    # Config file for tf.Session()
+    config = tf.ConfigProto(allow_soft_placement=flags.allow_soft_placement,
+                            log_device_placement=flags.log_device_placement,
+                            )
+    config.gpu_options.visible_device_list = str(hvd.local_rank())
+
+    ############################################
+    # Setup Graph, Input pipeline and optimizer#
+    ############################################
+    # Start building the graph
+    graph = tf.Graph()
+    with graph.as_default(), tf.device('/gpu:%d' % hvd.local_rank()):
+        global_step = tf.contrib.framework.get_or_create_global_step()
+
+        # Setup data stream
+        with tf.device(flags.CPU_ID):
+            with tf.name_scope('Input') as _:
+                filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
+                # pass the filename_queue to the inputs classes to decode
+                dset = inputs.DatasetTFRecords(filename_queue, flags)
+                image, label = dset.decode_image_label()
+                # # Process images and generate examples batch
+                # images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
+                #                                                 noise_min=0.0, noise_max=0.25,
+                #                                                 random_glimpses='normal', geometric=True)
+
+        # setup optimizer
+        opt = get_optimizer(flags, hyper_params, global_step)
+
+        ##################
+        # Building Model#
+        ##################
+
+        # Build model, forward propagate, and calculate loss
+        with tf.variable_scope(tf.get_variable_scope(), reuse=None):
+            scope = 'neural_net'
+            if hvd.local_rank() == 0: summary = True
+
+            # Process images and generate examples batch
+            images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
+                                                            noise_min=0.0, noise_max=0.25,
+                                                            random_glimpses='uniform', geometric=True)
+
+            print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
+                                                                    format(labels.get_shape())))
+
+            # Setup Neural Net
+            n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
+                                    operation='train', summary=False)
+
+            # Build it and propagate images through it.
+            n_net.build_model()
+
+            # calculate the total loss
+            n_net.get_loss()
+
+            # Assemble all of the losses.
+            losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
+            regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+
+            # Calculate the total loss for the current worker
+            total_loss = tf.add_n(losses + regularization, name='total_loss')
+
+            # Generate summaries for the losses and get corresponding op
+            loss_averages_op = _add_loss_summaries(total_loss, losses, flags, summaries=summary)
+
+            # get summaries, except for the one produced by string_input_producer
+            # TODO: figure out the summaries nonsense.
+            if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
+
+            # Calculate the gradients for the current data batch
+            with tf.control_dependencies([loss_averages_op]):
+                grads_vars = opt.compute_gradients(total_loss)
+
+        #######################################
+        # Apply Gradients and setup train op #
+        #######################################
+
+        # Apply gradients to trainable variables
+        apply_gradient_op = opt.apply_gradients(grads_vars, global_step=global_step)
+
+        # Add Summary histograms for trainable variables and their gradients
+        summary_merged = tf.summary.merge_all()
+
+        # Track the moving averages of all trainable variables.
+        variable_averages = tf.train.ExponentialMovingAverage(hyper_params['moving_average_decay'], global_step)
+        variable_averages_op = variable_averages.apply(tf.trainable_variables())
+
+        # Gather all training related ops into a single one.
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+
+        with tf.control_dependencies([apply_gradient_op, variable_averages_op]):
+            with tf.control_dependencies(update_ops):
+                train_op = tf.no_op(name='train')
+
+        ###############################
+        # Setting up training session #
+        ###############################
+
+        # calculate loss and setup logger
+        avg_total_loss = tf.reduce_mean(total_loss)
+        logHook = _LoggerHook(flags, avg_total_loss, num_GPUS, last_step=last_step)
+
+        # Stats and summaries
+        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+        run_metadata = tf.RunMetadata()
+        summary_writer = tf.summary.FileWriter(flags.train_dir)
+
+        # Start Training Session
+        if hvd.rank() == 0:
+            checkpoint_dir = flags.train_dir
+        else:
+            checkpoint_dir = None
+        with tf.train.MonitoredTrainingSession(checkpoint_dir=checkpoint_dir,
+                                               hooks=[tf.train.StopAtStepHook(last_step=flags.max_steps),
+                                                      tf.train.NanTensorHook(avg_total_loss),
+                                                      hvd.BroadcastGlobalVariablesHook(0),
+                                                      logHook], config=config,
+                                               save_summaries_steps=None, save_summaries_secs=None,
+                                               save_checkpoint_secs=120) as mon_sess:
+            while not mon_sess.should_stop():
+                if logHook._step % flags.save_frequency == 0:
+                    # Train, Record stats and save summaries
+                    _, sum_merged = mon_sess.run([train_op, summary_merged], options=run_options,
+                                                 run_metadata=run_metadata)
+                    summary_writer.add_run_metadata(run_metadata, 'step %s' % format(logHook._step),
+                                                    global_step=logHook._step)
+                    summary_writer.add_summary(sum_merged, global_step=logHook._step)
+                    print('Running Stats and Saving Summaries...')
+                else:
+                    # Just train
+                    mon_sess.run(train_op)
+
+            summary_writer.close()
+
+
 def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
     """
         Evaluate the network for a number of steps.
@@ -345,7 +512,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
         :return: None
     """
     if num_GPUS == 0:
-        device = '/cpu:0'
+        device = flags.CPU_ID
         cpu_bound = True
     else:
         device = '/gpu:%d' % (num_GPUS - 1)
@@ -373,7 +540,7 @@ def eval(network_config, hyper_params, data_path, flags, num_GPUS=1):
                     hyper_params['loss_function']['type'] = 'MSE'
 
                 # Setup Neural Net
-                n_net = network.ConvNet('worker_0/', flags, 0, hyper_params, network_config, images, labels,
+                n_net = network.ResNet('worker_0/', flags, 0, hyper_params, network_config, images, labels,
                                         operation='eval', summary=False)
 
                 # Build it and propagate images through it.
@@ -434,7 +601,7 @@ def eval_regress(flags, saver, summary_writer, eval_ops, summary_op, labels, cpu
                             log_device_placement=flags.log_device_placement)
 
     if cpu_bound:
-        device = '/cpu:0'
+        device = flags.CPU_ID
         config.device_count= {'GPU': 0}
         config.gpu_options.allow_growth = True
         config.gpu_options.per_process_gpu_memory_fraction = 0.001
@@ -548,7 +715,7 @@ def eval_classify(flags, saver, summary_writer, eval_ops, summary_op, labels, cp
                             log_device_placement=flags.log_device_placement)
 
     if cpu_bound:
-        device = '/cpu:0'
+        device = flags.CPU_ID
         config.device_count = {'GPU': 0}
         config.gpu_options.allow_growth = True
         config.gpu_options.per_process_gpu_memory_fraction = 0.001
