@@ -51,6 +51,8 @@ class ConvNet(object):
         self.misc_ops = []
         if self.scope == self.flags.worker_name+'_0/':
             self.reuse = None
+        if self.scope == 'horovod':
+            self.reuse = None
         else:
             self.reuse = True
         self.bytesize = 2

@@ -397,7 +397,7 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
         # Build model, forward propagate, and calculate loss
         with tf.variable_scope(tf.get_variable_scope(), reuse=None):
-            scope = 'neural_net'
+            scope = 'horovod'
             if hvd.local_rank() == 0: summary = True
 
             # Process images and generate examples batch
