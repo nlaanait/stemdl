@@ -668,13 +668,13 @@ class ConvNet(object):
         Returns:
           Variable Tensor
         """
-        with tf.device(self.flags.CPU_ID):
-            if regularize:
-                var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable,
-                                      regularizer=self._weight_decay)
-                return var
+        # with tf.device(self.flags.CPU_ID):
+        if regularize:
+            var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable,
+                                  regularizer=self._weight_decay)
+            return var
 
-            var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
+        var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
         return var
 
     def _weight_decay(self, tensor):
