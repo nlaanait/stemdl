@@ -335,7 +335,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             summary_writer.close()
 
 
-def train_hrvd(network_config, hyper_params, data_path, flags, num_GPUS=1):
+def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
     """
     Train the network for a number of steps using horovod
     # At each step (global_step):
