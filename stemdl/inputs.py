@@ -79,7 +79,7 @@ class DatasetTFRecords(object):
         tf.summary.image('Train_Images', images, max_outputs=1)
 
         # resize images using the new flags
-        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])
+        # images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])
 
         # change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
