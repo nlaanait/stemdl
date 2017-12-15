@@ -391,9 +391,8 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 # images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
                 #                                                 noise_min=0.0, noise_max=0.25,
                 #                                                 random_glimpses='normal', geometric=True)
-
                 dset = inputs.NewDatasetTFRecords(data_path, flags)
-                images, labels = dset.train_images_labels_batch(random_glimpses=True)
+                images, labels = dset.train_images_labels_batch(random_glimpses='uniform')
 
 
         # setup optimizer
