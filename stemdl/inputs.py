@@ -67,9 +67,9 @@ class DatasetTFRecords(object):
         #TODO: Need to change num_threads so that it's determined from horovod total_rank
         images, labels = tf.train.shuffle_batch([image, label],
                                                 batch_size=self.flags.batch_size,
-                                                capacity=100000,
+                                                capacity=10000,
                                                 num_threads=10,
-                                                min_after_dequeue=10000,
+                                                min_after_dequeue=1000,
                                                 name='shuffle_batch')
 
         # Extract glimpses from training batch
