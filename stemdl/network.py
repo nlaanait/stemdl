@@ -49,9 +49,7 @@ class ConvNet(object):
         self.summary = summary
         self.num_weights = 0
         self.misc_ops = []
-        if self.scope == self.flags.worker_name+'_0/':
-            self.reuse = None
-        if self.scope == 'horovod':
+        if self.scope == self.flags.worker_name+'_0/' or self.scope == 'horovod' or self.operation == 'eval':
             self.reuse = None
         else:
             self.reuse = True
