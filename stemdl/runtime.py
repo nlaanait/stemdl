@@ -383,17 +383,14 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # Setup data stream
         with tf.device(flags.CPU_ID):
             with tf.name_scope('Input') as _:
-                # filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
-                # # pass the filename_queue to the inputs classes to decode
-                # dset = inputs.DatasetTFRecords(filename_queue, flags)
-                # image, label = dset.decode_image_label()
-                # # Process images and generate examples batch
-                # images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
-                #                                                 noise_min=0.0, noise_max=0.25,
-                #                                                 random_glimpses='normal', geometric=True)
-                dset = inputs.NewDatasetTFRecords(data_path, flags)
-                images, labels = dset.train_images_labels_batch(random_glimpses='uniform')
-
+                filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
+                # pass the filename_queue to the inputs classes to decode
+                dset = inputs.DatasetTFRecords(filename_queue, flags)
+                image, label = dset.decode_image_label()
+                # Process images and generate examples batch
+                images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
+                                                                noise_min=0.0, noise_max=0.25,
+                                                                random_glimpses='normal', geometric=True)
 
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
