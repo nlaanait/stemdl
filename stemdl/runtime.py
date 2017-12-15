@@ -387,10 +387,10 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 # pass the filename_queue to the inputs classes to decode
                 dset = inputs.DatasetTFRecords(filename_queue, flags)
                 image, label = dset.decode_image_label()
-                # # Process images and generate examples batch
-                # images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
-                #                                                 noise_min=0.0, noise_max=0.25,
-                #                                                 random_glimpses='normal', geometric=True)
+                # Process images and generate examples batch
+                images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
+                                                                noise_min=0.0, noise_max=0.25,
+                                                                random_glimpses='normal', geometric=True)
 
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
@@ -400,45 +400,45 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
         ##################
 
         # Build model, forward propagate, and calculate loss
-        with tf.variable_scope(tf.get_variable_scope(), reuse=None):
-            scope = 'horovod'
-            if hvd.local_rank() == 0: summary = True
+        # with tf.variable_scope(tf.get_variable_scope(), reuse=None):
+        scope = 'horovod'
+        if hvd.local_rank() == 0: summary = True
 
-            # Process images and generate examples batch
-            images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
-                                                            noise_min=0.0, noise_max=0.25,
-                                                            random_glimpses='uniform', geometric=True)
+        # # Process images and generate examples batch
+        # images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
+        #                                                 noise_min=0.0, noise_max=0.25,
+        #                                                 random_glimpses='uniform', geometric=True)
 
-            print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
-                                                                    format(labels.get_shape())))
+        print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
+                                                                format(labels.get_shape())))
 
-            # Setup Neural Net
-            n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
-                                    operation='train', summary=False)
+        # Setup Neural Net
+        n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
+                                operation='train', summary=False)
 
-            # Build it and propagate images through it.
-            n_net.build_model()
+        # Build it and propagate images through it.
+        n_net.build_model()
 
-            # calculate the total loss
-            n_net.get_loss()
+        # calculate the total loss
+        n_net.get_loss()
 
-            # Assemble all of the losses.
-            losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
-            regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+        # Assemble all of the losses.
+        losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
+        regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
 
-            # Calculate the total loss for the current worker
-            total_loss = tf.add_n(losses + regularization, name='total_loss')
+        # Calculate the total loss for the current worker
+        total_loss = tf.add_n(losses + regularization, name='total_loss')
 
-            # Generate summaries for the losses and get corresponding op
-            loss_averages_op = _add_loss_summaries(total_loss, losses, flags, summaries=summary)
+        # Generate summaries for the losses and get corresponding op
+        loss_averages_op = _add_loss_summaries(total_loss, losses, flags, summaries=summary)
 
-            # get summaries, except for the one produced by string_input_producer
-            # TODO: figure out the summaries nonsense.
-            if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
+        # get summaries, except for the one produced by string_input_producer
+        # TODO: figure out the summaries nonsense.
+        # if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
 
-            # Calculate the gradients for the current data batch
-            with tf.control_dependencies([loss_averages_op]):
-                grads_vars = opt.compute_gradients(total_loss)
+        # Calculate the gradients for the current data batch
+        with tf.control_dependencies([loss_averages_op]):
+            grads_vars = opt.compute_gradients(total_loss)
 
         #######################################
         # Apply Gradients and setup train op #
