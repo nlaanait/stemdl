@@ -463,7 +463,7 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
         # calculate loss and setup logger
         avg_total_loss = tf.reduce_mean(total_loss)
-        logHook = _LoggerHook(flags, avg_total_loss, num_GPUS, last_step=last_step)
+        logHook = _LoggerHook(flags, avg_total_loss, num_GPUS, n_net.ops, last_step=last_step)
 
         # Stats and summaries
         run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
