@@ -20,12 +20,12 @@ These FLAGS define variables for a particular TF workflow and are not expected t
 # Basic parameters describing the training run
 tf.app.flags.DEFINE_boolean('log_device_placement', False, """Whether to log device placement.""")
 tf.app.flags.DEFINE_boolean('allow_soft_placement', True, """Whether to allow variable soft placement on the device-""" +\
-                     """ This is needed for multi-gpu runs.""")
+                            """ This is needed for multi-gpu runs.""")
 tf.app.flags.DEFINE_integer('log_frequency', 50, """How often to log results to the console.""")
-tf.app.flags.DEFINE_integer('save_frequency', 500, """How often to save summaries to disk.""")
-tf.app.flags.DEFINE_integer('max_steps', 1000000,"""Number of batches to run.""")
-tf.app.flags.DEFINE_integer('num_epochs', 500,"""Number of Data Epochs to do training""")
-tf.app.flags.DEFINE_integer('NUM_EXAMPLES_PER_EPOCH', 729000,"""Number of examples in training data.""")
+tf.app.flags.DEFINE_integer('save_frequency', 5000, """How often to save summaries to disk.""")
+tf.app.flags.DEFINE_integer('max_steps', 2000, """Number of batches to run.""")
+tf.app.flags.DEFINE_integer('num_epochs', 500, """Number of Data Epochs to do training""")
+tf.app.flags.DEFINE_integer('NUM_EXAMPLES_PER_EPOCH', 729000, """Number of examples in training data.""")
 tf.app.flags.DEFINE_string('worker_name', 'worker', """Name of gpu worker to append to each device ops, scope, etc...""")
 tf.app.flags.DEFINE_boolean('train_distort', True, """Whether to perform data distortion during training.""")
 
