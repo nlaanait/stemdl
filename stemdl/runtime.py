@@ -431,7 +431,7 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
                                                                 format(labels.get_shape())))
 
         # Setup Neural Net
-        n_net = network.ConvNet(scope, flags, global_step, hyper_params, network_config, images, labels,
+        n_net = network.ResNet(scope, flags, global_step, hyper_params, network_config, images, labels,
                                 operation='train', summary=False)
 
         # Build it and propagate images through it.
