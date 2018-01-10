@@ -329,12 +329,11 @@ class ConvNet(object):
         ops_per_conv = 2 * np.prod(params['kernel'] + [input.shape[1].value])
         # number of convolutions on the image for a single filter / output channel (stride brings down the number)
         convs_per_filt = np.prod([input.shape[2].value, input.shape[3].value]) // np.prod(params['stride'])
-        # final = num images * filters * convs/filter * ops/conv
-        this_ops = np.prod([params['features'], input.shape[0].value, convs_per_filt, ops_per_conv])
+        # final = filters * convs/filter * ops/conv
+        this_ops = np.prod([params['features'], convs_per_filt, ops_per_conv])
         if verbose:
-            print('\t%d ops/conv, %d convs/filter, %d filters, %d examples = %3.2e ops' % (ops_per_conv, convs_per_filt,
-                                                                              params['features'], input.shape[0].value,
-                                                                              this_ops))
+            print('\t%d ops/conv, %d convs/filter, %d filters = %3.2e ops' % (ops_per_conv, convs_per_filt,
+                                                                              params['features'], this_ops))
         self.ops += this_ops
 
         return output, kernel
@@ -441,12 +440,20 @@ class ConvNet(object):
         # Keep tabs on the number of weights and memory
         self.num_weights += bias_shape[0] + np.cumprod(weights_shape)[-1]
         self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
-        # equation = W * X + b
-        # equation = [batch x features] * [features, nodes] + nodes
+        # equation =  inputs * weights + bias for a single example
+        # equation = [features] * [features, nodes]
+        # for each element in the output - feature^2 multiplies + feature^2 additions
+        ops_per_element = 2 * dim_input ** 2
+        # number of elements in outputs = batch * hidden nodes in this layer
+        num_dot_prods = params['weights']  # * self.flags.batch_size
+        # addition of bias = nodes number of additions
+        bias_ops = params['weights']
         # batch * nodes * 2 * features + nodes <- 2 comes in for the dot prod + sum
-        this_ops = np.prod(input.get_shape().as_list() + [2, params['weights']]) + params['weights']
+        this_ops = ops_per_element * num_dot_prods + bias_ops
         if verbose:
-            print('\t%3.2e ops' % this_ops)
+            print('\t%d ops/element, %d dot products, %d additions for bias = %3.2e ops' % (ops_per_element,
+                                                                                                  num_dot_prods,
+                                                                                            bias_ops, this_ops))
         self.ops += this_ops
         return output
 
@@ -470,7 +477,8 @@ class ConvNet(object):
         :param name: scope.name
         :return:
         """
-        this_ops = 2 * np.prod(input.get_shape().as_list())
+        # should ignore the batch size in the calculation!
+        this_ops = 2 * np.prod(input.get_shape().as_list()[1:])
         if verbose:
             print('\tactivation = %3.2e ops' % this_ops)
         self.ops += this_ops
@@ -711,8 +719,8 @@ class ResNet(ConvNet):
                                                                                     hidden.get_shape().as_list()[1]))
             with tf.variable_scope("shortcut", reuse=self.reuse) as scope:
                 out, _ = self._conv(input=out, params=shortcut_parms)
-        # ops just for the addition operation
-        this_ops = np.prod(out.get_shape().as_list())
+        # ops just for the addition operation - ignore the batch size
+        this_ops = np.prod(out.get_shape().as_list()[:1])
         if verbose:
             print('\tops for adding shortcut: %3.2e' % this_ops)
         self.ops += this_ops
