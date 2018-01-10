@@ -4,14 +4,15 @@ Created on 12/15/17.
 email: laanaitn@ornl.gov
 """
 
-from stemdl import inputs
-from stemdl import runtime
-from stemdl import io_utils
 import tensorflow as tf
 import argparse
 import sys
 import os
 import horovod.tensorflow as hvd
+
+sys.path.append('../')
+from stemdl import runtime
+from stemdl import io_utils
 
 """
 These FLAGS define variables for a particular TF workflow and are not expected to change.
