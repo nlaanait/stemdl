@@ -11,6 +11,7 @@ import re
 import numpy as np
 from . import network
 from . import inputs
+from . import inputs_dev_cifar_eg
 import os
 from collections import OrderedDict
 import horovod.tensorflow as hvd
@@ -197,6 +198,8 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
     # Building Model and replicating #
     ##################################
 
+    use_dev_reader = False
+
     # Start building the graph
     graph = tf.Graph()
     with graph.as_default(), tf.device(flags.CPU_ID):
@@ -206,8 +209,11 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         with tf.name_scope('Input') as _:
             filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
             # pass the filename_queue to the inputs classes to decode
-            dset = inputs.DatasetTFRecords(filename_queue, flags)
-            image, label = dset.decode_image_label()
+            if use_dev_reader:
+                reader = inputs_dev_cifar_eg.CifarEgReader(data_path, flags, num_gpus=num_GPUS)
+            else:
+                dset = inputs.DatasetTFRecords(filename_queue, flags)
+                image, label = dset.decode_image_label()
 
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
@@ -217,6 +223,9 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         worker_ops = []
         worker_total_loss = []
         with tf.variable_scope(tf.get_variable_scope(), reuse=None):
+            if use_dev_reader:
+                image_shards, label_shards = reader.get_batch(distort=flags.train_distort, noise_min=0.0,
+                                                              noise_max=0.25, random_glimpses='normal', geometric=True)
             for gpu_id in range(num_GPUS):
                 # Flag to only generate summaries on the first device.
                 summary = gpu_id == 0
@@ -224,9 +233,13 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
                     with tf.name_scope('%s_%d' % (flags.worker_name, gpu_id)) as scope:
 
                         # Process images and generate examples batch
-                        images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
-                                                                        noise_min=0.0, noise_max=0.25,
-                                                                        random_glimpses='normal', geometric=True)
+                        if use_dev_reader:
+                            images = image_shards[gpu_id]
+                            labels = label_shards[gpu_id]
+                        else:
+                            images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
+                                                                            noise_min=0.0, noise_max=0.25,
+                                                                            random_glimpses='normal', geometric=True)
 
                         print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
                                                                                 format(labels.get_shape())))
@@ -376,6 +389,9 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
     # Setup Graph, Input pipeline and optimizer#
     ############################################
     # Start building the graph
+
+    use_dev_reader = False
+
     graph = tf.Graph()
     with graph.as_default(), tf.device('/gpu:%d' % hvd.local_rank()):
         global_step = tf.contrib.framework.get_or_create_global_step()
@@ -385,12 +401,17 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
             with tf.name_scope('Input') as _:
                 filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
                 # pass the filename_queue to the inputs classes to decode
-                dset = inputs.DatasetTFRecords(filename_queue, flags)
-                image, label = dset.decode_image_label()
-                # Process images and generate examples batch
-                images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
-                                                                noise_min=0.0, noise_max=0.25,
-                                                                random_glimpses='normal', geometric=True)
+                if use_dev_reader:
+                    reader = inputs_dev_cifar_eg.CifarEgReader(data_path, flags, num_gpus=num_GPUS)
+                    images, labels = reader._make_batch(distort=flags.train_distort, noise_min=0.0, noise_max=0.25,
+                                                        random_glimpses='normal', geometric=True)
+                else:
+                    dset = inputs.DatasetTFRecords(filename_queue, flags)
+                    image, label = dset.decode_image_label()
+                    # Process images and generate examples batch
+                    images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
+                                                                    noise_min=0.0, noise_max=0.25,
+                                                                    random_glimpses='normal', geometric=True)
 
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
