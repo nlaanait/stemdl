@@ -1,8 +1,8 @@
 export CUDA_VISIBLE_DEVICES="4,5"
-data=/usr/atom_ai/data/oxide_perangles_GP_train_85x120.tfrecords
-net=network_ResNet_50_custom.json
-hyp=hyper_params_regressor_custom.json
-model=ResNet50
+data=../../data/oxide_perangles_GP_train_85x120.tfrecords
+net=network_ResNet_18_custom.json
+hyp=hyper_params_regressor_resnet.json
+model=ResNet18
 batch=64
 gpus=2
 mode=train
