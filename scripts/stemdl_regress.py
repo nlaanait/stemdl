@@ -56,7 +56,7 @@ def main(argv):
     parser = argparse.ArgumentParser(description='Setup and Run a Deep Neural Network.')
     parser.add_argument('--data_path', type=str, help='path to tfrecords file with images + labels.', nargs=1,
                         required=True)
-    parser.add_argument('--checkpt_dir', type=str, help='path where to save directory with training data,'+\
+    parser.add_argument('--checkpt_dir', type=str, help='path where to save directory with training data,' + \
                                                         'visualization, and TensorBoard events.', nargs=1,
                         required=True)
     parser.add_argument('--network_config', type=str, help='path to .json file with neural net architecture.', nargs=1,
@@ -80,9 +80,9 @@ def main(argv):
 
     # Create directories
     if tf.gfile.Exists(checkpt_dir):
-        print('Directory "%s" exists already.\nReloading model from latest checkpoint.' %format(checkpt_dir))
+        print('Directory "%s" exists already.\nReloading model from latest checkpoint.' % format(checkpt_dir))
     elif tf.gfile.Exists(eval_dir):
-        print('Removing "%s"' %format(eval_dir))
+        print('Removing "%s"' % format(eval_dir))
         tf.gfile.DeleteRecursively(eval_dir)
     else:
         tf.gfile.MakeDirs(checkpt_dir)
