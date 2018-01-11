@@ -131,15 +131,13 @@ class CifarEgReader(object):
         iterator = dataset.make_one_shot_iterator()
         images, labels = iterator.get_next()
 
-        print(images.get_shape().as_list(), labels.get_shape().as_list())
-
         # Extract glimpses from batch
-        print(images.get_shape().as_list(), labels.get_shape().as_list())
+        # print(images.get_shape().as_list(), labels.get_shape().as_list())
         # at this point the first axis of glimpses becomes batch_size while labels remains None!
         images = self._get_glimpses(images, random=random_glimpses)
         # forcing the first dimension of the labels to be batch size via a reshape:
         labels = tf.reshape(labels, shape=(self.batch_size, self.flags.NUM_CLASSES))
-        print(images.get_shape().as_list(), labels.get_shape().as_list())
+        # print(images.get_shape().as_list(), labels.get_shape().as_list())
 
         # Display the images in the Tensorboard visualizer.
         tf.summary.image(self.mode + '_Images', images, max_outputs=1)
