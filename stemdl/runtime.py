@@ -210,7 +210,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
             filename_queue = tf.train.string_input_producer([data_path], num_epochs=flags.num_epochs)
             # pass the filename_queue to the inputs classes to decode
             if use_dev_reader:
-                reader = inputs_dev_cifar_eg.CifarEgReader(data_path, flags, num_gpus=num_GPUS)
+                reader = inputs_dev_cifar_eg.CifarEgReader(data_path, flags, num_gpus=num_GPUS, using_horovod=False)
             else:
                 dset = inputs.DatasetTFRecords(filename_queue, flags)
                 image, label = dset.decode_image_label()
@@ -403,7 +403,7 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
                 # pass the filename_queue to the inputs classes to decode
                 if use_dev_reader:
                     # set number of GPUs to 1 since horovod will handle the multi GPUs
-                    reader = inputs_dev_cifar_eg.CifarEgReader(data_path, flags, num_gpus=1)
+                    reader = inputs_dev_cifar_eg.CifarEgReader(data_path, flags, num_gpus=num_GPUS, using_horovod=True)
                     images, labels = reader._make_batch(distort=flags.train_distort, noise_min=0.0, noise_max=0.25,
                                                         random_glimpses='normal', geometric=True)
                 else:

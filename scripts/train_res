@@ -6,7 +6,7 @@ model=ResNet18
 batch=64
 gpus=2
 mode=train
-cpuid=1
+cpuid=0
 script=stemdl_regress_horovod.py
 checkpt=$model-batch-$batch-gpus-$gpus
 echo python $script --data_path $data --checkpt_dir $checkpt --network_config $net --hyper_params $hyp --num_gpus $gpus --batch_size $batch --mode $mode --cpu_id $cpuid
