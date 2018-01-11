@@ -6,6 +6,7 @@ email: syz@ornl.gov
 
 import tensorflow as tf
 import numpy as np
+from multiprocessing import cpu_count
 
 
 class CifarEgReader(object):
@@ -20,15 +21,35 @@ class CifarEgReader(object):
     Images go through some sort of a
     """
 
-    def __init__(self, file_path, flags, mode='train', num_gpus=1):
+    def __init__(self, file_path, flags, mode='train', num_gpus=1, max_cpu_utilization=0.9, train_cpu_frac=1,
+                 using_horovod=False):
         self.file_path = file_path
         self.flags = flags
         self.mode = mode
-        self.distort = False
-        self.noise_min = 0
-        self.noise_max = 0.3
-        self.geometric = False
+
+        max_cpu_utilization = max(0, min(1, max_cpu_utilization))
+        self.max_threads = int(max_cpu_utilization * 2 * cpu_count())
+        self.train_cpu_frac = max(0, min(1, train_cpu_frac))
+        if self.train_cpu_frac == 1:
+            print('WARNING: All threads devoted to training, cannot use any for evaluation')
+
+        print('***************************************************')
+        print('\t\tUsing CifarEgReader')
+        print('Original parameters:')
+        print('GPUs: {}, Max CPU utilization: {}, Training fraction allowed: {}'.format(num_gpus, max_cpu_utilization,
+                                                                                        self.train_cpu_frac))
+        print('CPU Threads: available: {}, allowed: {}'.format(int(2 * cpu_count()), self.max_threads))
+
+        if using_horovod:
+            self.max_threads = self.max_threads // num_gpus
+            num_gpus = 1
+
+        self.num_gpus = num_gpus
         self.batch_size = num_gpus * self.flags.batch_size
+
+        print('Horvod: {}, GPUs (re)set to: {}, batch size scaled from {} to {}'.format(
+            using_horovod, self.num_gpus, self.flags.batch_size, self.batch_size))
+        print('***************************************************')
 
     def _parser(self, serialized_example):
 
@@ -98,11 +119,10 @@ class CifarEgReader(object):
             """
             dataset = tf.contrib.data.TFRecordDataset(filenames).repeat()
 
-        num_threads = self.batch_size  # from the CIFAR dataset
         if self.mode == 'train':
-            num_threads = 16
+            num_threads = int(self.max_threads * self.train_cpu_frac)
         else:
-            num_threads = 4
+            num_threads = int(self.max_threads * (1-self.train_cpu_frac))
 
         # Parse records.
         if tf_version > 1.3:
