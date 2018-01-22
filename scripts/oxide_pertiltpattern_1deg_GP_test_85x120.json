@@ -1,0 +1,9 @@
+{
+	"IMAGE_HEIGHT": {"value": 85, "type":"int", "desc":"image height"},
+	"IMAGE_WIDTH": {"value": 120, "type":"int", "desc":"image width"},
+	"IMAGE_DEPTH": {"value": 1, "type":"int", "desc":"image depth"},
+	"IMAGE_FP16": {"value": false, "type":"bool", "desc":"Whether to use half-precision format for images."},
+	"NUM_CLASSES": {"value": 27, "type":"int", "desc":"Number of classes in training/evaluation data"},
+	"LABEL_DTYPE": {"value": "int64", "type":"str", "desc":"precision of labels"},
+	"NUM_EXAMPLES": {"value": 72900, "type":"int", "desc":"Number of examples in this dataset"}
+}
