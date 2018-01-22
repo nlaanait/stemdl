@@ -1,3 +1,4 @@
+#!/bin/bash
 data=../../data/oxide_perangles_GP_train_85x120.tfrecords
 net=network_ResNet_18_custom.json
 hyp=hyper_params_regressor_resnet.json
