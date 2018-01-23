@@ -49,8 +49,7 @@ class Tf2MxRecords(object):
     def __init__(self, input_tf_record, data_params):
         load_flags_from_json(data_params, tf.app.flags)
         self.tf_filepath = input_tf_record
-        self.file_queue = tf.train.string_input_producer([self.tf_filepath])
-        print(self.file_queue)
+        self.file_queue = tf.train.string_input_producer([self.tf_filepath], num_epochs=1)
         self.flags = tf.app.flags.FLAGS
 
     def __decode_image_label(self, reader):
