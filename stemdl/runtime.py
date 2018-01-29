@@ -42,7 +42,7 @@ class _LoggerHook(tf.train.SessionRunHook):
             self._start_time = current_time
 
             loss_value = run_values.results
-            examples_per_sec = self.flags.log_frequency * self.flags.batch_size * self.num_gpus / duration
+            examples_per_sec = self.num_gpus * self.flags.log_frequency * self.flags.batch_size / duration
             sec_per_batch = float(duration / self.flags.log_frequency)
             elapsed_epochs = self.num_gpus * self._step * self.flags.batch_size * 1.0 / self.flags.NUM_EXAMPLES_PER_EPOCH
             self.epoch += elapsed_epochs
@@ -407,7 +407,8 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
                     images, labels = reader._make_batch(distort=flags.train_distort, noise_min=0.0, noise_max=0.25,
                                                         random_glimpses='normal', geometric=True)
                 else:
-                    dset = inputs.DatasetTFRecords(filename_queue, flags)
+                    dset = inputs.DatasetTFRecords(filename_queue, flags,
+                                                   num_gpus=num_GPUS, using_horovod=True)
                     image, label = dset.decode_image_label()
                     # Process images and generate examples batch
                     images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
