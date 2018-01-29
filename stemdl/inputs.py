@@ -6,6 +6,7 @@ email: laanaitn@ornl.gov
 
 import tensorflow as tf
 import numpy as np
+from multiprocessing import cpu_count
 
 
 class DatasetTFRecords(object):
@@ -14,9 +15,28 @@ class DatasetTFRecords(object):
     Data is read from a TFRecords filename queue.
     """
 
-    def __init__(self, filename_queue, flags):
+    def __init__(self, filename_queue, flags, num_gpus=1, train_cpu_frac=1,
+                 max_cpu_utilization=0.9, using_horovod=False):
         self.filename_queue = filename_queue
         self.flags = flags
+
+        max_cpu_utilization = max(0, min(1, max_cpu_utilization))
+        self.max_threads = int(max_cpu_utilization * cpu_count())
+        self.train_cpu_frac = max(0, min(1, train_cpu_frac))
+        if using_horovod:
+            self.max_threads = self.max_threads // num_gpus
+
+        if self.train_cpu_frac == 1:
+            print('WARNING: All threads devoted to training, cannot use any for evaluation')
+
+        print('***************************************************')
+        print('\t\tUsing DatasetTFRecords')
+        print('Original parameters:')
+        print('Horvod: {}, GPUs: {}, Max CPU utilization: {}, Training fraction allowed: {}'.format(using_horovod, num_gpus, max_cpu_utilization,
+                                                                                        self.train_cpu_frac))
+        print('CPU Threads: available: {}, allowed: {}'.format(int(cpu_count()), self.max_threads))
+
+        print('***************************************************')
 
     def decode_image_label(self):
         """
@@ -65,10 +85,12 @@ class DatasetTFRecords(object):
 
         # Generate batch
         #TODO: Need to change num_threads so that it's determined from horovod total_rank
+        num_threads = int(self.max_threads * self.train_cpu_frac)
+
         images, labels = tf.train.shuffle_batch([image, label],
                                                 batch_size=self.flags.batch_size,
                                                 capacity=10000,
-                                                num_threads=10,
+                                                num_threads=num_threads,
                                                 min_after_dequeue=1000,
                                                 name='shuffle_batch')
 
