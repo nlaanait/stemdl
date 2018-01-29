@@ -28,7 +28,7 @@ class CifarEgReader(object):
         self.mode = mode
 
         max_cpu_utilization = max(0, min(1, max_cpu_utilization))
-        self.max_threads = int(max_cpu_utilization * 2 * cpu_count())
+        self.max_threads = int(max_cpu_utilization * cpu_count())
         self.train_cpu_frac = max(0, min(1, train_cpu_frac))
         if self.train_cpu_frac == 1:
             print('WARNING: All threads devoted to training, cannot use any for evaluation')
@@ -38,11 +38,12 @@ class CifarEgReader(object):
         print('Original parameters:')
         print('GPUs: {}, Max CPU utilization: {}, Training fraction allowed: {}'.format(num_gpus, max_cpu_utilization,
                                                                                         self.train_cpu_frac))
-        print('CPU Threads: available: {}, allowed: {}'.format(int(2 * cpu_count()), self.max_threads))
 
         if using_horovod:
             self.max_threads = self.max_threads // num_gpus
             num_gpus = 1
+
+        print('CPU Threads: available: {}, allowed: {}'.format(int(cpu_count()), self.max_threads))
 
         self.num_gpus = num_gpus
         self.batch_size = num_gpus * self.flags.batch_size
@@ -113,7 +114,7 @@ class CifarEgReader(object):
             dataset = tf.data.TFRecordDataset(filenames).repeat()
         else:
             """
-            TFRecordDataset.__init__ (from tensorflow.contrib.data.python.ops.readers) is deprecated and will be removed in 
+            TFRecordDataset.__init__ (from tensorflow.contrib.data.python.ops.readers) is deprecated and will be removed in
             a future version.
             Instructions for updating: Use `tf.data.TFRecordDataset`.
             """
@@ -130,13 +131,13 @@ class CifarEgReader(object):
             dataset = dataset.map(self._parser, num_parallel_calls=num_threads)
         else:
             """
-            calling Dataset.map (from tensorflow.contrib.data.python.ops.dataset_ops) with output_buffer_size is deprecated 
+            calling Dataset.map (from tensorflow.contrib.data.python.ops.dataset_ops) with output_buffer_size is deprecated
             and will be removed in a future version.
 
             num_threads is deprecated and will be removed in a future version.
 
             Instructions for updating:
-            Replace `num_threads=T` with `num_parallel_calls=T`. Replace `output_buffer_size=N` with `ds.prefetch(N)` on 
+            Replace `num_threads=T` with `num_parallel_calls=T`. Replace `output_buffer_size=N` with `ds.prefetch(N)` on
             the returned dataset.
             """
             dataset = dataset.map(self._parser, num_threads=num_threads, output_buffer_size=2 * self.batch_size)
