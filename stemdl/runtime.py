@@ -24,7 +24,7 @@ class _LoggerHook(tf.train.SessionRunHook):
         self.total_loss = total_loss
         self.num_gpus = num_gpus
         self.last_step = last_step
-        self.net_ops = net_ops * num_gpus
+        self.net_ops = net_ops * num_gpus * self.flags.batch_size * self.flags.log_frequency
 
     def begin(self):
         self._step = -1 + self.last_step
