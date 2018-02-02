@@ -198,7 +198,7 @@ class ConvNet(object):
                     """
                     Note that tf.variance_scaling_initializer and tf.contrib.layers.variance_scaling_initializer
                     take the same kinds of parameters with different names and formats.
-                    
+
                     However, tf.variance_scaling_initializer doesn't seem to be available on TF 1.2.1 on the DGX1
                     """
                     params_copy['factor'] = params_copy.pop('scale', 1)
@@ -324,7 +324,13 @@ class ConvNet(object):
         # Keep tabs on the number of weights and memory
         self.num_weights += np.cumprod(kernel_shape)[-1]
         self.mem += np.cumprod(output.get_shape())[-1]*self.bytesize / 1024
-        # batch * width * height * in_channels * kern_h * kern_w * features
+        # input = batch_size (ignore), channels, height, width
+        # http://imatge-upc.github.io/telecombcn-2016-dlcv/slides/D2L1-memory.pdf
+        this_ops = np.prod(params['kernel'] + input.get_shape().as_list()[1:] + [features])
+        if verbose:
+            print('\tops: %3.2e' % (this_ops))
+        """
+        # batch * width * height * in_channels * (kern_h * kern_w * channels)
         # at each location in the image:
         ops_per_conv = 2 * np.prod(params['kernel'] + [input.shape[1].value])
         # number of convolutions on the image for a single filter / output channel (stride brings down the number)
@@ -334,6 +340,7 @@ class ConvNet(object):
         if verbose:
             print('\t%d ops/conv, %d convs/filter, %d filters = %3.2e ops' % (ops_per_conv, convs_per_filt,
                                                                               params['features'], this_ops))
+        """
         self.ops += this_ops
 
         return output, kernel
@@ -442,6 +449,11 @@ class ConvNet(object):
         self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
         # equation =  inputs * weights + bias for a single example
         # equation = [features] * [features, nodes]
+        # http://imatge-upc.github.io/telecombcn-2016-dlcv/slides/D2L1-memory.pdf
+        this_ops = input.get_shape().as_list()[1] * params['weights']
+        if verbose:
+            print('\tops: %3.2e' % (this_ops))
+        """
         # for each element in the output - feature^2 multiplies + feature^2 additions
         ops_per_element = 2 * dim_input ** 2
         # number of elements in outputs = batch * hidden nodes in this layer
@@ -454,6 +466,7 @@ class ConvNet(object):
             print('\t%d ops/element, %d dot products, %d additions for bias = %3.2e ops' % (ops_per_element,
                                                                                                   num_dot_prods,
                                                                                             bias_ops, this_ops))
+        """
         self.ops += this_ops
         return output
 
