@@ -77,11 +77,11 @@ class DatasetTFRecords(object):
         else:
             image = image_raw
 
-        # if running with half-precision we cast to float16
-        if self.flags.IMAGE_FP16:
-            image = tf.cast(image, tf.float16)
-        else:
-            image = tf.cast(image, tf.float32)
+        # # if running with half-precision we cast to float16
+        # if self.flags.IMAGE_FP16:
+        #     image = tf.cast(image, tf.float16)
+        # else:
+        #     image = tf.cast(image, tf.float32)
 
         # Generate batch
         #TODO: Need to change num_threads so that it's determined from horovod total_rank
@@ -106,6 +106,10 @@ class DatasetTFRecords(object):
         # change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
 
+        # if running with half-precision we cast back to float16
+        if self.flags.IMAGE_FP16:
+            images = tf.cast(images, tf.float16)
+
         return images, labels
 
     def eval_images_labels_batch(self, image_raw, label, distort= False, noise_min=0., noise_max=0.3,
@@ -122,11 +126,11 @@ class DatasetTFRecords(object):
         else:
             image = image_raw
 
-        # if running with half-precision we cast back to float16
-        if self.flags.IMAGE_FP16:
-            image = tf.image.convert_image_dtype(image, tf.float16)
-        else:
-            image = tf.cast(image, tf.float32)
+        # # if running with half-precision we cast back to float16
+        # if self.flags.IMAGE_FP16:
+        #     image = tf.image.convert_image_dtype(image, tf.float16)
+        # else:
+        #     image = tf.cast(image, tf.float32)
 
         # Generate batch
         images, labels = tf.train.shuffle_batch([image, label],
@@ -147,6 +151,10 @@ class DatasetTFRecords(object):
 
         # change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
+
+        # if running with half-precision we cast back to float16
+        if self.flags.IMAGE_FP16:
+           images = tf.cast(images,tf.float16)
 
         return images, labels
 

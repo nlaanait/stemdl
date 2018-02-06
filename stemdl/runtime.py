@@ -64,6 +64,8 @@ def _add_loss_summaries(total_loss, losses, flags, summaries=False):
     """
     # Compute the moving average of all individual losses and the total loss.
     loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
+    # if flags.IMAGE_FP16:
+    #     losses = losses*
     loss_averages_op = loss_averages.apply(losses + [total_loss])
 
     # Attach a scalar summary to all individual losses and the total loss;
@@ -203,7 +205,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
     # Start building the graph
     graph = tf.Graph()
     with graph.as_default(), tf.device(flags.CPU_ID):
-        global_step = tf.contrib.framework.get_or_create_global_step()
+        global_step = tf.train.get_or_create_global_step()
 
         # Setup data stream
         with tf.name_scope('Input') as _:
@@ -406,14 +408,16 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
                     reader = inputs_dev_cifar_eg.CifarEgReader(data_path, flags, num_gpus=num_GPUS, using_horovod=True)
                     images, labels = reader._make_batch(distort=flags.train_distort, noise_min=0.0, noise_max=0.25,
                                                         random_glimpses='normal', geometric=True)
+
                 else:
                     dset = inputs.DatasetTFRecords(filename_queue, flags,
-                                                   num_gpus=num_GPUS, using_horovod=True)
+                                                   num_gpus=num_GPUS, using_horovod=True, max_cpu_utilization=0.1)
                     image, label = dset.decode_image_label()
                     # Process images and generate examples batch
                     images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
                                                                     noise_min=0.0, noise_max=0.25,
                                                                     random_glimpses='normal', geometric=True)
+
 
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
@@ -446,6 +450,11 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
         losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
         regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
 
+        # scale the losses
+        if flags.IMAGE_FP16:
+            scaling = 128
+
+
         # Calculate the total loss for the current worker
         total_loss = tf.add_n(losses + regularization, name='total_loss')
 
@@ -465,7 +474,20 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
         #######################################
 
         # Apply gradients to trainable variables
-        apply_gradient_op = opt.apply_gradients(grads_vars, global_step=global_step)
+        if flags.IMAGE_FP16:
+            # One of the gradients is None so below won't work
+            #TODO: check why one of the gradients is None. Probably variable initialized as trainable and shouldn't be
+            #grads_vars = [(grads[0]/scaling,grads[1]) for grads in grads_vars]
+            new_grads_vars = []
+            for grads in grads_vars:
+                if grads[0] is not None: new_grads = grads[0]/scaling
+                else: new_grads = grads[0]
+                new_grads_vars.append((new_grads, grads[1]))
+
+            apply_gradient_op = opt.apply_gradients(new_grads_vars, global_step=global_step)
+        else:
+            apply_gradient_op = opt.apply_gradients(grads_vars, global_step=global_step)
+
 
         # Add Summary histograms for trainable variables and their gradients
         summary_merged = tf.summary.merge_all()
@@ -505,7 +527,7 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
                                                       hvd.BroadcastGlobalVariablesHook(0),
                                                       logHook], config=config,
                                                save_summaries_steps=None, save_summaries_secs=None,
-                                               save_checkpoint_secs=120) as mon_sess:
+                                               save_checkpoint_secs=300) as mon_sess:
             while not mon_sess.should_stop():
                 if logHook._step % flags.save_frequency == 0:
                     # Train, Record stats and save summaries

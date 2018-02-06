@@ -55,7 +55,7 @@ class ConvNet(object):
             self.reuse = True
         self.bytesize = 2
         if not self.flags.IMAGE_FP16: self.bytesize = 4
-        self.mem = np.cumprod(self.images.get_shape())[-1]*self.bytesize/1024  # (in KB)
+        self.mem = np.cumprod(self.images.get_shape().as_list())[-1]*self.bytesize/1024  # (in KB)
         self.ops = 0
         self.initializer = self._get_initializer(hyper_params.get('initializer', None))
         if "batch_norm" in self.hyper_params:
@@ -73,7 +73,7 @@ class ConvNet(object):
         """
         # Initiate 1st layer
         print('Building Neural Net on %s...' % self.scope)
-        print('input: ---, dim: %s memory: %s MB' %(format(self.images.get_shape()), format(self.mem/1024)))
+        print('input: ---, dim: %s memory: %s MB' %(format(self.images.get_shape().as_list()), format(self.mem/1024)))
         layer_name, layer_params = list(self.network.items())[0]
         with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
             out, kernel = self._conv(input=self.images, params=layer_params)
@@ -83,19 +83,19 @@ class ConvNet(object):
             else:
                 out = self._add_bias(input=out, params=layer_params)
             out = self._activate(input=out, name=scope.name, params=layer_params)
-            in_shape = self.images.get_shape()
+            in_shape = self.images.get_shape().as_list()
             # Tensorboard Summaries
             if self.summary:
                 self._activation_summary(out)
                 self._activation_image_summary(out)
                 self._kernel_image_summary(kernel)
 
-            self._print_layer_specs(layer_params, scope, in_shape, out.get_shape())
+            self._print_layer_specs(layer_params, scope, in_shape, out.get_shape().as_list())
 
         # Initiate the remaining layers
         for layer_name, layer_params in list(self.network.items())[1:]:
             with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
-                in_shape = out.get_shape()
+                in_shape = out.get_shape().as_list()
                 if layer_params['type'] == 'convolutional':
                     out, _ = self._conv(input=out, params=layer_params)
                     do_bn = layer_params.get('batch_norm', False)
@@ -122,9 +122,9 @@ class ConvNet(object):
                     if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] == 'linear_output':
-                    in_shape = out.get_shape()
+                    in_shape = out.get_shape().as_list()
                     out = self._linear(input=out, name=scope.name, params=layer_params)
-                    assert out.get_shape()[-1] == self.flags.OUTPUT_DIM, 'Dimensions of the linear output layer' + \
+                    assert out.get_shape().as_list()[-1] == self.flags.OUTPUT_DIM, 'Dimensions of the linear output layer' + \
                                                                          'do not match the expected output set in' + \
                                                                          'tf.app.flags. Check flags or network_config.json'
                     if self.summary: self._activation_summary(out)
@@ -137,7 +137,7 @@ class ConvNet(object):
                 # print layer specs and generate Tensorboard summaries
                 if out is None:
                     raise NotImplementedError('Layer type: ' + layer_params['type'] + ' was not implemented!')
-                out_shape = out.get_shape()
+                out_shape = out.get_shape().as_list()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
 
         print('Total # of layers: %d,  weights: %2.1e, memory: %s MB, ops: %3.2e \n' % (len(self.network),
@@ -146,7 +146,10 @@ class ConvNet(object):
                                                                                         self.ops))
 
         # reference the output
-        self.model_output = out
+        if self.flags.IMAGE_FP16:
+            self.model_output = tf.cast(out, tf.float32)
+        else:
+            self.model_output = out
 
     def _compound_layer(self, out, layer_params, scope):
         """
@@ -323,7 +326,8 @@ class ConvNet(object):
 
         # Keep tabs on the number of weights and memory
         self.num_weights += np.cumprod(kernel_shape)[-1]
-        self.mem += np.cumprod(output.get_shape())[-1]*self.bytesize / 1024
+        self.mem += np.cumprod(output.get_shape().as_list())[-1]*self.bytesize / 1024
+        # batch * width * height * in_channels * kern_h * kern_w * features
         # input = batch_size (ignore), channels, height, width
         # http://imatge-upc.github.io/telecombcn-2016-dlcv/slides/D2L1-memory.pdf
         this_ops = np.prod(params['kernel'] + input.get_shape().as_list()[1:] + [features])
@@ -446,7 +450,7 @@ class ConvNet(object):
 
         # Keep tabs on the number of weights and memory
         self.num_weights += bias_shape[0] + np.cumprod(weights_shape)[-1]
-        self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
+        self.mem += np.cumprod(output.get_shape().as_list())[-1] * self.bytesize / 1024
         # equation =  inputs * weights + bias for a single example
         # equation = [features] * [features, nodes]
         # http://imatge-upc.github.io/telecombcn-2016-dlcv/slides/D2L1-memory.pdf
@@ -516,7 +520,7 @@ class ConvNet(object):
             output = tf.nn.avg_pool(input, kernel_shape, stride_shape, params['padding'], name=name, data_format='NCHW')
 
         # Keep tabs on memory
-        self.mem += np.cumprod(output.get_shape())[-1] * self.bytesize / 1024
+        self.mem += np.cumprod(output.get_shape().as_list())[-1] * self.bytesize / 1024
 
         # at each location in the image:
         # avg: 1 to sum each of the N element, 1 op for avg
@@ -700,12 +704,16 @@ class ConvNet(object):
           Variable Tensor
         """
         # with tf.device(self.flags.CPU_ID):
+
         if regularize:
             var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable,
                                   regularizer=self._weight_decay)
-            return var
+        else:
+            var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
 
-        var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
+        if self.flags.IMAGE_FP16 and trainable:
+            var = tf.cast(var, tf.float16)
+
         return var
 
     def _weight_decay(self, tensor):
