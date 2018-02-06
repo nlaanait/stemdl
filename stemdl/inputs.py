@@ -95,7 +95,8 @@ class DatasetTFRecords(object):
                                                 name='shuffle_batch')
 
         # Extract glimpses from training batch
-        images = self._getGlimpses(images, random=random_glimpses)
+        if random_glimpses is not None:
+            images = self._getGlimpses(images, random=random_glimpses)
 
         # Display the training images in the Tensorboard visualizer.
         tf.summary.image('Train_Images', images, max_outputs=1)
