@@ -396,7 +396,7 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
 
     graph = tf.Graph()
     with graph.as_default(), tf.device('/gpu:%d' % hvd.local_rank()):
-        global_step = tf.contrib.framework.get_or_create_global_step()
+        global_step = tf.train.get_or_create_global_step()
 
         # Setup data stream
         with tf.device(flags.CPU_ID):
@@ -417,7 +417,6 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
                     images, labels = dset.train_images_labels_batch(image, label, distort=flags.train_distort,
                                                                     noise_min=0.0, noise_max=0.25,
                                                                     random_glimpses='normal', geometric=True)
-
 
         # setup optimizer
         opt = get_optimizer(flags, hyper_params, global_step)
