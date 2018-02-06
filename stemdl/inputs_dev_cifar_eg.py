@@ -95,7 +95,7 @@ class CifarEgReader(object):
         return image
 
     def _make_batch(self, distort=False, noise_min=0., noise_max=0.3,
-                    random_glimpses=True, geometric=False):
+                    random_glimpses='normal', geometric=False):
         """Read the images and labels from 'filenames'."""
         self.distort = distort
         self.noise_min = noise_min
@@ -143,7 +143,7 @@ class CifarEgReader(object):
             dataset = dataset.map(self._parser, num_threads=num_threads, output_buffer_size=2 * self.batch_size)
 
         # shuffle records.
-        min_queue_examples = int(self.flags.NUM_EXAMPLES_PER_EPOCH * 0.4)
+        min_queue_examples = int(self.flags.NUM_EXAMPLES_PER_EPOCH * 0.1)
         # Ensure that the capacity is sufficiently large to provide good random shuffling.
         dataset = dataset.shuffle(buffer_size=min_queue_examples + 3 * self.batch_size)
 
@@ -155,7 +155,17 @@ class CifarEgReader(object):
         # Extract glimpses from batch
         # print(images.get_shape().as_list(), labels.get_shape().as_list())
         # at this point the first axis of glimpses becomes batch_size while labels remains None!
-        images = self._get_glimpses(images, random=random_glimpses)
+        if random_glimpses is not None:
+            images = self._get_glimpses(images, random=random_glimpses)
+        else:
+            # the tf.image.extract_glimpse() is necessary to get the correct batch size.
+            size = tf.constant(value=[self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH],
+                               dtype=tf.int32)
+            offs = np.zeros((self.batch_size,), dtype=np.int32)
+            offsets = np.vstack([offs, offs]).T
+            offsets = tf.constant(value=offsets, dtype=tf.float32)
+            images = tf.image.extract_glimpse(images, size, offsets, centered=False,
+                                                     normalized=False, uniform_noise=False, name='batch_glimpses')
         # forcing the first dimension of the labels to be batch size via a reshape:
         labels = tf.reshape(labels, shape=(self.batch_size, self.flags.NUM_CLASSES))
         # print(images.get_shape().as_list(), labels.get_shape().as_list())
@@ -259,7 +269,7 @@ class CifarEgReader(object):
             cen_x = tf.random_normal([self.batch_size], mean=x_size / 2, stddev=4.)
             offsets = tf.stack([cen_y, cen_x], axis=1)
 
-        elif not random:
+        else:
             # fixed crop
             cen_y = np.ones((self.batch_size,), dtype=np.int32) * 38
             cen_x = np.ones((self.batch_size,), dtype=np.int32) * 70
