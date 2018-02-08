@@ -125,6 +125,8 @@ class CifarEgReader(object):
         else:
             num_threads = int(self.max_threads * (1-self.train_cpu_frac))
 
+        num_threads = max(1, num_threads)
+
         # Parse records.
         if tf_version > 1.3:
             dataset.prefetch(2 * self.batch_size)
