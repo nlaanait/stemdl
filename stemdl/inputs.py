@@ -26,6 +26,8 @@ class DatasetTFRecords(object):
         if using_horovod:
             self.max_threads = self.max_threads // num_gpus
 
+        self.max_threads = max(1, self.max_threads)
+
         if self.train_cpu_frac == 1:
             print('WARNING: All threads devoted to training, cannot use any for evaluation')
 
@@ -102,7 +104,7 @@ class DatasetTFRecords(object):
         tf.summary.image('Train_Images', images, max_outputs=1)
 
         # resize images using the new flags
-        # images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])
+        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])
 
         # change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
@@ -148,7 +150,7 @@ class DatasetTFRecords(object):
         tf.summary.image('Test_Images', images, max_outputs=1)
 
         # resize images using the new flags
-        #images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])
+        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])
 
         # change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
