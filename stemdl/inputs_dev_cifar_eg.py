@@ -21,9 +21,9 @@ class CifarEgReader(object):
     Images go through some sort of a
     """
 
-    def __init__(self, file_path, flags, mode='train', num_gpus=1, max_cpu_utilization=0.9, train_cpu_frac=1,
+    def __init__(self, file_queue, flags, mode='train', num_gpus=1, max_cpu_utilization=0.9, train_cpu_frac=1,
                  using_horovod=False):
-        self.file_path = file_path
+        self.file_queue = file_queue
         self.flags = flags
         self.mode = mode
 
@@ -107,7 +107,7 @@ class CifarEgReader(object):
         if tf_version < 1:
             raise NotImplementedError('Will not work on TF versions < 1')
 
-        filenames = [self.file_path]
+        filenames = self.file_queue
 
         # Repeat infinitely.
         if tf_version > 1.3:
