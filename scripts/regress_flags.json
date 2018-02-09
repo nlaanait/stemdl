@@ -25,9 +25,9 @@
 	"IMAGE_FP16": {"type":"bool", "value": false, "desc": " Whether to use half-precision format for images."},
 	"LABEL_DTYPE": {"type":"str", "value":"float64", "desc": " precision of label."},
 	"CPU_ID": { "type": "str", "value":"/cpu:0", "desc": "Which CPU to use in a multi-CPU machine.Default 0"},
-	"batch_size_2": { "type": "int", "value":128, "desc": "number of images per batch to propagate through the network. Powers of 2 are processed more efficiently.Default 64."},
+	"batch_size": { "type": "int", "value":128, "desc": "number of images per batch to propagate through the network. Powers of 2 are processed more efficiently.Default 64."},
 
-	"data_path": {"type": "str", "value":"../../data/oxide_perangles_GP_train_85x120.tfrecords", "desc": "path to tfrecords file with images + labels."},
+	"data_dir": {"type": "str", "value":"../../data/oxide_perangles_GP_train_85x120.tfrecords", "desc": "path to tfrecords file with images + labels."},
 	"checkpt_dir": { "type": "str", "value":"stemdl_checkpoint", "desc": "path where to save directory with training data, visualization, and TensorBoard events."},
 	"network_config": { "type": "str", "value":"network_VGG16_w_batch_norm.json", "desc": "path to .json file with neural net architecture."},
 	"hyper_params": { "type": "str", "value":"hyper_params_regressor_custom.json", "desc": "path to .json file with hyper-parameters."},

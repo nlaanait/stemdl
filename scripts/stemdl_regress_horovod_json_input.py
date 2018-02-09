@@ -37,8 +37,10 @@ def main():
         tf.gfile.MakeDirs(eval_dir)
 
     # Set additional tf.app.flags
-    runtime.set_flags(checkpt_dir, eval_dir, FLAGS.batch_size_2, FLAGS.data_path)
-    print(FLAGS.train_dir, FLAGS.eval_dir, FLAGS.batch_size, FLAGS.data_dir)
+    print(checkpt_dir, eval_dir)
+    tf.app.flags.DEFINE_string('train_dir', checkpt_dir, """Directory where to write event logs and checkpoint.""")
+    tf.app.flags.DEFINE_string('eval_dir', eval_dir, """Directory where to write event logs during evaluation.""")
+    print(FLAGS.train_dir, FLAGS.eval_dir)
 
     # load network config file and hyper_parameters
     network_config = io_utils.load_json_network_config(FLAGS.network_config)
@@ -46,9 +48,9 @@ def main():
 
     # train or evaluate
     if FLAGS.mode == 'train':
-        runtime.train_horovod(network_config, hyper_params, FLAGS.data_path, tf.app.flags.FLAGS, num_GPUS=FLAGS.num_gpus)
+        runtime.train_horovod(network_config, hyper_params, FLAGS.data_dir, tf.app.flags.FLAGS, num_GPUS=FLAGS.num_gpus)
     if FLAGS.mode == 'eval':
-        runtime.eval(network_config, hyper_params, FLAGS.data_path, tf.app.flags.FLAGS, num_GPUS=FLAGS.num_gpus)
+        runtime.eval(network_config, hyper_params, FLAGS.data_dir, tf.app.flags.FLAGS, num_GPUS=FLAGS.num_gpus)
 
 
 if __name__ == '__main__':
