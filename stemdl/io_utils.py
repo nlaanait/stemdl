@@ -74,6 +74,8 @@ def load_flags_from_simple_json(file_path, flags, verbose=False):
     image_parms = load_json_hyper_params(file_path)
     for parm_name in image_parms.keys():
         val = image_parms[parm_name]
+        if verbose:
+            print('\t{}: {}'.format(parm_name, val))
         if isinstance(val, bool):
             dtype = 'boolean'
             func = flags.DEFINE_boolean
@@ -96,6 +98,8 @@ def load_flags_from_simple_json(file_path, flags, verbose=False):
 def load_flags_from_json(file_path, flags, verbose=False):
     image_parms = load_json_hyper_params(file_path)
     for parm_name, parm_values in list(image_parms.items()):
+        if verbose:
+            print('\t{}: {}'.format(parm_name, parm_values))
         if parm_values['type'] == 'bool':
             func = flags.DEFINE_boolean
         elif parm_values['type'] == 'int':
