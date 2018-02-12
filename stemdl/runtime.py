@@ -15,6 +15,7 @@ from . import inputs_dev_cifar_eg
 import os
 from collections import OrderedDict
 import horovod.tensorflow as hvd
+from tensorflow.python.client import timeline
 
 
 class _LoggerHook(tf.train.SessionRunHook):
@@ -527,10 +528,16 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
                                                save_summaries_steps=None, save_summaries_secs=None,
                                                save_checkpoint_secs=300) as mon_sess:
             while not mon_sess.should_stop():
+                #TODO: code below does a hardware trace, write summaries and writes a checkpoint at the same time.
+                #  Must be separated.
                 if logHook._step % flags.save_frequency == 0:
                     # Train, Record stats and save summaries
                     _, sum_merged = mon_sess.run([train_op, summary_merged], options=run_options,
                                                  run_metadata=run_metadata)
+                    # Writing trace to json file. open with chrome://tracing
+                    trace = timeline.Timeline(step_stats=run_metadata.step_stats)
+                    with open('timeline.ctf.' + str(hvd.rank()) + '.json', 'w') as f:
+                        f.write(trace.generate_chrome_trace_format())
                     summary_writer.add_run_metadata(run_metadata, 'step %s' % format(logHook._step),
                                                     global_step=logHook._step)
                     summary_writer.add_summary(sum_merged, global_step=logHook._step)
