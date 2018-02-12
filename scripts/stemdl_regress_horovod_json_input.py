@@ -36,12 +36,6 @@ def main():
         tf.gfile.MakeDirs(checkpt_dir)
         tf.gfile.MakeDirs(eval_dir)
 
-    # Set additional tf.app.flags
-    print(checkpt_dir, eval_dir)
-    tf.app.flags.DEFINE_string('train_dir', checkpt_dir, """Directory where to write event logs and checkpoint.""")
-    tf.app.flags.DEFINE_string('eval_dir', eval_dir, """Directory where to write event logs during evaluation.""")
-    print(FLAGS.train_dir, FLAGS.eval_dir)
-
     # load network config file and hyper_parameters
     network_config = io_utils.load_json_network_config(FLAGS.network_config)
     hyper_params = io_utils.load_json_hyper_params(FLAGS.hyper_params)
@@ -49,7 +43,7 @@ def main():
     # train or evaluate
     if FLAGS.mode == 'train':
         runtime.train_horovod(network_config, hyper_params, FLAGS.data_dir, tf.app.flags.FLAGS, num_GPUS=FLAGS.num_gpus)
-    if FLAGS.mode == 'eval':
+    else: #if FLAGS.mode == 'eval':
         runtime.eval(network_config, hyper_params, FLAGS.data_dir, tf.app.flags.FLAGS, num_GPUS=FLAGS.num_gpus)
 
 

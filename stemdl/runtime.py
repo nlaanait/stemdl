@@ -187,7 +187,7 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
     :return: None
     """
     # Check if training is a restart from checkpoint
-    ckpt = tf.train.get_checkpoint_state(flags.train_dir)
+    ckpt = tf.train.get_checkpoint_state(flags.checkpt_dir)
     if ckpt is None:
         last_step = 0
     else:
@@ -330,10 +330,10 @@ def train(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # Stats and summaries
         run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
         run_metadata = tf.RunMetadata()
-        summary_writer = tf.summary.FileWriter(flags.train_dir)
+        summary_writer = tf.summary.FileWriter(flags.checkpt_dir)
 
         # Start Training Session
-        with tf.train.MonitoredTrainingSession(checkpoint_dir=flags.train_dir,
+        with tf.train.MonitoredTrainingSession(checkpoint_dir=flags.checkpt_dir,
                                                hooks=[tf.train.StopAtStepHook(last_step=flags.max_steps),
                                                       tf.train.NanTensorHook(avg_total_loss),logHook], config=config,
                                                save_summaries_steps=None, save_summaries_secs=None,
@@ -371,7 +371,7 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
     :return: None
     """
     # Check if training is a restart from checkpoint
-    ckpt = tf.train.get_checkpoint_state(flags.train_dir)
+    ckpt = tf.train.get_checkpoint_state(flags.checkpt_dir)
     if ckpt is None:
         last_step = 0
     else:
@@ -512,11 +512,11 @@ def train_horovod(network_config, hyper_params, data_path, flags, num_GPUS=1):
         # Stats and summaries
         run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
         run_metadata = tf.RunMetadata()
-        summary_writer = tf.summary.FileWriter(flags.train_dir)
+        summary_writer = tf.summary.FileWriter(flags.checkpt_dir)
 
         # Start Training Session
         if hvd.rank() == 0:
-            checkpoint_dir = flags.train_dir
+            checkpoint_dir = flags.checkpt_dir
         else:
             checkpoint_dir = None
         with tf.train.MonitoredTrainingSession(checkpoint_dir=checkpoint_dir,
@@ -655,7 +655,7 @@ def eval_regress(flags, saver, summary_writer, eval_ops, summary_op, labels, cpu
     with tf.device(device):
         with tf.Session(config=config) as sess:
             # Restore Model from checkpoint
-            ckpt = tf.train.get_checkpoint_state(flags.train_dir)
+            ckpt = tf.train.get_checkpoint_state(flags.checkpt_dir)
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)
                 # Assuming model_checkpoint_path looks something like:
@@ -769,7 +769,7 @@ def eval_classify(flags, saver, summary_writer, eval_ops, summary_op, labels, cp
     with tf.device(device):
         with tf.Session(config=config) as sess:
             # Restore Model from checkpoint
-            ckpt = tf.train.get_checkpoint_state(flags.train_dir)
+            ckpt = tf.train.get_checkpoint_state(flags.checkpt_dir)
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)
                 # Assuming model_checkpoint_path looks something like:
@@ -864,7 +864,7 @@ def set_flags(checkpt_dir, eval_dir, batch_size=64, data_dir=None):
     :param data_dir: as it says.
     :return:
     """
-    tf.app.flags.DEFINE_string('train_dir', checkpt_dir, """Directory where to write event logs and checkpoint.""")
+    tf.app.flags.DEFINE_string('checkpt_dir', checkpt_dir, """Directory where to write event logs and checkpoint.""")
     tf.app.flags.DEFINE_string('eval_dir', eval_dir, """Directory where to write event logs during evaluation.""")
     tf.app.flags.DEFINE_integer('batch_size', batch_size, """Number of images to process in a batch.""")
     tf.app.flags.DEFINE_string('data_dir', data_dir,"""Directory where data tfrecords is located""")
