@@ -1,0 +1,1679 @@
+{
+    "conv0": {
+        "kernel": [
+            7, 
+            7
+        ], 
+        "features": 64, 
+        "activation": "relu", 
+        "padding": "SAME", 
+        "stride": [
+            2, 
+            2
+        ], 
+        "type": "convolutional", 
+        "batch_norm": true
+    }, 
+    "pool0": {
+        "pool_type": "max", 
+        "stride": [
+            2, 
+            2
+        ], 
+        "padding": "SAME", 
+        "type": "pooling", 
+        "kernel": [
+            3, 
+            3
+        ]
+    }, 
+    "res1_1": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 64, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 64, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res1_2": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 64, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 64, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res1_3": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 64, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 64, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "pool1": {
+        "pool_type": "max", 
+        "stride": [
+            2, 
+            2
+        ], 
+        "padding": "SAME", 
+        "type": "pooling", 
+        "kernel": [
+            2, 
+            2
+        ]
+    }, 
+    "res2_1": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 512, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 128, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 128, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res2_2": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 512, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 128, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 128, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res2_3": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 512, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 128, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 128, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res2_4": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 512, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 128, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 128, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "pool2": {
+        "pool_type": "max", 
+        "stride": [
+            2, 
+            2
+        ], 
+        "padding": "SAME", 
+        "type": "pooling", 
+        "kernel": [
+            2, 
+            2
+        ]
+    }, 
+    "res3_1": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_2": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_3": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_4": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_5": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_6": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_7": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_8": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_9": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_10": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_11": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_12": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_13": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_14": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_15": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_16": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_17": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_18": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_19": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_20": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_21": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_22": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res3_23": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 1024, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 256, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "pool3": {
+        "pool_type": "max", 
+        "stride": [
+            2, 
+            2
+        ], 
+        "padding": "SAME", 
+        "type": "pooling", 
+        "kernel": [
+            2, 
+            2
+        ]
+    }, 
+    "res4_1": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 2048, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 512, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 512, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res4_2": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 2048, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 512, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 512, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "res4_3": {
+        "conv3": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 2048, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv2": {
+            "kernel": [
+                3, 
+                3
+            ], 
+            "features": 512, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                3, 
+                3
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "conv1": {
+            "kernel": [
+                1, 
+                1
+            ], 
+            "features": 512, 
+            "activation": "relu", 
+            "padding": "SAME", 
+            "stride": [
+                1, 
+                1
+            ], 
+            "type": "convolutional", 
+            "batch_norm": true
+        }, 
+        "type": "residual"
+    }, 
+    "pool4": {
+        "pool_type": "avg", 
+        "stride": [
+            7, 
+            7
+        ], 
+        "padding": "SAME", 
+        "type": "pooling", 
+        "kernel": [
+            7, 
+            7
+        ]
+    }, 
+    "fc": {
+        "regularize": true, 
+        "weights": 1000, 
+        "activation": "relu", 
+        "bias": 1000, 
+        "type": "fully_connected"
+    }, 
+    "linear_output": {
+        "regularize": false, 
+        "weights": 27, 
+        "bias": 27, 
+        "type": "linear_output"
+    }
+}
