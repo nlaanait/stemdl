@@ -21,10 +21,10 @@ class CifarEgReader(object):
     Images go through some sort of a
     """
 
-    def __init__(self, file_queue, flags, mode='train', num_gpus=1, max_cpu_utilization=0.9, train_cpu_frac=1,
+    def __init__(self, file_queue, params, mode='train', num_gpus=1, max_cpu_utilization=0.9, train_cpu_frac=1,
                  using_horovod=False):
         self.file_queue = file_queue
-        self.flags = flags
+        self.params = params
         self.mode = mode
 
         max_cpu_utilization = max(0, min(1, max_cpu_utilization))
@@ -46,10 +46,10 @@ class CifarEgReader(object):
         print('CPU Threads: available: {}, allowed: {}'.format(int(cpu_count()), self.max_threads))
 
         self.num_gpus = num_gpus
-        self.batch_size = num_gpus * self.flags.batch_size
+        self.batch_size = num_gpus * self.params['batch_size']
 
         print('Horvod: {}, GPUs (re)set to: {}, batch size scaled from {} to {}'.format(
-            using_horovod, self.num_gpus, self.flags.batch_size, self.batch_size))
+            using_horovod, self.num_gpus, self.params['batch_size'], self.batch_size))
         print('***************************************************')
 
     def _parser(self, serialized_example):
@@ -61,13 +61,13 @@ class CifarEgReader(object):
                 'label': tf.FixedLenFeature([], tf.string),
             })
         # decode from byte and reshape label and image
-        label_dtype = tf.as_dtype(self.flags.LABEL_DTYPE)
+        label_dtype = tf.as_dtype(self.params['LABEL_DTYPE'])
         label = tf.decode_raw(features['label'], label_dtype)
-        label.set_shape(self.flags.NUM_CLASSES)
+        label.set_shape(self.params['NUM_CLASSES'])
 
         image = tf.decode_raw(features['image_raw'], tf.float16)
-        image.set_shape([self.flags.IMAGE_HEIGHT * self.flags.IMAGE_WIDTH * self.flags.IMAGE_DEPTH])
-        image = tf.reshape(image, [self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH, self.flags.IMAGE_DEPTH])
+        image.set_shape([self.params['IMAGE_HEIGHT'] * self.params['IMAGE_WIDTH'] * self.params['IMAGE_DEPTH']])
+        image = tf.reshape(image, [self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH'], self.params['IMAGE_DEPTH']])
         # standardize the image to [-1.,1.]
         image = tf.image.per_image_standardization(image)
 
@@ -84,7 +84,7 @@ class CifarEgReader(object):
             image = self._distort(image, self.noise_min, self.noise_max, geometric=self.geometric)
 
         # if running with half-precision we cast to float16
-        if self.flags.IMAGE_FP16:
+        if self.params['IMAGE_FP16']:
             if self.mode == 'train':
                 image = tf.cast(image, tf.float16)
             else:
@@ -145,7 +145,7 @@ class CifarEgReader(object):
             dataset = dataset.map(self._parser, num_threads=num_threads, output_buffer_size=2 * self.batch_size)
 
         # shuffle records.
-        min_queue_examples = int(self.flags.NUM_EXAMPLES_PER_EPOCH * 0.1)
+        min_queue_examples = int(self.params['NUM_EXAMPLES_PER_EPOCH'] * 0.1)
         # Ensure that the capacity is sufficiently large to provide good random shuffling.
         dataset = dataset.shuffle(buffer_size=min_queue_examples + 3 * self.batch_size)
 
@@ -161,7 +161,7 @@ class CifarEgReader(object):
             images = self._get_glimpses(images, random=random_glimpses)
         else:
             # the tf.image.extract_glimpse() is necessary to get the correct batch size.
-            size = tf.constant(value=[self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH],
+            size = tf.constant(value=[self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']],
                                dtype=tf.int32)
             offs = np.zeros((self.batch_size,), dtype=np.int32)
             offsets = np.vstack([offs, offs]).T
@@ -169,14 +169,14 @@ class CifarEgReader(object):
             images = tf.image.extract_glimpse(images, size, offsets, centered=False,
                                                      normalized=False, uniform_noise=False, name='batch_glimpses')
         # forcing the first dimension of the labels to be batch size via a reshape:
-        labels = tf.reshape(labels, shape=(self.batch_size, self.flags.NUM_CLASSES))
+        labels = tf.reshape(labels, shape=(self.batch_size, self.params['NUM_CLASSES']))
         # print(images.get_shape().as_list(), labels.get_shape().as_list())
 
         # Display the images in the Tensorboard visualizer.
         tf.summary.image(self.mode + '_Images', images, max_outputs=1)
 
-        # resize images using the new flags
-        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])
+        # resize images using the new params
+        images = tf.image.resize_images(images, [self.params['RESIZE_HEIGHT'], self.params['RESIZE_WIDTH']])
 
         # change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
@@ -224,19 +224,19 @@ class CifarEgReader(object):
 
         # 2. Apply isotropic scaling, sampled from a normal distribution.
         zoom_factor = np.random.normal(1.0, 0.05, size=1)
-        crop_y_size, crop_x_size = self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH
+        crop_y_size, crop_x_size = self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']
         size = tf.constant(value=[int(np.round(crop_y_size / zoom_factor)),
                                   int(np.round(crop_x_size / zoom_factor))], dtype=tf.int32)
 
-        cen_y = np.ones((1,), dtype=np.float32) * int(self.flags.IMAGE_HEIGHT / 2)
-        cen_x = np.ones((1,), dtype=np.float32) * int(self.flags.IMAGE_WIDTH / 2)
+        cen_y = np.ones((1,), dtype=np.float32) * int(self.params['IMAGE_HEIGHT'] / 2)
+        cen_x = np.ones((1,), dtype=np.float32) * int(self.params['IMAGE_WIDTH'] / 2)
         offsets = tf.stack([cen_y, cen_x], axis=1)
         scaled_image = tf.expand_dims(aff_image, axis=0)
         scaled_image = tf.image.extract_glimpse(scaled_image, size, offsets, centered=False, normalized=False,
                                                 uniform_noise=False)
         scaled_image = tf.reshape(scaled_image, (scaled_image.shape[1].value, scaled_image.shape[2].value,
                                                  scaled_image.shape[3].value))
-        scaled_image = tf.image.resize_images(scaled_image, (self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH))
+        scaled_image = tf.image.resize_images(scaled_image, (self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']))
 
         # Apply noise
         alpha = tf.random_uniform([1], minval=noise_min, maxval=noise_max)
@@ -252,8 +252,8 @@ class CifarEgReader(object):
         :return: batch of glimpses
         """
         # set size of glimpses
-        y_size, x_size = self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH
-        crop_y_size, crop_x_size = self.flags.CROP_HEIGHT, self.flags.CROP_WIDTH
+        y_size, x_size = self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']
+        crop_y_size, crop_x_size = self.params['CROP_HEIGHT'], self.params['CROP_WIDTH']
         size = tf.constant(value=[crop_y_size, crop_x_size],
                            dtype=tf.int32)
 

@@ -13,16 +13,14 @@ sys.path.append('../')
 from stemdl import runtime
 from stemdl import io_utils
 
-io_utils.load_flags_from_json('regress_flags.json', tf.app.flags)
-
-FLAGS = tf.app.flags.FLAGS
-
 
 def main():
     # initiate horovod
     hvd.init()
 
-    checkpt_dir = FLAGS.checkpt_dir
+    params = io_utils.get_dict_from_json('../json/regress_flags.json')
+
+    checkpt_dir = params['checkpt_dir']
     # Also need a directory within the checkpoint dir for event files coming from eval
     eval_dir = os.path.join(checkpt_dir, '_eval')
 
@@ -36,15 +34,18 @@ def main():
         tf.gfile.MakeDirs(checkpt_dir)
         tf.gfile.MakeDirs(eval_dir)
 
+    params['train_dir'] = checkpt_dir
+    params['eval_dir'] = eval_dir
+
     # load network config file and hyper_parameters
-    network_config = io_utils.load_json_network_config(FLAGS.network_config)
-    hyper_params = io_utils.load_json_hyper_params(FLAGS.hyper_params)
+    network_config = io_utils.load_json_network_config(params['network_config'])
+    hyper_params = io_utils.load_json_hyper_params(params['hyper_params'])
 
     # train or evaluate
-    if FLAGS.mode == 'train':
-        runtime.train_horovod(network_config, hyper_params, FLAGS.data_dir, tf.app.flags.FLAGS, num_GPUS=FLAGS.num_gpus)
-    else: #if FLAGS.mode == 'eval':
-        runtime.eval(network_config, hyper_params, FLAGS.data_dir, tf.app.flags.FLAGS, num_GPUS=FLAGS.num_gpus)
+    if params['mode'] == 'train':
+        runtime.train_horovod(network_config, hyper_params, params['data_dir'], params, num_GPUS=params['num_gpus'])
+    else:
+        runtime.eval(network_config, hyper_params, params['data_dir'], params, num_GPUS=params['num_gpus'])
 
 
 if __name__ == '__main__':

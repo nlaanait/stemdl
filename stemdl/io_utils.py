@@ -95,6 +95,15 @@ def load_flags_from_simple_json(file_path, flags, verbose=False):
         func(parm_name, val, """""")
 
 
+def get_dict_from_json(file_path):
+    json_dict = load_json_hyper_params(file_path)
+    new_dict = dict()
+    for key, val in json_dict.items():
+        assert isinstance(val, dict)
+        new_dict[key] = val['value']
+    return new_dict
+
+
 def load_flags_from_json(file_path, flags, verbose=False):
     image_parms = load_json_hyper_params(file_path)
     for parm_name, parm_values in list(image_parms.items()):

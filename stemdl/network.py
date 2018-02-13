@@ -20,10 +20,10 @@ class ConvNet(object):
     """
     Vanilla Convolutional Neural Network (Feed-Forward).
     """
-    def __init__(self, scope, flags, global_step, hyper_params, network, images, labels, operation='train',
+    def __init__(self, scope, params, global_step, hyper_params, network, images, labels, operation='train',
                  summary=False):
         """
-        :param flags: tf.app.flags
+        :param params: dict
         :param global_step: as it says
         :param hyper_params: dictionary, hyper-parameters
         :param network: collections.OrderedDict, specifies ConvNet layers
@@ -34,7 +34,7 @@ class ConvNet(object):
         :return:
         """
         self.scope = scope
-        self.flags = flags
+        self.params = params
         self.global_step = global_step
         self.hyper_params = hyper_params
         self.network = network
@@ -49,12 +49,12 @@ class ConvNet(object):
         self.summary = summary
         self.num_weights = 0
         self.misc_ops = []
-        if self.scope == self.flags.worker_name+'_0/' or self.scope == 'horovod' or self.operation == 'eval':
+        if self.scope == self.params['worker_name'] +'_0/' or self.scope == 'horovod' or self.operation == 'eval':
             self.reuse = None
         else:
             self.reuse = True
         self.bytesize = 2
-        if not self.flags.IMAGE_FP16: self.bytesize = 4
+        if not self.params['IMAGE_FP16']: self.bytesize = 4
         self.mem = np.cumprod(self.images.get_shape().as_list())[-1]*self.bytesize/1024  # (in KB)
         self.ops = 0
         self.initializer = self._get_initializer(hyper_params.get('initializer', None))
@@ -124,9 +124,8 @@ class ConvNet(object):
                 if layer_params['type'] == 'linear_output':
                     in_shape = out.get_shape().as_list()
                     out = self._linear(input=out, name=scope.name, params=layer_params)
-                    assert out.get_shape().as_list()[-1] == self.flags.OUTPUT_DIM, 'Dimensions of the linear output layer' + \
-                                                                         'do not match the expected output set in' + \
-                                                                         'tf.app.flags. Check flags or network_config.json'
+                    assert out.get_shape().as_list()[-1] == self.params['OUTPUT_DIM'], 'Dimensions of the linear output layer' + \
+                                                                         'do not match the expected output set in the params'
                     if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] not in ['convolutional', 'pooling', 'fully_connected', 'linear_output']:
@@ -146,7 +145,7 @@ class ConvNet(object):
                                                                                         self.ops))
 
         # reference the output
-        if self.flags.IMAGE_FP16:
+        if self.params['IMAGE_FP16']:
             self.model_output = tf.cast(out, tf.float32)
         else:
             self.model_output = out
@@ -253,7 +252,7 @@ class ConvNet(object):
             "Type of regression loss function must be 'Huber' or 'MSE'"
         if params['type'] == 'Huber':
             # decay the residual cutoff exponentially
-            decay_steps = int(self.flags.NUM_EXAMPLES_PER_EPOCH / self.flags.batch_size \
+            decay_steps = int(self.params['NUM_EXAMPLES_PER_EPOCH'] / self.params['batch_size'] \
                               * params['residual_num_epochs_decay'])
             initial_residual = params['residual_initial']
             min_residual = params['residual_minimum']
@@ -284,9 +283,9 @@ class ConvNet(object):
         cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
             labels=labels, logits=self.model_output)
         cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy')
-        precision_1 = tf.scalar_mul(1. / self.flags.batch_size,
+        precision_1 = tf.scalar_mul(1. / self.params['batch_size'],
                                     tf.reduce_sum(tf.cast(tf.nn.in_top_k(self.model_output, labels, 1), tf.float32)))
-        precision_5 = tf.scalar_mul(1. / self.flags.batch_size,
+        precision_5 = tf.scalar_mul(1. / self.params['batch_size'],
                                     tf.reduce_sum(tf.cast(tf.nn.in_top_k(self.model_output, labels, 5), tf.float32)))
         if self.summary :
             tf.summary.scalar('precision@1_train', precision_1)
@@ -415,7 +414,7 @@ class ConvNet(object):
         :return:
         """
         assert params['weights'] == params['bias'], " weights and bias outer dimensions do not match"
-        input_reshape = tf.reshape(input,[self.flags.batch_size, -1])
+        input_reshape = tf.reshape(input,[self.params['batch_size'], -1])
         dim_input = input_reshape.shape[1].value
         # print(dim_input,list(params['weights']))
         weights_shape = [dim_input, params['weights']]
@@ -461,7 +460,7 @@ class ConvNet(object):
         # for each element in the output - feature^2 multiplies + feature^2 additions
         ops_per_element = 2 * dim_input ** 2
         # number of elements in outputs = batch * hidden nodes in this layer
-        num_dot_prods = params['weights']  # * self.flags.batch_size
+        num_dot_prods = params['weights']  # * self.params['batch_size
         # addition of bias = nodes number of additions
         bias_ops = params['weights']
         # batch * nodes * 2 * features + nodes <- 2 comes in for the dot prod + sum
@@ -657,7 +656,6 @@ class ConvNet(object):
         Add summaries for losses in model.
         Generates moving average for all losses and associated summaries for
         visualizing the performance of the network.
-        :param flags:
         :param total_loss:
         :param losses:
         :return: loss_averages_op
@@ -703,7 +701,7 @@ class ConvNet(object):
         Returns:
           Variable Tensor
         """
-        # with tf.device(self.flags.CPU_ID):
+        # with tf.device(self.params['CPU_ID):
 
         if regularize:
             var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable,
@@ -711,7 +709,7 @@ class ConvNet(object):
         else:
             var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
 
-        if self.flags.IMAGE_FP16 and trainable:
+        if self.params['IMAGE_FP16'] and trainable:
             var = tf.cast(var, tf.float16)
 
         return var

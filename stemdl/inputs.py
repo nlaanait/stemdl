@@ -15,10 +15,10 @@ class DatasetTFRecords(object):
     Data is read from a TFRecords filename queue.
     """
 
-    def __init__(self, filename_queue, flags, num_gpus=1, train_cpu_frac=1,
+    def __init__(self, filename_queue, params, num_gpus=1, train_cpu_frac=1,
                  max_cpu_utilization=0.9, using_horovod=False):
         self.filename_queue = filename_queue
-        self.flags = flags
+        self.params = params
 
         max_cpu_utilization = max(0, min(1, max_cpu_utilization))
         self.max_threads = int(max_cpu_utilization * cpu_count())
@@ -55,12 +55,12 @@ class DatasetTFRecords(object):
                 'label': tf.FixedLenFeature([], tf.string),
             })
         # decode from byte and reshape label and image
-        label_dtype = tf.as_dtype(self.flags.LABEL_DTYPE)
+        label_dtype = tf.as_dtype(self.params['LABEL_DTYPE'])
         label = tf.decode_raw(features['label'], label_dtype)
-        label.set_shape(self.flags.NUM_CLASSES)
+        label.set_shape(self.params['NUM_CLASSES'])
         image = tf.decode_raw(features['image_raw'], tf.float16)
-        image.set_shape([self.flags.IMAGE_HEIGHT * self.flags.IMAGE_WIDTH * self.flags.IMAGE_DEPTH])
-        image = tf.reshape(image, [self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH, self.flags.IMAGE_DEPTH])
+        image.set_shape([self.params['IMAGE_HEIGHT'] * self.params['IMAGE_WIDTH'] * self.params['IMAGE_DEPTH']])
+        image = tf.reshape(image, [self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH'], self.params['IMAGE_DEPTH']])
         # standardize the image to [-1.,1.]
         image = tf.image.per_image_standardization(image)
         return image, label
@@ -80,7 +80,7 @@ class DatasetTFRecords(object):
             image = image_raw
 
         # # if running with half-precision we cast to float16
-        # if self.flags.IMAGE_FP16:
+        # if self.params['IMAGE_FP16:
         #     image = tf.cast(image, tf.float16)
         # else:
         #     image = tf.cast(image, tf.float32)
@@ -90,7 +90,7 @@ class DatasetTFRecords(object):
         num_threads = int(self.max_threads * self.train_cpu_frac)
 
         images, labels = tf.train.shuffle_batch([image, label],
-                                                batch_size=self.flags.batch_size,
+                                                batch_size=self.params['batch_size'],
                                                 capacity=10000,
                                                 num_threads=num_threads,
                                                 min_after_dequeue=1000,
@@ -103,14 +103,14 @@ class DatasetTFRecords(object):
         # Display the training images in the Tensorboard visualizer.
         tf.summary.image('Train_Images', images, max_outputs=1)
 
-        # resize images using the new flags
-        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])
+        # resize images using the new params
+        images = tf.image.resize_images(images, [self.params['RESIZE_HEIGHT'], self.params['RESIZE_WIDTH']])
 
         # change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
 
         # if running with half-precision we cast back to float16
-        if self.flags.IMAGE_FP16:
+        if self.params['IMAGE_FP16']:
             images = tf.cast(images, tf.float16)
 
         return images, labels
@@ -130,14 +130,14 @@ class DatasetTFRecords(object):
             image = image_raw
 
         # # if running with half-precision we cast back to float16
-        # if self.flags.IMAGE_FP16:
+        # if self.params['IMAGE_FP16:
         #     image = tf.image.convert_image_dtype(image, tf.float16)
         # else:
         #     image = tf.cast(image, tf.float32)
 
         # Generate batch
         images, labels = tf.train.shuffle_batch([image, label],
-                                                batch_size=self.flags.batch_size,
+                                                batch_size=self.params['batch_size'],
                                                 capacity=5100,
                                                 num_threads=4,
                                                 min_after_dequeue=100,
@@ -149,14 +149,14 @@ class DatasetTFRecords(object):
         # Display the training images in the visualizer.
         tf.summary.image('Test_Images', images, max_outputs=1)
 
-        # resize images using the new flags
-        images = tf.image.resize_images(images, [self.flags.RESIZE_HEIGHT, self.flags.RESIZE_WIDTH])
+        # resize images using the new params
+        images = tf.image.resize_images(images, [self.params['RESIZE_HEIGHT'], self.params['RESIZE_WIDTH']])
 
         # change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
 
         # if running with half-precision we cast back to float16
-        if self.flags.IMAGE_FP16:
+        if self.params['IMAGE_FP16']:
            images = tf.cast(images,tf.float16)
 
         return images, labels
@@ -200,11 +200,11 @@ class DatasetTFRecords(object):
                                            interpolation='BILINEAR')
         # 2. Apply isotropic scaling, sampled from a normal distribution.
         zoom_factor = np.random.normal(1.0, 0.05, size=1)
-        crop_y_size, crop_x_size = self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH
+        crop_y_size, crop_x_size = self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']
         size = tf.constant(value=[int(np.round(crop_y_size / zoom_factor)),
                                   int(np.round(crop_x_size / zoom_factor))], dtype=tf.int32)
-        cen_y = np.ones((1,), dtype=np.float32) * int(self.flags.IMAGE_HEIGHT / 2)
-        cen_x = np.ones((1,), dtype=np.float32) * int(self.flags.IMAGE_WIDTH / 2)
+        cen_y = np.ones((1,), dtype=np.float32) * int(self.params['IMAGE_HEIGHT'] / 2)
+        cen_x = np.ones((1,), dtype=np.float32) * int(self.params['IMAGE_WIDTH'] / 2)
         offsets = tf.stack([cen_y, cen_x], axis=1)
         scaled_image = tf.expand_dims(aff_image, axis=0)
         scaled_image = tf.image.extract_glimpse(scaled_image, size, offsets,
@@ -213,7 +213,7 @@ class DatasetTFRecords(object):
                                          uniform_noise=False)
         scaled_image = tf.reshape(scaled_image, (scaled_image.shape[1].value, scaled_image.shape[2].value,
                                                  scaled_image.shape[3].value))
-        scaled_image = tf.image.resize_images(scaled_image, (self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH))
+        scaled_image = tf.image.resize_images(scaled_image, (self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']))
 
         # Apply noise
         alpha = tf.random_uniform([1], minval=noise_min, maxval=noise_max)
@@ -229,8 +229,8 @@ class DatasetTFRecords(object):
         :return: batch of glimpses
         """
         # set size of glimpses
-        y_size, x_size = self.flags.IMAGE_HEIGHT, self.flags.IMAGE_WIDTH
-        crop_y_size, crop_x_size = self.flags.CROP_HEIGHT, self.flags.CROP_WIDTH
+        y_size, x_size = self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']
+        crop_y_size, crop_x_size = self.params['CROP_HEIGHT'], self.params['CROP_WIDTH']
         size = tf.constant(value=[crop_y_size, crop_x_size],
                            dtype=tf.int32)
         random = kwargs.get('random', False)
@@ -239,20 +239,20 @@ class DatasetTFRecords(object):
             # generate uniform random window centers for the batch with overlap with input
             y_low, y_high = int(crop_y_size / 2), int(y_size - crop_y_size / 2)
             x_low, x_high = int(crop_x_size / 2), int(x_size - crop_x_size / 2)
-            cen_y = tf.random_uniform([self.flags.batch_size], minval=y_low, maxval=y_high)
-            cen_x = tf.random_uniform([self.flags.batch_size], minval=x_low, maxval=x_high)
+            cen_y = tf.random_uniform([self.params['batch_size']], minval=y_low, maxval=y_high)
+            cen_x = tf.random_uniform([self.params['batch_size']], minval=x_low, maxval=x_high)
             offsets = tf.stack([cen_y, cen_x], axis=1)
 
         if random is 'normal':
             # generate normal random window centers for the batch with overlap with input
-            cen_y = tf.random_normal([self.flags.batch_size], mean=y_size / 2, stddev=4.)
-            cen_x = tf.random_normal([self.flags.batch_size], mean=x_size / 2, stddev=4.)
+            cen_y = tf.random_normal([self.params['batch_size']], mean=y_size / 2, stddev=4.)
+            cen_x = tf.random_normal([self.params['batch_size']], mean=x_size / 2, stddev=4.)
             offsets = tf.stack([cen_y, cen_x], axis=1)
 
         if not random:
             # fixed crop
-            cen_y = np.ones((self.flags.batch_size,), dtype=np.int32) * 38
-            cen_x = np.ones((self.flags.batch_size,), dtype=np.int32) * 70
+            cen_y = np.ones((self.params['batch_size'],), dtype=np.int32) * 38
+            cen_x = np.ones((self.params['batch_size'],), dtype=np.int32) * 70
             offsets = np.vstack([cen_y, cen_x]).T
             offsets = tf.constant(value=offsets, dtype=tf.float32)
 
