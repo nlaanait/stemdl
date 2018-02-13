@@ -520,9 +520,9 @@ def eval_regress(params, saver, summary_writer, eval_ops, summary_op, labels, cp
                     step += 1
 
                 # Reformatting the output arrays
-                sorted_errors = np.reshape(sorted_errors,(-1, params['OUTPUT_DIM']))
-                angles_arr = np.reshape(angles_arr, (-1, params['OUTPUT_DIM']))
-                predictions = np.reshape(predictions, (-1, params['OUTPUT_DIM']))
+                sorted_errors = np.reshape(sorted_errors,(-1, params['NUM_CLASSES']))
+                angles_arr = np.reshape(angles_arr, (-1, params['NUM_CLASSES']))
+                predictions = np.reshape(predictions, (-1, params['NUM_CLASSES']))
 
                 # saved_vars = []
                 # for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):

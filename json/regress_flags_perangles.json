@@ -16,7 +16,6 @@
 
 	"NUM_EXAMPLES_PER_EPOCH": {"type":"int", "value": 729000, "desc": "Number of examples in training data."},
 	"NUM_CLASSES": {"type":"int", "value": 3, "desc": "Number of classes in training/evaluation data."},
-	"OUTPUT_DIM": {"type":"int", "value": 3, "desc": "Dimension of the Network's Output"},
 	"IMAGE_HEIGHT": {"type":"int", "value": 85, "desc": "IMAGE HEIGHT"},
 	"IMAGE_WIDTH": {"type":"int", "value": 120, "desc": "IMAGE WIDTH"},
 	"IMAGE_DEPTH": {"type":"int", "value": 1, "desc": "IMAGE DEPTH"},

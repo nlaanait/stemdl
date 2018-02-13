@@ -124,7 +124,7 @@ class ConvNet(object):
                 if layer_params['type'] == 'linear_output':
                     in_shape = out.get_shape().as_list()
                     out = self._linear(input=out, name=scope.name, params=layer_params)
-                    assert out.get_shape().as_list()[-1] == self.params['OUTPUT_DIM'], 'Dimensions of the linear output layer' + \
+                    assert out.get_shape().as_list()[-1] == self.params['NUM_CLASSES'], 'Dimensions of the linear output layer' + \
                                                                          'do not match the expected output set in the params'
                     if self.summary: self._activation_summary(out)
 
