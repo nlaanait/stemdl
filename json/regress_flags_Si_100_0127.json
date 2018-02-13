@@ -37,8 +37,8 @@
 
 	"data_dir": {"type": "str", "value":"../../data/Si_100_0127_train.tfrecords", "desc": "path to tfrecords file with images + labels."},
 	"checkpt_dir": { "type": "str", "value":"stemdl_checkpoint", "desc": "path where to save directory with training data, visualization, and TensorBoard events."},
-	"network_config": { "type": "str", "value":"../json/network_VGG16_w_batch_norm.json", "desc": "path to .json file with neural net architecture."},
-	"hyper_params": { "type": "str", "value":"../json/hyper_params_regressor_custom.json", "desc": "path to .json file with hyper-parameters."},
+	"network_config": { "type": "str", "value":"../json/network_ResNet_50.json", "desc": "path to .json file with neural net architecture."},
+	"hyper_params": { "type": "str", "value":"../json/hyper_params_regressor_resnet.json", "desc": "path to .json file with hyper-parameters."},
 	"mode": { "type": "str", "value":"train", "desc": "operation mode, must be 'train' or 'eval' .Default: 'train'"},
 	"num_gpus": { "type": "int", "value":2, "desc": "number of gpus to use during training.Default 1."}
 }
