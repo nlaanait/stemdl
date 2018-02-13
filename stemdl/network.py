@@ -123,6 +123,13 @@ class ConvNet(object):
 
                 if layer_params['type'] == 'linear_output':
                     in_shape = out.get_shape().as_list()
+                    # sometimes the same network json file is used for regression and classification.
+                    # Taking the number of classes from the parameters / flags instead of the network json
+                    if layer_params['bias'] != self.params['NUM_CLASSES']:
+                        print("Overriding the size of the bias ({}) and weights ({}) with the 'NUM_CLASSES' parm ({})"
+                              "".format(layer_params['bias'], layer_params['weights'], self.params['NUM_CLASSES']))
+                        layer_params['bias'] = self.params['NUM_CLASSES']
+                        layer_params['weights'] = self.params['NUM_CLASSES']
                     out = self._linear(input=out, name=scope.name, params=layer_params)
                     assert out.get_shape().as_list()[-1] == self.params['NUM_CLASSES'], 'Dimensions of the linear output layer' + \
                                                                          'do not match the expected output set in the params'
