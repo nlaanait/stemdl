@@ -221,8 +221,9 @@ def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
                 if use_dev_reader:
                     reader = inputs_dev_cifar_eg.CifarEgReader(filename_queue, params, num_gpus=num_GPUS,
                                                                using_horovod=True)
-                    images, labels = reader._make_batch(distort=params['train_distort'], noise_min=0.0, noise_max=0.25,
-                                                        random_glimpses='normal', geometric=True)
+                    images, labels = reader._make_batch(distort=params['train_distort'], noise_min=params['noise_min'],
+                                                        noise_max=params['noise_max'], geometric=params['geometric'],
+                                                        random_glimpses=params['random_glimpses'])
 
                 else:
                     dset = inputs.DatasetTFRecords(filename_queue, params,
@@ -230,8 +231,10 @@ def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
                     image, label = dset.decode_image_label()
                     # Process images and generate examples batch
                     images, labels = dset.train_images_labels_batch(image, label, distort=params['train_distort'],
-                                                                    noise_min=0.0, noise_max=0.25,
-                                                                    random_glimpses='normal', geometric=True)
+                                                                    noise_min=params['noise_min'],
+                                                                    noise_max=params['noise_max'],
+                                                                    random_glimpses=params['random_glimpses'],
+                                                                    geometric=params['geometric'])
 
         # setup optimizer
         opt = get_optimizer(params, hyper_params, global_step)

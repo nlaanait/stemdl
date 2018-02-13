@@ -18,7 +18,7 @@ def main():
     # initiate horovod
     hvd.init()
 
-    params = io_utils.get_dict_from_json('../json/regress_flags.json')
+    params = io_utils.get_dict_from_json('../json/regress_flags_perangles.json')
 
     checkpt_dir = params['checkpt_dir']
     # Also need a directory within the checkpoint dir for event files coming from eval
