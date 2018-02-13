@@ -79,14 +79,8 @@ class DatasetTFRecords(object):
         else:
             image = image_raw
 
-        # # if running with half-precision we cast to float16
-        # if self.params['IMAGE_FP16:
-        #     image = tf.cast(image, tf.float16)
-        # else:
-        #     image = tf.cast(image, tf.float32)
-
         # Generate batch
-        #TODO: Need to change num_threads so that it's determined from horovod total_rank
+        # TODO: Need to change num_threads so that it's determined from horovod total_rank
         num_threads = int(self.max_threads * self.train_cpu_frac)
 
         images, labels = tf.train.shuffle_batch([image, label],
@@ -104,9 +98,11 @@ class DatasetTFRecords(object):
         tf.summary.image('Train_Images', images, max_outputs=1)
 
         # resize images using the new params
-        images = tf.image.resize_images(images, [self.params['RESIZE_HEIGHT'], self.params['RESIZE_WIDTH']])
+        if self.params['RESIZE_HEIGHT'] != self.params['IMAGE_HEIGHT'] or \
+                self.params['RESIZE_WIDTH'] != self.params['IMAGE_WIDTH']:
+            images = tf.image.resize_images(images, [self.params['RESIZE_HEIGHT'], self.params['RESIZE_WIDTH']])
 
-        # change to NCHW format
+        # change from NHWC to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
 
         # if running with half-precision we cast back to float16
@@ -115,7 +111,7 @@ class DatasetTFRecords(object):
 
         return images, labels
 
-    def eval_images_labels_batch(self, image_raw, label, distort= False, noise_min=0., noise_max=0.3,
+    def eval_images_labels_batch(self, image_raw, label, distort=False, noise_min=0., noise_max=0.3,
                                  random_glimpses=True, geometric=False):
         """
         Returns: batch of images and labels to test on.
@@ -128,12 +124,6 @@ class DatasetTFRecords(object):
             image = self._distort(image, noise_min, noise_max, geometric=geometric)
         else:
             image = image_raw
-
-        # # if running with half-precision we cast back to float16
-        # if self.params['IMAGE_FP16:
-        #     image = tf.image.convert_image_dtype(image, tf.float16)
-        # else:
-        #     image = tf.cast(image, tf.float32)
 
         # Generate batch
         images, labels = tf.train.shuffle_batch([image, label],
@@ -150,14 +140,16 @@ class DatasetTFRecords(object):
         tf.summary.image('Test_Images', images, max_outputs=1)
 
         # resize images using the new params
-        images = tf.image.resize_images(images, [self.params['RESIZE_HEIGHT'], self.params['RESIZE_WIDTH']])
+        if self.params['RESIZE_HEIGHT'] != self.params['IMAGE_HEIGHT'] or \
+                self.params['RESIZE_WIDTH'] != self.params['IMAGE_WIDTH']:
+            images = tf.image.resize_images(images, [self.params['RESIZE_HEIGHT'], self.params['RESIZE_WIDTH']])
 
         # change to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
 
         # if running with half-precision we cast back to float16
         if self.params['IMAGE_FP16']:
-           images = tf.cast(images,tf.float16)
+            images = tf.cast(images, tf.float16)
 
         return images, labels
 
@@ -222,7 +214,7 @@ class DatasetTFRecords(object):
 
         return trans_image
 
-    def _getGlimpses(self, batch_images, **kwargs):
+    def _getGlimpses(self, batch_images, random=False):
         """
         Get bounded glimpses from images, corresponding to ~ 2x1 supercell
         :param batch_images: batch of training images
@@ -233,7 +225,6 @@ class DatasetTFRecords(object):
         crop_y_size, crop_x_size = self.params['CROP_HEIGHT'], self.params['CROP_WIDTH']
         size = tf.constant(value=[crop_y_size, crop_x_size],
                            dtype=tf.int32)
-        random = kwargs.get('random', False)
 
         if random is 'uniform':
             # generate uniform random window centers for the batch with overlap with input
