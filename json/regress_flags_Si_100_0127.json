@@ -33,7 +33,7 @@
 	"RESIZE_WIDTH": {"type":"int", "value": 512, "desc": "RESIZE WIDTH"},
 
 	"IMAGE_FP16": {"type":"bool", "value": true, "desc": " Whether to use half-precision format for images."},
-	"batch_size": { "type": "int", "value":64, "desc": "number of images per batch to propagate through the network. Powers of 2 are processed more efficiently.Default 64."},
+	"batch_size": { "type": "int", "value":16, "desc": "number of images per batch to propagate through the network. Powers of 2 are processed more efficiently.Default 64."},
 
 	"data_dir": {"type": "str", "value":"../../data/Si_100_0127_train.tfrecords", "desc": "path to tfrecords file with images + labels."},
 	"checkpt_dir": { "type": "str", "value":"stemdl_checkpoint", "desc": "path where to save directory with training data, visualization, and TensorBoard events."},
