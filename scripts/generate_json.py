@@ -139,7 +139,7 @@ def generate_res_net_json(num_layers=18, output_features=4):
 
         def bneck_res_block(conv_layer, chans_1, chans_2):
             bn_in = modify_layer(conv_layer, {'features': chans_1, 'kernel': [1, 1], 'stride': [1, 1]})
-            conv_layer = modify_layer(conv_layer, {'features': chans_1, 'kernel': [3, 3], 'stride': [3, 3]})
+            conv_layer = modify_layer(conv_layer, {'features': chans_1, 'kernel': [3, 3], 'stride': [1, 1]})
             bn_out = modify_layer(bn_in, {'features': chans_2})
             basic_dict = {'type': 'residual', 'conv1': bn_in, 'conv2': conv_layer, 'conv3': bn_out}
             return OrderedDict(sorted(basic_dict.items(), key=lambda t: t[0]))

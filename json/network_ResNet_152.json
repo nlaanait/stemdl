@@ -52,8 +52,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -100,8 +100,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -148,8 +148,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -209,8 +209,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -257,8 +257,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -305,8 +305,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -353,8 +353,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -401,8 +401,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -449,8 +449,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -497,8 +497,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -545,8 +545,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -606,8 +606,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -654,8 +654,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -702,8 +702,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -750,8 +750,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -798,8 +798,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -846,8 +846,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -894,8 +894,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -942,8 +942,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -990,8 +990,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1038,8 +1038,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1086,8 +1086,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1134,8 +1134,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1182,8 +1182,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1230,8 +1230,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1278,8 +1278,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1326,8 +1326,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1374,8 +1374,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1422,8 +1422,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1470,8 +1470,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1518,8 +1518,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1566,8 +1566,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1614,8 +1614,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1662,8 +1662,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1710,8 +1710,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1758,8 +1758,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1806,8 +1806,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1854,8 +1854,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1902,8 +1902,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1950,8 +1950,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -1998,8 +1998,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -2046,8 +2046,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -2094,8 +2094,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -2142,8 +2142,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -2190,8 +2190,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -2238,8 +2238,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -2286,8 +2286,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -2347,8 +2347,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -2395,8 +2395,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
@@ -2443,8 +2443,8 @@
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
-                3, 
-                3
+                1, 
+                1
             ], 
             "type": "convolutional", 
             "batch_norm": true
