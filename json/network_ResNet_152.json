@@ -28,12 +28,12 @@
         ]
     }, 
     "res1_1": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 64, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -58,12 +58,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 64, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -76,12 +76,12 @@
         "type": "residual"
     }, 
     "res1_2": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 64, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -106,12 +106,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 64, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -124,12 +124,12 @@
         "type": "residual"
     }, 
     "res1_3": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 64, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -154,12 +154,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 64, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -185,12 +185,12 @@
         ]
     }, 
     "res2_1": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 512, 
+            "features": 128, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -215,12 +215,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 128, 
+            "features": 512, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -233,12 +233,12 @@
         "type": "residual"
     }, 
     "res2_2": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 512, 
+            "features": 128, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -263,12 +263,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 128, 
+            "features": 512, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -281,12 +281,12 @@
         "type": "residual"
     }, 
     "res2_3": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 512, 
+            "features": 128, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -311,12 +311,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 128, 
+            "features": 512, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -329,12 +329,12 @@
         "type": "residual"
     }, 
     "res2_4": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 512, 
+            "features": 128, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -359,12 +359,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 128, 
+            "features": 512, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -377,12 +377,12 @@
         "type": "residual"
     }, 
     "res2_5": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 512, 
+            "features": 128, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -407,12 +407,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 128, 
+            "features": 512, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -425,12 +425,12 @@
         "type": "residual"
     }, 
     "res2_6": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 512, 
+            "features": 128, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -455,12 +455,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 128, 
+            "features": 512, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -473,12 +473,12 @@
         "type": "residual"
     }, 
     "res2_7": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 512, 
+            "features": 128, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -503,12 +503,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 128, 
+            "features": 512, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -521,12 +521,12 @@
         "type": "residual"
     }, 
     "res2_8": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 512, 
+            "features": 128, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -551,12 +551,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 128, 
+            "features": 512, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -582,12 +582,12 @@
         ]
     }, 
     "res3_1": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -612,12 +612,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -630,12 +630,12 @@
         "type": "residual"
     }, 
     "res3_2": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -660,12 +660,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -678,12 +678,12 @@
         "type": "residual"
     }, 
     "res3_3": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -708,12 +708,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -726,12 +726,12 @@
         "type": "residual"
     }, 
     "res3_4": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -756,12 +756,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -774,12 +774,12 @@
         "type": "residual"
     }, 
     "res3_5": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -804,12 +804,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -822,12 +822,12 @@
         "type": "residual"
     }, 
     "res3_6": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -852,12 +852,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -870,12 +870,12 @@
         "type": "residual"
     }, 
     "res3_7": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -900,12 +900,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -918,12 +918,12 @@
         "type": "residual"
     }, 
     "res3_8": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -948,12 +948,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -966,12 +966,12 @@
         "type": "residual"
     }, 
     "res3_9": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -996,12 +996,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1014,12 +1014,12 @@
         "type": "residual"
     }, 
     "res3_10": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1044,12 +1044,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1062,12 +1062,12 @@
         "type": "residual"
     }, 
     "res3_11": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1092,12 +1092,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1110,12 +1110,12 @@
         "type": "residual"
     }, 
     "res3_12": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1140,12 +1140,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1158,12 +1158,12 @@
         "type": "residual"
     }, 
     "res3_13": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1188,12 +1188,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1206,12 +1206,12 @@
         "type": "residual"
     }, 
     "res3_14": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1236,12 +1236,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1254,12 +1254,12 @@
         "type": "residual"
     }, 
     "res3_15": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1284,12 +1284,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1302,12 +1302,12 @@
         "type": "residual"
     }, 
     "res3_16": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1332,12 +1332,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1350,12 +1350,12 @@
         "type": "residual"
     }, 
     "res3_17": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1380,12 +1380,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1398,12 +1398,12 @@
         "type": "residual"
     }, 
     "res3_18": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1428,12 +1428,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1446,12 +1446,12 @@
         "type": "residual"
     }, 
     "res3_19": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1476,12 +1476,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1494,12 +1494,12 @@
         "type": "residual"
     }, 
     "res3_20": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1524,12 +1524,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1542,12 +1542,12 @@
         "type": "residual"
     }, 
     "res3_21": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1572,12 +1572,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1590,12 +1590,12 @@
         "type": "residual"
     }, 
     "res3_22": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1620,12 +1620,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1638,12 +1638,12 @@
         "type": "residual"
     }, 
     "res3_23": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1668,12 +1668,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1686,12 +1686,12 @@
         "type": "residual"
     }, 
     "res3_24": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1716,12 +1716,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1734,12 +1734,12 @@
         "type": "residual"
     }, 
     "res3_25": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1764,12 +1764,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1782,12 +1782,12 @@
         "type": "residual"
     }, 
     "res3_26": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1812,12 +1812,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1830,12 +1830,12 @@
         "type": "residual"
     }, 
     "res3_27": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1860,12 +1860,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1878,12 +1878,12 @@
         "type": "residual"
     }, 
     "res3_28": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1908,12 +1908,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1926,12 +1926,12 @@
         "type": "residual"
     }, 
     "res3_29": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1956,12 +1956,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -1974,12 +1974,12 @@
         "type": "residual"
     }, 
     "res3_30": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2004,12 +2004,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2022,12 +2022,12 @@
         "type": "residual"
     }, 
     "res3_31": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2052,12 +2052,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2070,12 +2070,12 @@
         "type": "residual"
     }, 
     "res3_32": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2100,12 +2100,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2118,12 +2118,12 @@
         "type": "residual"
     }, 
     "res3_33": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2148,12 +2148,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2166,12 +2166,12 @@
         "type": "residual"
     }, 
     "res3_34": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2196,12 +2196,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2214,12 +2214,12 @@
         "type": "residual"
     }, 
     "res3_35": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2244,12 +2244,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2262,12 +2262,12 @@
         "type": "residual"
     }, 
     "res3_36": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 1024, 
+            "features": 256, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2292,12 +2292,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 256, 
+            "features": 1024, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2323,12 +2323,12 @@
         ]
     }, 
     "res4_1": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 2048, 
+            "features": 512, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2353,12 +2353,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 512, 
+            "features": 2048, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2371,12 +2371,12 @@
         "type": "residual"
     }, 
     "res4_2": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 2048, 
+            "features": 512, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2401,12 +2401,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 512, 
+            "features": 2048, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2419,12 +2419,12 @@
         "type": "residual"
     }, 
     "res4_3": {
-        "conv3": {
+        "conv1": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 2048, 
+            "features": 512, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2449,12 +2449,12 @@
             "type": "convolutional", 
             "batch_norm": true
         }, 
-        "conv1": {
+        "conv3": {
             "kernel": [
                 1, 
                 1
             ], 
-            "features": 512, 
+            "features": 2048, 
             "activation": "relu", 
             "padding": "SAME", 
             "stride": [
@@ -2488,8 +2488,8 @@
     }, 
     "linear_output": {
         "regularize": false, 
-        "weights": 27, 
-        "bias": 27, 
+        "weights": 4, 
+        "bias": 4, 
         "type": "linear_output"
     }
 }
