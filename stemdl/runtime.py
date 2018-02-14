@@ -263,11 +263,6 @@ def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
         losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
         regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
 
-        # scale the losses
-        if params['IMAGE_FP16']:
-            scaling = 128
-
-
         # Calculate the total loss for the current worker
         total_loss = tf.add_n(losses + regularization, name='total_loss')
 
@@ -288,6 +283,8 @@ def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
 
         # Apply gradients to trainable variables
         if params['IMAGE_FP16']:
+            # scale the losses
+            scaling = 128
             # One of the gradients is None so below won't work
             #TODO: check why one of the gradients is None. Probably variable initialized as trainable and shouldn't be
             #grads_vars = [(grads[0]/scaling,grads[1]) for grads in grads_vars]
