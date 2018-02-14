@@ -226,16 +226,12 @@ def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
                                                         random_glimpses=params['random_glimpses'])
 
                 else:
-                    dset = inputs.DatasetTFRecords(filename_queue, params,
-                                                   num_gpus=num_GPUS, using_horovod=True, max_cpu_utilization=0.1)
-                    image, label = dset.decode_image_label()
+                    dset = inputs.DatasetTFRecords(filename_queue, params, is_train=True,
+                                                   num_gpus=num_GPUS, using_horovod=True, max_cpu_utilization=0.9)
                     # Process images and generate examples batch
-                    images, labels = dset.train_images_labels_batch(image, label, distort=params['train_distort'],
-                                                                    noise_min=params['noise_min'],
-                                                                    noise_max=params['noise_max'],
-                                                                    random_glimpses=params['random_glimpses'],
-                                                                    geometric=params['geometric'])
-
+                    images, labels = dset.get_batch(distort=params['train_distort'], noise_min=params['noise_min'],
+                                                    noise_max=params['noise_max'], geometric=params['geometric'],
+                                                    random_glimpses=params['random_glimpses'])
         # setup optimizer
         opt = get_optimizer(params, hyper_params, global_step)
 
@@ -305,7 +301,6 @@ def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
         else:
             apply_gradient_op = opt.apply_gradients(grads_vars, global_step=global_step)
 
-
         # Add Summary histograms for trainable variables and their gradients
         summary_merged = tf.summary.merge_all()
 
@@ -346,7 +341,7 @@ def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
                                                save_summaries_steps=None, save_summaries_secs=None,
                                                save_checkpoint_secs=300) as mon_sess:
             while not mon_sess.should_stop():
-                #TODO: code below does a hardware trace, write summaries and writes a checkpoint at the same time.
+                # TODO: code below does a hardware trace, write summaries and writes a checkpoint at the same time.
                 #  Must be separated.
                 if logHook._step % params['save_frequency'] == 0:
                     # Train, Record stats and save summaries
@@ -394,12 +389,10 @@ def eval(network_config, hyper_params, data_path, params, num_GPUS=1):
             with tf.name_scope('Input_Eval') as _:
                 filename_queue = tf.train.string_input_producer([data_path])
                 # pass the filename_queue to the inputs classes to decode
-                dset = inputs.DatasetTFRecords(filename_queue, params)
-                image, label = dset.decode_image_label()
+                dset = inputs.DatasetTFRecords(filename_queue, params, is_train=False)
                 # distort images and generate examples batch
-                images, labels = dset.eval_images_labels_batch(image, label, noise_min=0.05, noise_max=0.25,
-                                                               distort=params['eval_distort'], random_glimpses='normal',
-                                                               geometric=False)
+                images, labels = dset.get_batch(noise_min=0.05, noise_max=0.25, distort=params['eval_distort'],
+                                                random_glimpses='normal', geometric=False)
 
             with tf.variable_scope(tf.get_variable_scope(), reuse=None):
 
@@ -410,7 +403,7 @@ def eval(network_config, hyper_params, data_path, params, num_GPUS=1):
 
                 # Setup Neural Net
                 n_net = network.ResNet('worker_0/', params, 0, hyper_params, network_config, images, labels,
-                                        operation='eval', summary=False)
+                                       operation='eval', summary=False)
 
                 # Build it and propagate images through it.
                 n_net.build_model()

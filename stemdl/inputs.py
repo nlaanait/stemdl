@@ -15,8 +15,9 @@ class DatasetTFRecords(object):
     Data is read from a TFRecords filename queue.
     """
 
-    def __init__(self, filename_queue, params, num_gpus=1, train_cpu_frac=1,
+    def __init__(self, filename_queue, params, is_train=True, num_gpus=1, train_cpu_frac=1,
                  max_cpu_utilization=0.9, using_horovod=False):
+        self.is_train = is_train
         self.filename_queue = filename_queue
         self.params = params
 
@@ -40,7 +41,7 @@ class DatasetTFRecords(object):
 
         print('***************************************************')
 
-    def decode_image_label(self):
+    def _decode_image_label(self):
         """
         Returns: image, label decoded from tfrecords
         """
@@ -64,94 +65,6 @@ class DatasetTFRecords(object):
         # standardize the image to [-1.,1.]
         image = tf.image.per_image_standardization(image)
         return image, label
-
-    def train_images_labels_batch(self, image_raw, label, distort=False, noise_min=0., noise_max=0.3,
-                                  random_glimpses=True, geometric=False):
-        """
-        Returns: batch of images and labels to train on.
-        """
-
-        if distort:
-            # we first cast to float32 to do some image operations
-            image = tf.cast(image_raw, tf.float32)
-            # Apply image distortions
-            image = self._distort(image, noise_min, noise_max, geometric=geometric)
-        else:
-            image = image_raw
-
-        # Generate batch
-        # TODO: Need to change num_threads so that it's determined from horovod total_rank
-        num_threads = int(self.max_threads * self.train_cpu_frac)
-
-        images, labels = tf.train.shuffle_batch([image, label],
-                                                batch_size=self.params['batch_size'],
-                                                capacity=10000,
-                                                num_threads=num_threads,
-                                                min_after_dequeue=1000,
-                                                name='shuffle_batch')
-
-        # Extract glimpses from training batch
-        if random_glimpses is not None:
-            images = self._getGlimpses(images, random=random_glimpses)
-
-        # Display the training images in the Tensorboard visualizer.
-        tf.summary.image('Train_Images', images, max_outputs=1)
-
-        # resize images using the new params
-        if self.params['RESIZE_HEIGHT'] != self.params['IMAGE_HEIGHT'] or \
-                self.params['RESIZE_WIDTH'] != self.params['IMAGE_WIDTH']:
-            images = tf.image.resize_images(images, [self.params['RESIZE_HEIGHT'], self.params['RESIZE_WIDTH']])
-
-        # change from NHWC to NCHW format
-        images = tf.transpose(images, perm=[0, 3, 1, 2])
-
-        # if running with half-precision we cast back to float16
-        if self.params['IMAGE_FP16']:
-            images = tf.cast(images, tf.float16)
-
-        return images, labels
-
-    def eval_images_labels_batch(self, image_raw, label, distort=False, noise_min=0., noise_max=0.3,
-                                 random_glimpses=True, geometric=False):
-        """
-        Returns: batch of images and labels to test on.
-        """
-
-        if distort:
-            # we first cast to float32 to do some image operations
-            image = tf.cast(image_raw, tf.float32)
-            # Apply image distortions
-            image = self._distort(image, noise_min, noise_max, geometric=geometric)
-        else:
-            image = image_raw
-
-        # Generate batch
-        images, labels = tf.train.shuffle_batch([image, label],
-                                                batch_size=self.params['batch_size'],
-                                                capacity=5100,
-                                                num_threads=4,
-                                                min_after_dequeue=100,
-                                                name='shuffle_batch')
-
-        # extract glimpses from evaluation batch
-        images = self._getGlimpses(images, random=random_glimpses)
-
-        # Display the training images in the visualizer.
-        tf.summary.image('Test_Images', images, max_outputs=1)
-
-        # resize images using the new params
-        if self.params['RESIZE_HEIGHT'] != self.params['IMAGE_HEIGHT'] or \
-                self.params['RESIZE_WIDTH'] != self.params['IMAGE_WIDTH']:
-            images = tf.image.resize_images(images, [self.params['RESIZE_HEIGHT'], self.params['RESIZE_WIDTH']])
-
-        # change to NCHW format
-        images = tf.transpose(images, perm=[0, 3, 1, 2])
-
-        # if running with half-precision we cast back to float16
-        if self.params['IMAGE_FP16']:
-            images = tf.cast(images, tf.float16)
-
-        return images, labels
 
     def _distort(self, image, noise_min, noise_max, geometric=False):
         """
@@ -214,7 +127,7 @@ class DatasetTFRecords(object):
 
         return trans_image
 
-    def _getGlimpses(self, batch_images, random=False):
+    def _get_glimpses(self, batch_images, random=False):
         """
         Get bounded glimpses from images, corresponding to ~ 2x1 supercell
         :param batch_images: batch of training images
@@ -253,3 +166,58 @@ class DatasetTFRecords(object):
                                                  uniform_noise=False,
                                                  name='batch_glimpses')
         return glimpse_batch
+
+    def get_batch(self, distort=False, noise_min=0., noise_max=0.3, random_glimpses=True, geometric=False):
+
+        image_raw, label = self._decode_image_label()
+
+        if distort:
+            # we first cast to float32 to do some image operations
+            image = tf.cast(image_raw, tf.float32)
+            # Apply image distortions
+            image = self._distort(image, noise_min, noise_max, geometric=geometric)
+        else:
+            image = image_raw
+
+        # Generate batch
+
+        cpu_frac = self.train_cpu_frac
+        min_after_dequeue = 5000
+        tensor_name = 'Train_Images'
+        if not self.is_train:
+            cpu_frac = 1 - cpu_frac
+            min_after_dequeue = 1000
+            tensor_name = 'Test_Images'
+
+        # TODO: Need to change num_threads so that it's determined from horovod total_rank
+        num_threads = int(self.max_threads * cpu_frac)
+        capacity = max(int(min_after_dequeue * 1.1),
+                       int(self.params['NUM_EXAMPLES_PER_EPOCH'] * 0.1))
+
+        images, labels = tf.train.shuffle_batch([image, label],
+                                                batch_size=self.params['batch_size'],
+                                                capacity=capacity,
+                                                num_threads=num_threads,
+                                                min_after_dequeue=min_after_dequeue,
+                                                name='shuffle_batch')
+
+        # Extract glimpses from training batch
+        if random_glimpses is not None:
+            images = self._get_glimpses(images, random=random_glimpses)
+
+        # Display the training images in the Tensorboard visualizer.
+        tf.summary.image(tensor_name, images, max_outputs=1)
+
+        # resize images using the new params
+        if self.params['RESIZE_HEIGHT'] != self.params['IMAGE_HEIGHT'] or \
+                self.params['RESIZE_WIDTH'] != self.params['IMAGE_WIDTH']:
+            images = tf.image.resize_images(images, [self.params['RESIZE_HEIGHT'], self.params['RESIZE_WIDTH']])
+
+        # change from NHWC to NCHW format
+        images = tf.transpose(images, perm=[0, 3, 1, 2])
+
+        # if running with half-precision we cast back to float16
+        if self.params['IMAGE_FP16']:
+            images = tf.cast(images, tf.float16)
+
+        return images, labels
