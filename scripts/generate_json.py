@@ -14,7 +14,7 @@ from stemdl import io_utils
 # templates for network_config  #
 #################################
 
-def generate_custom_cnn():
+def generate_alex_net_custom():
 
     layer_keys_list = ['conv1', 'conv2', 'pool1', 'conv3', 'conv4', 'conv5', 'conv6', 'pool2',
                        'conv7', 'conv8', 'conv9', 'conv10', 'pool3', 'conv11','conv12', 'conv13', 'conv14', 'pool4',
@@ -42,30 +42,86 @@ def generate_custom_cnn():
 
     io_utils.write_json_network_config('network_regressor.json', layer_keys_list, layer_params_list)
 
-################
-# VGG-16 #
-##############
+#######
+# VGG #
+#######
 
 
-def generate_custom_vgg16():
-    layer_keys_list = ['conv1', 'conv2', 'pool1', 'conv3', 'conv4','pool2', 'conv5','conv6', 'conv7','conv8','pool3', 'conv9', 'conv10','conv11','conv12', 'pool3','conv13', 'conv14', 'conv15', 'conv16','pool4', 'fc_1','fc_2', 'fc_3', 'linear_output']
-    conv_1 =OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 64,'activation':'relu',
-                         'padding':'SAME', 'batch_norm':False})
-    conv_2 =OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 128,'activation':'relu',
-                         'padding':'SAME', 'batch_norm':False})
-    conv_3 =OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 256,'activation':'relu',
-                         'padding':'SAME', 'batch_norm':False})
-    conv_4 =OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 512,'activation':'relu',
-                         'padding':'SAME', 'batch_norm':False})
-    pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
-    fully_connected_1 = OrderedDict({'type': 'fully_connected','weights': 4096,'bias': 4096, 'activation': 'relu',
-                                     'regularize': False})
-    fully_connected_2 = OrderedDict({'type': 'fully_connected','weights': 1000,'bias': 1000, 'activation': 'relu',
+def modify_layer(standard, new_parms):
+    modified = standard.copy()
+    modified.update(new_parms)
+    return modified
+
+
+def build_network(sequence):
+    names = list()
+    parms = list()
+    for batch in sequence:
+        layer_name, layer, reps = batch
+        if reps > 1:
+            for index in range(1, reps + 1):
+                names.append(layer_name + '_' + str(index))
+                parms.append(layer)
+        else:
+            names.append(layer_name)
+            parms.append(layer)
+    return names, parms
+
+
+def generate_vgg_net_json(num_layers=16, output_features=4):
+
+    assert num_layers in [11, 13, 16, 19], "Allowed number of layers:{}".format([11, 13, 16, 19])
+
+    conv_64 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [3, 3], 'features': 64,
+                           'activation': 'relu', 'padding': 'SAME', 'batch_norm': True})
+    conv_128 = modify_layer(conv_64, {'features': 128})
+    conv_256 = modify_layer(conv_64, {'features': 256})
+    conv_512 = modify_layer(conv_64, {'features': 512})
+    max_pool_2 = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max',
+                              'padding': 'SAME'})
+    fully_connected_4 = OrderedDict({'type': 'fully_connected', 'weights': 4096, 'bias': 4096, 'activation': 'relu',
                                      'regularize': True})
-    linear_output = OrderedDict({'type': 'linear_output','weights': 3,'bias': 3,'regularize': False})
-    layer_params_list = [conv_1]*2 +[pool] + [conv_2]*2 + [pool] + [conv_3]*4 + [pool] + [conv_4]*4 + [pool] + [conv_4]*4 + [pool] + [fully_connected_1]*2 + [fully_connected_2] + [linear_output]
+    fully_connected_1 = OrderedDict({'type': 'fully_connected', 'weights': 1000, 'bias': 1000, 'activation': 'relu',
+                                     'regularize': True})
+    linear_output = OrderedDict({'type': 'linear_output', 'weights': output_features, 'bias': output_features,
+                                 'regularize': False})
 
-    io_utils.write_json_network_config('network_VGG_custom.json', layer_keys_list, layer_params_list)
+    if num_layers == 11:
+        sequence = [('conv0', conv_64, 1), ('pool0', max_pool_2, 1),
+                    ('conv1', conv_128, 1), ('pool1', max_pool_2, 1),
+                    ('conv2', conv_256, 2), ('pool2', max_pool_2, 1),
+                    ('conv3', conv_512, 2), ('pool3', max_pool_2, 1),
+                    ('conv4', conv_512, 2), ('pool4', max_pool_2, 1),
+                    ('fc4', fully_connected_4, 2), ('fc1', fully_connected_1, 1),
+                    ('linear_output', linear_output, 1)]
+    elif num_layers == 13:
+        sequence = [('conv0', conv_64, 2), ('pool0', max_pool_2, 1),
+                    ('conv1', conv_128, 2), ('pool1', max_pool_2, 1),
+                    ('conv2', conv_256, 2), ('pool2', max_pool_2, 1),
+                    ('conv3', conv_512, 2), ('pool3', max_pool_2, 1),
+                    ('conv4', conv_512, 2), ('pool4', max_pool_2, 1),
+                    ('fc4', fully_connected_4, 2), ('fc1', fully_connected_1, 1),
+                    ('linear_output', linear_output, 1)]
+    elif num_layers == 16:
+        sequence = [('conv0', conv_64, 2), ('pool0', max_pool_2, 1),
+                    ('conv1', conv_128, 2), ('pool1', max_pool_2, 1),
+                    ('conv2', conv_256, 3), ('pool2', max_pool_2, 1),
+                    ('conv3', conv_512, 3), ('pool3', max_pool_2, 1),
+                    ('conv4', conv_512, 3), ('pool4', max_pool_2, 1),
+                    ('fc4', fully_connected_4, 2), ('fc1', fully_connected_1, 1),
+                    ('linear_output', linear_output, 1)]
+    elif num_layers == 19:
+        sequence = [('conv0', conv_64, 2), ('pool0', max_pool_2, 1),
+                    ('conv1', conv_128, 2), ('pool1', max_pool_2, 1),
+                    ('conv2', conv_256, 4), ('pool2', max_pool_2, 1),
+                    ('conv3', conv_512, 4), ('pool3', max_pool_2, 1),
+                    ('conv4', conv_512, 4), ('pool4', max_pool_2, 1),
+                    ('fc4', fully_connected_4, 2), ('fc1', fully_connected_1, 1),
+                    ('linear_output', linear_output, 1)]
+
+    vgg_names, vgg_parms = build_network(sequence)
+    io_utils.write_json_network_config('network_VGGNet_' + str(num_layers) + '_w_batch_norm.json', vgg_names, vgg_parms)
+
 
 # ########
 # ResNet #
@@ -73,25 +129,6 @@ def generate_custom_vgg16():
 
 
 def generate_res_net_json(num_layers=18, output_features=4):
-
-    def modify_layer(standard, new_parms):
-        modified = standard.copy()
-        modified.update(new_parms)
-        return modified
-
-    def build_network(sequence):
-        names = list()
-        parms = list()
-        for batch in sequence:
-            layer_name, layer, reps = batch
-            if reps > 1:
-                for index in range(1, reps + 1):
-                    names.append(layer_name + '_' + str(index))
-                    parms.append(layer)
-            else:
-                names.append(layer_name)
-                parms.append(layer)
-        return names, parms
 
     # ################# ################# ################# ################# ################# ################
 
