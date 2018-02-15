@@ -1,6 +1,7 @@
 """
 Created on 12/15/17.
-@author: Suhas Somnath
+@author: Numan Laanait.
+email: laanaitn@ornl.gov
 """
 
 import tensorflow as tf
@@ -16,16 +17,16 @@ from stemdl import io_utils
 
 # NOTE because of summitdev/container problems, we can't pass any flags
 # whatsoever, so we have to hard code this path
-JSON_FLAGS = '../json/regress_flags_perangles.json'
+from json_flags import JSON_FLAGS
 
 
-def main():
+def main(argv):
     # initiate horovod
     hvd.init()
 
     params = io_utils.get_dict_from_json(JSON_FLAGS)
 
-    checkpt_dir = params['checkpt_dir']
+    checkpt_dir = args.checkpt_dir[0]
     # Also need a directory within the checkpoint dir for event files coming from eval
     eval_dir = os.path.join(checkpt_dir, '_eval')
 
@@ -39,19 +40,23 @@ def main():
         tf.gfile.MakeDirs(checkpt_dir)
         tf.gfile.MakeDirs(eval_dir)
 
-    params['train_dir'] = checkpt_dir
-    params['eval_dir'] = eval_dir
+    # Set additional tf.app.flags
+    runtime.set_flags(checkpt_dir, eval_dir, args.batch_size, args.data_path[0])
 
     # load network config file and hyper_parameters
-    network_config = io_utils.load_json_network_config(params['network_config'])
-    hyper_params = io_utils.load_json_hyper_params(params['hyper_params'])
+    network_config = io_utils.load_json_network_config(args.network_config[0])
+    hyper_params = io_utils.load_json_hyper_params(args.hyper_params[0])
+
+    # Create logfile to redirect all print statements
+    # sys.stdout = open(args.mode[0] + '.log', mode='w')
+
+    tf.app.flags.DEFINE_string('CPU_ID', '/cpu:' + str(args.cpu_id), """CPU_ID""")
 
     # train or evaluate
-    if params['mode'] == 'train':
-        runtime.train_horovod(network_config, hyper_params, params['data_dir'], params, num_GPUS=params['num_gpus'])
-    else:
-        runtime.eval(network_config, hyper_params, params['data_dir'], params, num_GPUS=params['num_gpus'])
-
+    if args.mode[0] == 'train':
+        runtime.train_horovod(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
+    if args.mode[0] == 'eval':
+        runtime.eval(network_config, hyper_params, args.data_path[0], tf.app.flags.FLAGS, num_GPUS=args.num_gpus)
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
