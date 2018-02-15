@@ -14,12 +14,16 @@ from stemdl import runtime
 from stemdl import io_utils
 
 
+# NOTE because of summitdev/container problems, we can't pass any flags
+# whatsoever, so we have to hard code this path
+JSON_FLAGS = '../json/regress_flags_perangles.json'
+
+
 def main():
     # initiate horovod
     hvd.init()
 
-    # params = io_utils.get_dict_from_json('../json/regress_flags_perangles.json')
-    params = io_utils.get_dict_from_json('../json/regress_flags_Si_100_0127.json')
+    params = io_utils.get_dict_from_json(JSON_FLAGS)
 
     checkpt_dir = params['checkpt_dir']
     # Also need a directory within the checkpoint dir for event files coming from eval
@@ -51,4 +55,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
