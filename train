@@ -1,0 +1,64 @@
+#!/bin/bash
+
+TRAIN_SCRIPT_PATH="${BASH_SOURCE%/*}"
+
+get_arg(){
+  echo $1 | sed -e 's/^[^=]*=//g'
+}
+
+extract_json_field(){
+  grep $1 ${JSON_FLAGS} | awk -v FS="(value\":|,)" '{print $3}'
+}
+
+if [ ! $# -eq 1 ] && [ $# -lt 4 ]; then
+  echo "ERROR: run with -h for arguments"
+  exit -1
+fi
+
+while [ ! $# -eq 0 ]; do
+  case "$1" in
+    -h|--help)
+      echo "options:"
+      echo "-h, --help            show brief help"
+      echo "-np                   number of MPI ranks"
+      echo "--json=JSON_FLAGS    json parameters"
+      echo "--type=MODEL_TYPE     'classify' or 'regress'"
+      echo ""
+      echo "Example:"
+      echo "./train -np 2 --type=regress --json=../json/regress_flags_perangles.json"
+      exit 0
+      ;;
+    -np)
+      shift
+      export NRANKS=$1
+      shift
+      ;;
+    --json*)
+      JSON_FLAGS_REL=`get_arg $1`
+      JSON_FLAGS=`readlink -f ${JSON_FLAGS_REL}`
+      shift
+      ;;
+    --type*)
+      TYPE=`get_arg $1`
+      export SCRIPT="${BASH_SOURCE%/*}/${TYPE}.py"
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+echo "JSON_FLAGS = \"${JSON_FLAGS}\"" > "${TRAIN_SCRIPT_PATH}/json_flags.py"
+
+BATCH_SIZE=`extract_json_field batch_size`
+CHECKPOINT_DIR=`extract_json_field checkpt_dir`
+
+LOGFILE=batch-${BATCH_SIZE}-gpus-${NRANKS}
+
+cmd="mpirun --allow-run-as-root -np ${NRANKS} python ${SCRIPT} &> ${LOGFILE}"
+
+echo $cmd
+$cmd
+
+rm -rf ${CHECKPOINT_DIR}
