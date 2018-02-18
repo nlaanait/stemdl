@@ -65,8 +65,6 @@ def _add_loss_summaries(total_loss, losses, params, summaries=False):
     """
     # Compute the moving average of all individual losses and the total loss.
     loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
-    # if params['IMAGE_FP16:
-    #     losses = losses*
     loss_averages_op = loss_averages.apply(losses + [total_loss])
 
     # Attach a scalar summary to all individual losses and the total loss;
@@ -301,15 +299,10 @@ def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
         # Add Summary histograms for trainable variables and their gradients
         summary_merged = tf.summary.merge_all()
 
-        # Track the moving averages of all trainable variables.
-        variable_averages = tf.train.ExponentialMovingAverage(hyper_params['moving_average_decay'], global_step)
-        variable_averages_op = variable_averages.apply(tf.trainable_variables())
-
         # Gather all training related ops into a single one.
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
-        with tf.control_dependencies([apply_gradient_op, variable_averages_op]):
-            with tf.control_dependencies(update_ops):
+        with tf.control_dependencies([apply_gradient_op, update_ops]):
                 train_op = tf.no_op(name='train')
 
         ###############################
