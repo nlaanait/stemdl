@@ -6,7 +6,9 @@ email: laanaitn@ornl.gov
 
 import tensorflow as tf
 import numpy as np
+import os
 from multiprocessing import cpu_count
+from tensorflow.python.ops import data_flow_ops
 
 
 class DatasetTFRecords(object):
@@ -221,3 +223,80 @@ class DatasetTFRecords(object):
             images = tf.cast(images, tf.float16)
 
         return images, labels
+
+def decode_image_label(record, params):
+    """
+    Returns: image, label decoded from tfrecords
+    """
+    # get raw image bytes and label string
+    features = tf.parse_single_example(
+        record,
+        features={
+            'image_raw': tf.FixedLenFeature([], tf.string),
+            'label': tf.FixedLenFeature([], tf.string),
+        })
+    # decode from byte and reshape label and image
+    label_dtype = tf.as_dtype(params['LABEL_DTYPE'])
+    label = tf.decode_raw(features['label'], label_dtype)
+    label.set_shape(params['NUM_CLASSES'])
+    image = tf.decode_raw(features['image_raw'], tf.float16)
+    image.set_shape([params['IMAGE_HEIGHT'] * params['IMAGE_WIDTH'] * params['IMAGE_DEPTH']])
+    image = tf.reshape(image, [params['IMAGE_HEIGHT'], params['IMAGE_WIDTH'], params['IMAGE_DEPTH']])
+    # standardize the image to [-1.,1.]
+    image = tf.image.per_image_standardization(image)
+    return image, label
+
+def minibatch(batchsize, params):
+    """
+    Returns minibatch of images and labels from TF records file.
+    :param batchsize:
+    :param params:
+    :return:
+    """
+
+    record_input = data_flow_ops.RecordInput(
+        file_pattern=os.path.join(params['data_dir'], '*_%s.tfrecords' % 'train'),
+        parallelism=40,
+        # Note: This causes deadlock during init if larger than dataset
+        buffer_size=100000,
+        batch_size=batchsize)
+    records = record_input.get_yield_op()
+    # Split batch into individual images
+    records = tf.split(records, batchsize, 0)
+    records = [tf.reshape(record, []) for record in records]
+    # Deserialize and preprocess images into batches for each device
+    images = []
+    labels = []
+    with tf.name_scope('input_pipeline'):
+        for i, record in enumerate(records):
+            image, label = decode_image_label(record, params)
+            images.append(image)
+            labels.append(label)
+        # Stack images back into a single tensor
+        images = tf.parallel_stack(images)
+        labels = tf.concat(labels, 0)
+        labels = tf.reshape(labels, [-1, params['NUM_CLASSES']])
+        images = tf.reshape(images, [-1, params['IMAGE_HEIGHT'], params['IMAGE_WIDTH'], params['IMAGE_DEPTH']])
+
+        # change from NHWC to NCHW format
+        images = tf.transpose(images, perm=[0, 3, 1, 2])
+
+        # Cast to FP_16
+        if params['IMAGE_FP16']:
+            images = tf.cast(images, tf.float16)
+        else:
+            images = tf.cast(images, tf.float32)
+    return images, labels
+
+def stage(tensors):
+    """Stages the given tensors in a StagingArea for asynchronous put/get.
+    """
+    stage_area = data_flow_ops.StagingArea(
+        dtypes=[tensor.dtype       for tensor in tensors],
+        shapes=[tensor.get_shape() for tensor in tensors])
+    put_op      = stage_area.put(tensors)
+    get_tensors = stage_area.get()
+
+    get_tensors = [tf.reshape(gt, t.get_shape())
+                   for (gt,t) in zip(get_tensors, tensors)]
+    return put_op, get_tensors

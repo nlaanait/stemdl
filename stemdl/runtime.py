@@ -16,6 +16,7 @@ import os
 from collections import OrderedDict
 import horovod.tensorflow as hvd
 from tensorflow.python.client import timeline
+from tensorflow.python.ops import data_flow_ops
 
 
 class _LoggerHook(tf.train.SessionRunHook):
@@ -135,6 +136,8 @@ def get_optimizer(params, hyper_params, global_step):
 
     opt = hvd.DistributedOptimizer(opt)
     return opt
+
+
 
 
 def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
