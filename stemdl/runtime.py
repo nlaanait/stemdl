@@ -140,13 +140,8 @@ def get_optimizer(params, hyper_params, global_step):
 
 def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=1):
     """
-    Train the network for a number of steps using horovod
-    # At each step (global_step):
-    # 1. propagate examples through the neural net.
-    # 2. calculate the losses/gradients for each worker.
-    # 3. average over gradients.
-    # 4. update the neural net weights.
-    # 5. repeat.
+    Train the network for a number of steps using horovod and asynchronous I/O staging ops.
+
     :param network_config: OrderedDict, network configuration
     :param hyper_params: OrderedDict, hyper_parameters
     :param params: dict
@@ -161,14 +156,14 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     else:
         last_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
 
-    # Only neural net ops will live on GPU.
-    # Everything else (variable initialization, placement, updates) is on the host.
 
     # Config file for tf.Session()
     config = tf.ConfigProto(allow_soft_placement=params['allow_soft_placement'],
                             log_device_placement=params['log_device_placement'],
                             )
     config.gpu_options.visible_device_list = str(hvd.local_rank())
+    config.intra_op_parallelism_threads = 12
+    config.inter_op_parallelism_threads = 12
 
     ############################################
     # Setup Graph, Input pipeline and optimizer#
@@ -287,8 +282,8 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
         sess.run(sync_op)
 
         # prefill pipeline first
+        print('Prefilling I/O pipeline...')
         for i in range(len(IO_ops)):
-            print('Prefilling I/O pipeline...')
             sess.run(IO_ops[:i + 1])
 
 
@@ -452,7 +447,8 @@ def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
         # Gather all training related ops into a single one.
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
-        with tf.control_dependencies([apply_gradient_op, update_ops]):
+        with tf.control_dependencies([apply_gradient_op]):
+            with tf.control_dependencies(update_ops):
                 train_op = tf.no_op(name='train')
 
         ###############################
