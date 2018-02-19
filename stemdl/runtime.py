@@ -78,37 +78,6 @@ def _add_loss_summaries(total_loss, losses, params, summaries=False):
 
     return loss_averages_op
 
-# TODO: double-for loop in python. Ouch! Needs to go.
-# Just compute running average in net building block. L#200-244.
-def _average_gradients(worker_grads):
-    """Calculate the average gradient for each shared variable across all workers.
-    This function essentially synchronizes all workers.
-    Args:
-    worker_grads: List of lists of (gradient, variable) tuples. The outer list
-      is over individual gradients. The inner list is over the gradient
-      calculation for each worker.
-    Returns:
-     List of pairs of (gradient, variable) where the gradient has been averaged
-     across all workers.
-    """
-    if len(worker_grads) == 1:
-        return worker_grads[0]
-    grads_list = []
-
-    for i in range(len(worker_grads[0])):
-        dummy=[]
-        for grad in worker_grads:
-            dummy.append(grad[i][0])
-        grads_list.append(tf.stack(dummy))
-
-    # Average over the 'worker' dimension.
-    grad_tensor = [tf.reduce_mean(grad, axis=0) for grad in grads_list]
-
-    # Getting shared variables
-    variables = [itm[1] for itm in worker_grads[0]]
-    average_grads = [(grad, var) for grad, var in zip(grad_tensor, variables)]
-    return average_grads
-
 
 def get_optimizer(params, hyper_params, global_step):
     """
