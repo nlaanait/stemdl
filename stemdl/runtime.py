@@ -295,16 +295,20 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
             # Here we log some stats
             if step % params['log_frequency'] == 0:
                 start_time = time.time()
-                loss_value = sess.run([train_op, total_loss])[-1]
+                loss_value = sess.run([train_op, total_loss], options=run_options, run_metadata=run_metadata) [-1]
                 duration = time.time() - start_time
                 examples_per_sec = params['batch_size']/duration
-                flops = n_net.ops/duration
+                flops = n_net.ops * params['batch_size']/duration
                 elapsed_epochs = step * params['batch_size'] * 1.0 / params['NUM_EXAMPLES_PER_EPOCH']
                 format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
                               'sec/batch/gpu), total flops = %3.2e')
                 print(format_str % (datetime.now(), step, elapsed_epochs, loss_value,
                                     examples_per_sec, duration, flops))
 
+                # Writing trace to json file. open with chrome://tracing
+                trace = timeline.Timeline(step_stats=run_metadata.step_stats)
+                with open('timeline.ctf.' + str(hvd.rank()) + '.json', 'w') as f:
+                    f.write(trace.generate_chrome_trace_format())
             # Just train
             else:
                 sess.run(train_op)
