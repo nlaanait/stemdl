@@ -138,6 +138,184 @@ def get_optimizer(params, hyper_params, global_step):
     return opt
 
 
+def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=1):
+    """
+    Train the network for a number of steps using horovod
+    # At each step (global_step):
+    # 1. propagate examples through the neural net.
+    # 2. calculate the losses/gradients for each worker.
+    # 3. average over gradients.
+    # 4. update the neural net weights.
+    # 5. repeat.
+    :param network_config: OrderedDict, network configuration
+    :param hyper_params: OrderedDict, hyper_parameters
+    :param params: dict
+    :param num_GPUS: int, default 1.
+    :param data_path: string, path to data.
+    :return: None
+    """
+    # Check if training is a restart from checkpoint
+    ckpt = tf.train.get_checkpoint_state(params['checkpt_dir'])
+    if ckpt is None:
+        last_step = 0
+    else:
+        last_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
+
+    # Only neural net ops will live on GPU.
+    # Everything else (variable initialization, placement, updates) is on the host.
+
+    # Config file for tf.Session()
+    config = tf.ConfigProto(allow_soft_placement=params['allow_soft_placement'],
+                            log_device_placement=params['log_device_placement'],
+                            )
+    config.gpu_options.visible_device_list = str(hvd.local_rank())
+
+    ############################################
+    # Setup Graph, Input pipeline and optimizer#
+    ############################################
+    # Start building the graph
+
+    # Setup data stream
+    with tf.device(params['CPU_ID']):
+        with tf.name_scope('Input') as _:
+            # filename_queue = tf.train.string_input_producer([data_path], num_epochs=params['num_epochs'])
+            # pass the filename_queue to the inputs classes to decode
+            images, labels = inputs.minibatch(params['batch_size'], params)
+            # Staging images on host
+            staging_op, (images, labels) = inputs.stage([images, labels])
+
+    with tf.device('/gpu:%d' % hvd.local_rank()):
+        global_step = tf.train.get_or_create_global_step()
+
+        # Copy images from host to device
+        gpucopy_op, (images, labels) = inputs.stage([images, labels])
+        IO_ops = [staging_op, gpucopy_op]
+
+
+        # setup optimizer
+        opt = get_optimizer(params, hyper_params, global_step)
+
+        ##################
+        # Building Model#
+        ##################
+
+        # Build model, forward propagate, and calculate loss
+        # with tf.variable_scope(tf.get_variable_scope(), reuse=None):
+        scope = 'horovod'
+        summary = False
+        if hvd.local_rank() == 0:
+            summary = True
+
+        print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
+                                                                format(labels.get_shape())))
+
+        # Setup Neural Net
+        n_net = network.ResNet(scope, params, global_step, hyper_params, network_config, images, labels,
+                                operation='train', summary=False)
+
+        # Build it and propagate images through it.
+        n_net.build_model()
+
+        # calculate the total loss
+        n_net.get_loss()
+
+        # Assemble all of the losses.
+        losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
+        regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+
+        # Calculate the total loss for the current worker
+        total_loss = tf.add_n(losses + regularization, name='total_loss')
+
+        # Generate summaries for the losses and get corresponding op
+        loss_averages_op = _add_loss_summaries(total_loss, losses, params, summaries= summary)
+
+        # get summaries, except for the one produced by string_input_producer
+        # TODO: figure out the summaries nonsense.
+        # if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
+
+        # Calculate the gradients for the current data batch
+        with tf.control_dependencies([loss_averages_op]):
+            grads_vars = opt.compute_gradients(total_loss, gate_gradients=tf.train.Optimizer.GATE_OP)
+
+        #######################################
+        # Apply Gradients and setup train op #
+        #######################################
+
+        # Apply gradients to trainable variables
+        if params['IMAGE_FP16']:
+            # scale the losses
+            scaling = 128
+            # One of the gradients is None so below won't work
+            #TODO: check why one of the gradients is None. Probably variable initialized as trainable and shouldn't be
+            #grads_vars = [(grads[0]/scaling,grads[1]) for grads in grads_vars]
+            new_grads_vars = []
+            for grads in grads_vars:
+                if grads[0] is not None: new_grads = grads[0]/scaling
+                else: new_grads = grads[0]
+                new_grads_vars.append((new_grads, grads[1]))
+
+            apply_gradient_op = opt.apply_gradients(new_grads_vars, global_step=global_step)
+        else:
+            apply_gradient_op = opt.apply_gradients(grads_vars, global_step=global_step)
+
+
+        # Gather all training related ops into a single one.
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        all_ops = tf.group(*([apply_gradient_op]+update_ops+IO_ops))
+
+        with tf.control_dependencies([all_ops]):
+                train_op = tf.no_op(name='train')
+
+        ###############################
+        # Setting up training session #
+        ###############################
+
+        # Stats and summaries
+        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+        run_metadata = tf.RunMetadata()
+        summary_writer = tf.summary.FileWriter(params['checkpt_dir'])
+        # Add Summary histograms for trainable variables and their gradients
+        summary_merged = tf.summary.merge_all()
+
+        #Initialize variables
+        sess = tf.Session(config=config)
+        init_op = tf.global_variables_initializer()
+        sess.run(init_op)
+
+        # Sync
+        sync_op = hvd.broadcast_global_variables(0)
+        sess.run(sync_op)
+
+        # prefill pipeline first
+        for i in range(len(IO_ops)):
+            print('Prefilling I/O pipeline...')
+            sess.run(IO_ops[:i + 1])
+
+
+        # TODO:checkpoint restarts, summaries, and hardware traces are not implemented below.
+        # Train
+        step = 0
+        while step < params['max_steps']:
+            step += 1
+            # Here we log some stats
+            if step % params['log_frequency'] == 0:
+                start_time = time.time()
+                loss_value = sess.run([train_op, total_loss])[-1]
+                duration = time.time() - start_time
+                examples_per_sec = params['batch_size']/duration
+                flops = n_net.ops/duration
+                elapsed_epochs = step * params['batch_size'] * 1.0 / params['NUM_EXAMPLES_PER_EPOCH']
+                format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
+                              'sec/batch/gpu), total flops = %3.2e')
+                print(format_str % (datetime.now(), step, elapsed_epochs, loss_value,
+                                    examples_per_sec, duration, flops))
+
+            # Just train
+            else:
+                sess.run(train_op)
+
+        # This won't exit cleanly if there's a divergence in loss
+        sess.close()
 
 
 def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
