@@ -256,9 +256,9 @@ def minibatch(batchsize, params):
 
     record_input = data_flow_ops.RecordInput(
         file_pattern=os.path.join(params['data_dir'], '*_%s.tfrecords' % 'train'),
-        parallelism=40,
+        parallelism=params['IO_threads'],
         # Note: This causes deadlock during init if larger than dataset
-        buffer_size=100000,
+        buffer_size=params['buffer_cap'],
         batch_size=batchsize)
     records = record_input.get_yield_op()
     # Split batch into individual images

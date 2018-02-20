@@ -40,5 +40,7 @@
 	"network_config": { "type": "str", "value":"../json/network_ResNet_50.json", "desc": "path to .json file with neural net architecture."},
 	"hyper_params": { "type": "str", "value":"../json/hyper_params_regressor_resnet.json", "desc": "path to .json file with hyper-parameters."},
 	"mode": { "type": "str", "value":"train", "desc": "operation mode, must be 'train' or 'eval' .Default: 'train'"},
-	"num_gpus": { "type": "int", "value":2, "desc": "number of gpus to use during training.Default 1."}
+	"num_gpus": { "type": "int", "value":2, "desc": "number of gpus to use during training.Default 1."},
+	"IO_threads": {"type": "int", "value": 10, "desc": "number of cpu threads per rank to use for I/O."},
+	"buffer_cap": {"type": "int", "value": 1000, "desc": "max number of data records per rank to keep in the I/O buffer."}
 }

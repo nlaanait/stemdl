@@ -299,7 +299,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
                 duration = time.time() - start_time
                 examples_per_sec = params['batch_size']/duration
                 flops = n_net.ops * params['batch_size']/duration
-                elapsed_epochs = step * params['batch_size'] * 1.0 / params['NUM_EXAMPLES_PER_EPOCH']
+                elapsed_epochs = step * params['batch_size'] * 1.0 * hvd.size() / params['NUM_EXAMPLES_PER_EPOCH']
                 format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
                               'sec/batch/gpu), total flops = %3.2e')
                 print(format_str % (datetime.now(), step, elapsed_epochs, loss_value,
