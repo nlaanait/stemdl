@@ -278,6 +278,9 @@ def minibatch(batchsize, params):
         labels = tf.reshape(labels, [-1, params['NUM_CLASSES']])
         images = tf.reshape(images, [-1, params['IMAGE_HEIGHT'], params['IMAGE_WIDTH'], params['IMAGE_DEPTH']])
 
+
+
+
         # change from NHWC to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
 
@@ -294,7 +297,7 @@ def stage(tensors):
     stage_area = data_flow_ops.StagingArea(
         dtypes=[tensor.dtype       for tensor in tensors],
         shapes=[tensor.get_shape() for tensor in tensors])
-    put_op      = stage_area.put(tensors)
+    put_op = stage_area.put(tensors)
     get_tensors = stage_area.get()
 
     get_tensors = [tf.reshape(gt, t.get_shape())

@@ -162,8 +162,8 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
                             log_device_placement=params['log_device_placement'],
                             )
     config.gpu_options.visible_device_list = str(hvd.local_rank())
-    config.intra_op_parallelism_threads = 12
-    config.inter_op_parallelism_threads = 12
+    config.intra_op_parallelism_threads = 1
+    # config.inter_op_parallelism_threads = 12
 
     ############################################
     # Setup Graph, Input pipeline and optimizer#
@@ -450,10 +450,9 @@ def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
 
         # Gather all training related ops into a single one.
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-
-        with tf.control_dependencies([apply_gradient_op]):
-            with tf.control_dependencies(update_ops):
-                train_op = tf.no_op(name='train')
+        all_ops = tf.group(*([apply_gradient_op] + update_ops ))
+        with tf.control_dependencies([all_ops]):
+            train_op = tf.no_op(name='train')
 
         ###############################
         # Setting up training session #
@@ -476,28 +475,54 @@ def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
         with tf.train.MonitoredTrainingSession(checkpoint_dir=checkpoint_dir,
                                                hooks=[tf.train.StopAtStepHook(last_step=params['max_steps']),
                                                       tf.train.NanTensorHook(avg_total_loss),
-                                                      hvd.BroadcastGlobalVariablesHook(0),
-                                                      logHook], config=config,
+                                                      hvd.BroadcastGlobalVariablesHook(0)],
+                                                      # logHook], config=config,
+                                                   config=config,
                                                save_summaries_steps=None, save_summaries_secs=None,
                                                save_checkpoint_secs=300) as mon_sess:
+
+            step = 0
             while not mon_sess.should_stop():
-                # TODO: code below does a hardware trace, write summaries and writes a checkpoint at the same time.
-                #  Must be separated.
-                if logHook._step % params['save_frequency'] == 0:
-                    # Train, Record stats and save summaries
-                    _, sum_merged = mon_sess.run([train_op, summary_merged], options=run_options,
-                                                 run_metadata=run_metadata)
+                step += 1
+                # Here we log some stats
+                if step % params['log_frequency'] == 0:
+                    start_time = time.time()
+                    loss_value = mon_sess.run([train_op, total_loss], options=run_options, run_metadata=run_metadata)[-1]
+                    duration = time.time() - start_time
+                    examples_per_sec = params['batch_size'] / duration
+                    flops = n_net.ops * params['batch_size'] / duration
+                    elapsed_epochs = step * params['batch_size'] * 1.0 * hvd.size() / params['NUM_EXAMPLES_PER_EPOCH']
+                    format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
+                                  'sec/batch/gpu), total flops = %3.2e')
+                    print(format_str % (datetime.now(), step, elapsed_epochs, loss_value,
+                                        examples_per_sec, duration, flops))
+
                     # Writing trace to json file. open with chrome://tracing
                     trace = timeline.Timeline(step_stats=run_metadata.step_stats)
                     with open('timeline.ctf.' + str(hvd.rank()) + '.json', 'w') as f:
                         f.write(trace.generate_chrome_trace_format())
-                    summary_writer.add_run_metadata(run_metadata, 'step %s' % format(logHook._step),
-                                                    global_step=logHook._step)
-                    summary_writer.add_summary(sum_merged, global_step=logHook._step)
-                    print('Running Stats and Saving Summaries...')
+                # Just train
                 else:
-                    # Just train
                     mon_sess.run(train_op)
+
+            # while not mon_sess.should_stop():
+            #     # TODO: code below does a hardware trace, write summaries and writes a checkpoint at the same time.
+            #     #  Must be separated.
+            #     if logHook._step % params['save_frequency'] == 0:
+            #         # Train, Record stats and save summaries
+            #         _, sum_merged = mon_sess.run([train_op, summary_merged], options=run_options,
+            #                                      run_metadata=run_metadata)
+            #         # Writing trace to json file. open with chrome://tracing
+            #         trace = timeline.Timeline(step_stats=run_metadata.step_stats)
+            #         with open('timeline.ctf.' + str(hvd.rank()) + '.json', 'w') as f:
+            #             f.write(trace.generate_chrome_trace_format())
+            #         summary_writer.add_run_metadata(run_metadata, 'step %s' % format(logHook._step),
+            #                                         global_step=logHook._step)
+            #         summary_writer.add_summary(sum_merged, global_step=logHook._step)
+            #         print('Running Stats and Saving Summaries...')
+            #     else:
+            #         # Just train
+            #         mon_sess.run(train_op)
 
             summary_writer.close()
 
