@@ -142,10 +142,10 @@ def get_optimizer(params, hyper_params, global_step):
     # optimizer
     if hyper_params['optimization'] == 'SGD':
         opt = tf.train.GradientDescentOptimizer(LEARNING_RATE)
-        return opt
+  
     if hyper_params['optimization'] == 'Momentum':
         opt = tf.train.MomentumOptimizer(LEARNING_RATE, momentum= hyper_params['momentum'], use_nesterov=True)
-        return opt
+
     else:
         # Default is ADAM
         opt = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE, beta1= hyper_params['momentum'])
