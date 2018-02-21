@@ -9,6 +9,7 @@ import re
 import tensorflow as tf
 import numpy as np
 from tensorflow.python.training import moving_averages
+import horovod.tensorflow as hvd
 
 
 # If a model is trained with multiple GPUs, prefix all Op names with worker_name
@@ -66,14 +67,18 @@ class ConvNet(object):
             self.hyper_params["batch_norm"] = {"epsilon": 1E-5, "decay": 0.995}
         self.model_output = None
 
+    def print_rank(self, *args, **kwargs):
+        if hvd.local_rank() == 0:
+            print(*args, **kwargs)
+
     def build_model(self, summaries=False):
         """
         Here we build the model.
         :param summaries: bool, flag to print out summaries.
         """
         # Initiate 1st layer
-        print('Building Neural Net on %s...' % self.scope)
-        print('input: ---, dim: %s memory: %s MB' %(format(self.images.get_shape().as_list()), format(self.mem/1024)))
+        print('Building Neural Net on %s_rank %d...' % (self.scope, hvd.local_rank()))
+        self.print_rank('input: ---, dim: %s memory: %s MB' %(format(self.images.get_shape().as_list()), format(self.mem/1024)))
         layer_name, layer_params = list(self.network.items())[0]
         with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
             out, kernel = self._conv(input=self.images, params=layer_params)
@@ -168,8 +173,8 @@ class ConvNet(object):
         """
         pass
 
-    @staticmethod
-    def _get_initializer(params):
+    # @staticmethod
+    def _get_initializer(self, params):
         """
         Returns an Initializer object for initializing weights
 
@@ -183,25 +188,25 @@ class ConvNet(object):
                 params_copy = params.copy()
                 name = str(params_copy.pop('type').lower())
                 if name == 'uniform_unit_scaling':
-                    print('using ' + name + ' initializer')
+                    self.print_rank('using ' + name + ' initializer')
                     # Random walk initialization (currently in the code).
                     return tf.uniform_unit_scaling_initializer(**params_copy)
                 elif name == 'truncated_normal':
-                    print('using ' + name + ' initializer')
+                    self.print_rank('using ' + name + ' initializer')
                     return tf.truncated_normal_initializer(**params_copy)
                 elif name == 'variance_scaling':
-                    print('using ' + name + ' initializer')
+                    self.print_rank('using ' + name + ' initializer')
                     return tf.contrib.layers.variance_scaling_initializer(**params_copy)
                 elif name == 'random_normal':
-                    print('using ' + name + ' initializer')
+                    self.print_rank('using ' + name + ' initializer')
                     # Normalized Initialization ( eq. 16 in Glorot et al.).
                     return tf.random_normal_initializer(**params_copy)
                 elif name == 'random_uniform':
-                    print('using ' + name + ' initializer')
+                    self.print_rank('using ' + name + ' initializer')
                     return tf.random_uniform_initializer(**params_copy)
                 elif name == 'xavier':  # Glorot uniform initializer, also called Xavier
                     # http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf
-                    print('using ' + name + ' initializer')
+                    self.print_rank('using ' + name + ' initializer')
                     return tf.contrib.layers.xavier_initializer(**params_copy)
                 elif name in ['he', 'lecun']:
                     """
@@ -223,17 +228,17 @@ class ConvNet(object):
                         _ = params_copy.pop('factor', None)  # force it to be 2.0 (default anyway)
                         _ = params_copy.pop('mode', None)  # force it to be 'FAN_IN' (default anyway)
                         # uniform parameter is False by default -> normal distribution
-                        print('using ' + name + ' initializer')
+                        self.print_rank('using ' + name + ' initializer')
                         return tf.contrib.layers.variance_scaling_initializer(factor=2.0, mode='FAN_IN', **params_copy)
                     elif name == 'lecun':
                         _ = params_copy.pop('factor', None)  # force it to be 1.0
                         _ = params_copy.pop('mode', None)  # force it to be 'FAN_IN' (default anyway)
                         # uniform parameter is False by default -> normal distribution
-                        print('using ' + name + ' initializer')
+                        self.print_rank('using ' + name + ' initializer')
                         return tf.contrib.layers.variance_scaling_initializer(factor=1.0, mode='FAN_IN', **params_copy)
-                    print('Requested initializer: ' + name + ' has not yet been implemented.')
+                    self.print_rank('Requested initializer: ' + name + ' has not yet been implemented.')
         # default = Xavier:
-        print('Using default Xavier instead')
+        self.print_rank('Using default Xavier instead')
         return tf.contrib.layers.xavier_initializer()
 
     def get_loss(self):
@@ -322,7 +327,7 @@ class ConvNet(object):
         elif isinstance(conv_initializer, tf.random_normal_initializer):
             init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
             if verbose:
-                print('stddev: %s' % format(init_val))
+                self.print_rank('stddev: %s' % format(init_val))
             conv_initializer.mean = 0.0
             conv_initializer.stddev = init_val
         # TODO: make and modify local copy only
@@ -338,7 +343,7 @@ class ConvNet(object):
         # http://imatge-upc.github.io/telecombcn-2016-dlcv/slides/D2L1-memory.pdf
         this_ops = np.prod(params['kernel'] + input.get_shape().as_list()[1:] + [features])
         if verbose:
-            print('\tops: %3.2e' % (this_ops))
+            self.print_rank('\tops: %3.2e' % (this_ops))
         """
         # batch * width * height * in_channels * (kern_h * kern_w * channels)
         # at each location in the image:
@@ -348,7 +353,7 @@ class ConvNet(object):
         # final = filters * convs/filter * ops/conv
         this_ops = np.prod([params['features'], convs_per_filt, ops_per_conv])
         if verbose:
-            print('\t%d ops/conv, %d convs/filter, %d filters = %3.2e ops' % (ops_per_conv, convs_per_filt,
+            self.print_rank('\t%d ops/conv, %d convs/filter, %d filters = %3.2e ops' % (ops_per_conv, convs_per_filt,
                                                                               params['features'], this_ops))
         """
         self.ops += this_ops
@@ -407,10 +412,10 @@ class ConvNet(object):
         assert params['weights'] == params['bias'], " weights and bias outer dimensions do not match"
         input_reshape = tf.reshape(input,[self.params['batch_size'], -1])
         dim_input = input_reshape.shape[1].value
-        # print(dim_input,list(params['weights']))
+        # self.print_rank(dim_input,list(params['weights']))
         weights_shape = [dim_input, params['weights']]
         init_val = max(np.sqrt(2.0/params['weights']), 0.01)
-        print('stddev: %s' % format(init_val))
+        self.print_rank('stddev: %s' % format(init_val))
         bias_shape = [params['bias']]
 
         if params['type'] == 'linear_output':
@@ -429,7 +434,7 @@ class ConvNet(object):
         elif isinstance(lin_initializer, tf.random_normal_initializer):
             init_val = max(np.sqrt(2.0 / params['weights']), 0.01)
             if verbose:
-                print('stddev: %s' % format(init_val))
+                self.print_rank('stddev: %s' % format(init_val))
             lin_initializer.mean = 0.0
             lin_initializer.stddev = init_val
 
@@ -446,7 +451,7 @@ class ConvNet(object):
         # http://imatge-upc.github.io/telecombcn-2016-dlcv/slides/D2L1-memory.pdf
         this_ops = input.get_shape().as_list()[1] * params['weights']
         if verbose:
-            print('\tops: %3.2e' % (this_ops))
+            self.print_rank('\tops: %3.2e' % (this_ops))
         """
         # for each element in the output - feature^2 multiplies + feature^2 additions
         ops_per_element = 2 * dim_input ** 2
@@ -457,7 +462,7 @@ class ConvNet(object):
         # batch * nodes * 2 * features + nodes <- 2 comes in for the dot prod + sum
         this_ops = ops_per_element * num_dot_prods + bias_ops
         if verbose:
-            print('\t%d ops/element, %d dot products, %d additions for bias = %3.2e ops' % (ops_per_element,
+            self.print_rank('\t%d ops/element, %d dot products, %d additions for bias = %3.2e ops' % (ops_per_element,
                                                                                                   num_dot_prods,
                                                                                             bias_ops, this_ops))
         """
@@ -487,7 +492,7 @@ class ConvNet(object):
         # should ignore the batch size in the calculation!
         this_ops = 2 * np.prod(input.get_shape().as_list()[1:])
         if verbose:
-            print('\tactivation = %3.2e ops' % this_ops)
+            self.print_rank('\tactivation = %3.2e ops' % this_ops)
         self.ops += this_ops
 
         if params is not None:
@@ -520,7 +525,7 @@ class ConvNet(object):
         num_pools = np.prod([input.shape[2].value, input.shape[3].value]) // np.prod(params['stride'])
         # final = num images * filters * convs/filter * ops/conv
         if verbose:
-            print('\t%d ops/pool, %d pools = %3.2e ops' % (ops_per_pool, num_pools,
+            self.print_rank('\t%d ops/pool, %d pools = %3.2e ops' % (ops_per_pool, num_pools,
                                                            num_pools * ops_per_pool))
 
         self.ops += num_pools * ops_per_pool
@@ -566,7 +571,7 @@ class ConvNet(object):
             n_features = -1
         for ind in range(1):
             map = tf.slice(image_stack, (ind, 0, 0, 0), (1, -1, -1, n_features))
-            # print('activation map shape: %s' %(format(map.shape)))
+            # self.print_rank('activation map shape: %s' %(format(map.shape)))
             map = tf.reshape(map, (map.shape[1].value, map.shape[2].value, map.shape[-1].value))
             map = tf.transpose(map, (2, 0 , 1))
             map = tf.reshape(map, (-1, map.shape[1].value, map.shape[2].value, 1))
@@ -604,7 +609,7 @@ class ConvNet(object):
         if n_features is None:
             n_features = -1
         map = tf.slice(image_stack, (0, 0, 0, 0), (-1, -1, -1, n_features))
-        # print('activation map shape: %s' %(format(map.shape)))
+        # self.print_rank('activation map shape: %s' %(format(map.shape)))
         map = tf.reshape(map, (map.shape[0].value, map.shape[1].value, map.shape[-2].value*map.shape[-1].value))
         map = tf.transpose(map, (2, 0, 1))
         map = tf.reshape(map, (-1, map.shape[1].value, map.shape[2].value, 1))
@@ -630,15 +635,15 @@ class ConvNet(object):
     def _print_layer_specs(self, params, scope, input_shape, output_shape):
         mem_in_MB = np.cumprod(output_shape)[-1] * self.bytesize / 1024**2
         if params['type'] == 'convolutional':
-            print('%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB' %
+            self.print_rank('%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB' %
                   (scope.name, format(output_shape), format(params['kernel']),
                    format(params['stride']), format(self.num_weights), format(mem_in_MB)))
         if params['type'] == 'pool':
-            print('%s --- output: %s, kernel: %s, stride: %s, memory: %s MB' %
+            self.print_rank('%s --- output: %s, kernel: %s, stride: %s, memory: %s MB' %
                   (scope.name, format(output_shape), format(params['kernel']),
                    format(params['stride']), format(mem_in_MB)))
         if params['type'] == 'fully_connected' or params['type'] == 'linear_output':
-            print('%s --- output: %s, weights: %s, bias: %s, # of weights: %s,  memory: %s MB' %
+            self.print_rank('%s --- output: %s, weights: %s, bias: %s, # of weights: %s,  memory: %s MB' %
                    (scope.name, format(output_shape), format(params['weights']),
                      format(params['bias']), format(self.num_weights), format(mem_in_MB)))
 
@@ -692,7 +697,12 @@ class ConvNet(object):
         Returns:
           Variable Tensor
         """
-        # with tf.device(self.params['CPU_ID):
+        # # with tf.device(self.params['CPU_ID):
+        # if self.params['IMAGE_FP16']:
+        #     dtype = tf.float16
+        # else:
+        #     dtype = tf.float32
+        # var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype, trainable=trainable)
 
         if regularize:
             var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable,
@@ -705,11 +715,15 @@ class ConvNet(object):
 
         return var
 
+
     def _weight_decay(self, tensor):
         return tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay'])
 
 
 class ResNet(ConvNet):
+
+    def __init__(self, *args, **kwargs):
+        super(ResNet, self).__init__(*args, **kwargs)
 
     def _add_branches(self, hidden, out, verbose=True):
         """
@@ -725,14 +739,14 @@ class ResNet(ConvNet):
             shortcut_parms = {"kernel": [1, 1], "stride": [1, 1], "padding": "SAME",
                               "features": hidden.get_shape().as_list()[1], "batch_norm": True}
             if verbose:
-                print('Doing 1x1 conv on output to bring channels from %d to %d' % (out.get_shape().as_list()[1],
+                self.print_rank('Doing 1x1 conv on output to bring channels from %d to %d' % (out.get_shape().as_list()[1],
                                                                                     hidden.get_shape().as_list()[1]))
             with tf.variable_scope("shortcut", reuse=self.reuse) as scope:
                 out, _ = self._conv(input=out, params=shortcut_parms)
         # ops just for the addition operation - ignore the batch size
         this_ops = np.prod(out.get_shape().as_list()[:1])
         if verbose:
-            print('\tops for adding shortcut: %3.2e' % this_ops)
+            self.print_rank('\tops for adding shortcut: %3.2e' % this_ops)
         self.ops += this_ops
         # Now add the hidden with input
         return tf.add(out, hidden)
@@ -773,7 +787,7 @@ class ResNet(ConvNet):
         # Up to N-1th layer: weight >> BN >> ReLU
         for layer_name in layer_ids[:-1]:
             if verbose:
-                print('weight >> BN >> ReLU on layer: ' + layer_name)
+                self.print_rank('weight >> BN >> ReLU on layer: ' + layer_name)
             with tf.variable_scope(layer_name, reuse=self.reuse) as sub_scope:
                 layer_params = res_block_params[layer_name]
                 hidden, _ = self._conv(input=hidden, params=layer_params)
@@ -781,7 +795,7 @@ class ResNet(ConvNet):
                 hidden = self._activate(input=hidden, name=sub_scope.name, params=layer_params)
 
         if verbose:
-            print('weight ONLY on layer: ' + layer_ids[-1])
+            self.print_rank('weight ONLY on layer: ' + layer_ids[-1])
         # last layer: Weight ONLY
         with tf.variable_scope(layer_ids[-1], reuse=self.reuse) as sub_scope:
             hidden, _ = self._conv(input=hidden, params=res_block_params[layer_ids[-1]])
@@ -791,23 +805,23 @@ class ResNet(ConvNet):
 
         if verbose:
             ops_out = self.ops
-            print('\tresnet ops = %3.2e' % (ops_out - ops_in))
+            self.print_rank('\tresnet ops = %3.2e' % (ops_out - ops_in))
 
         return ret_val
 
     def _print_layer_specs(self, params, scope, input_shape, output_shape):
         if params['type'] == 'pooling':
-            print('%s --- output: %s, kernel: %s, stride: %s' %
+            self.print_rank('%s --- output: %s, kernel: %s, stride: %s' %
                   (scope.name, format(output_shape), format(params['kernel']),
                    format(params['stride'])))
         elif params['type'] == 'residual':
             mem_in_MB = np.cumprod(output_shape)[-1] * self.bytesize / 1024**2
-            print('Residual Layer: ' + scope.name)
+            self.print_rank('Residual Layer: ' + scope.name)
             for parm_name in params.keys():
                 if isinstance(params[parm_name], OrderedDict):
                     if params[parm_name]['type'] == 'convolutional':
                         conv_parms = params[parm_name]
-                        print('\t%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB' %
+                        self.print_rank('\t%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB' %
                               (parm_name, format(output_shape), format(conv_parms['kernel']),
                                format(conv_parms['stride']), format(self.num_weights), format(0)))
 

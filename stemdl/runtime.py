@@ -18,6 +18,7 @@ import horovod.tensorflow as hvd
 from tensorflow.python.client import timeline
 from tensorflow.python.ops import data_flow_ops
 
+hvd.init()
 
 class _LoggerHook(tf.train.SessionRunHook):
     """Logs loss and runtime stats."""
@@ -52,6 +53,21 @@ class _LoggerHook(tf.train.SessionRunHook):
                           'sec/batch/gpu), total flops = %3.2e')
             print(format_str % (datetime.now(), self._step, elapsed_epochs, loss_value,
                                 examples_per_sec, sec_per_batch, self.net_ops/duration))
+
+
+def float32_variable_storage_getter(getter, name, shape=None, dtype=None,
+                                    initializer=None, regularizer=None,
+                                    trainable=True,
+                                    *args, **kwargs):
+    storage_dtype = tf.float32 if trainable else dtype
+    variable = getter(name, shape, dtype=storage_dtype,
+                      initializer=initializer, regularizer=regularizer,
+                      trainable=trainable,
+                      *args, **kwargs)
+    if trainable and dtype != tf.float32:
+        variable = tf.cast(variable, dtype)
+    return variable
+
 
 
 def _add_loss_summaries(total_loss, losses, params, summaries=False):
@@ -128,7 +144,7 @@ def get_optimizer(params, hyper_params, global_step):
         opt = tf.train.GradientDescentOptimizer(LEARNING_RATE)
         return opt
     if hyper_params['optimization'] == 'Momentum':
-        opt = tf.train.MomentumOptimizer(LEARNING_RATE, momentum= hyper_params['momentum'])
+        opt = tf.train.MomentumOptimizer(LEARNING_RATE, momentum= hyper_params['momentum'], use_nesterov=True)
         return opt
     else:
         # Default is ADAM
@@ -136,6 +152,31 @@ def get_optimizer(params, hyper_params, global_step):
 
     opt = hvd.DistributedOptimizer(opt)
     return opt
+
+
+def loss_func(labels, model, hyper_params, var_scope):
+    # Build the forward model
+    n_net = model
+    n_net.build_model()
+    logits = n_net.model_output
+    if logits.dtype != tf.float32:
+        logits = tf.cast(logits, tf.float32)
+    loss = tf.losses.mean_squared_error(labels, predictions=logits,
+                                 reduction=tf.losses.Reduction.MEAN)
+    # loss = tf.losses.sparse_softmax_cross_entropy(
+    #     logits=logits, labels=labels)
+    # Add weight decay
+    params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
+                               scope=var_scope.name)
+    l2_loss = tf.add_n([tf.nn.l2_loss(w) for w in params])
+    if l2_loss.dtype != tf.float32:
+        l2_loss = tf.cast(l2_loss, tf.float32)
+    loss += hyper_params['weight_decay'] * l2_loss
+    return loss, logits
+
+def print_rank(*args, **kwargs):
+    if hvd.local_rank() == 0:
+        print(*args, **kwargs)
 
 
 def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=1):
@@ -178,9 +219,10 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
             images, labels = inputs.minibatch(params['batch_size'], params)
             # Staging images on host
             staging_op, (images, labels) = inputs.stage([images, labels])
+            global_step = tf.train.get_or_create_global_step()
 
+    # with tf.device('/gpu:0'):
     with tf.device('/gpu:%d' % hvd.local_rank()):
-        global_step = tf.train.get_or_create_global_step()
 
         # Copy images from host to device
         gpucopy_op, (images, labels) = inputs.stage([images, labels])
@@ -201,36 +243,34 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
         if hvd.local_rank() == 0:
             summary = True
 
-        print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
+        print_rank('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
                                                                 format(labels.get_shape())))
 
         # Setup Neural Net
         n_net = network.ResNet(scope, params, global_step, hyper_params, network_config, images, labels,
                                 operation='train', summary=False)
 
-        # Build it and propagate images through it.
+        # # Build it and propagate images through it.
         n_net.build_model()
 
         # calculate the total loss
         n_net.get_loss()
 
-        # Assemble all of the losses.
+
+        #Assemble all of the losses.
         losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
         regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
 
         # Calculate the total loss for the current worker
         total_loss = tf.add_n(losses + regularization, name='total_loss')
 
-        # Generate summaries for the losses and get corresponding op
+        #Generate summaries for the losses and get corresponding op
         loss_averages_op = _add_loss_summaries(total_loss, losses, params, summaries= summary)
 
-        # get summaries, except for the one produced by string_input_producer
-        # TODO: figure out the summaries nonsense.
-        # if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
+        #get summaries, except for the one produced by string_input_producer
+        #TODO: figure out the summaries nonsense.
+        if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
 
-        # Calculate the gradients for the current data batch
-        with tf.control_dependencies([loss_averages_op]):
-            grads_vars = opt.compute_gradients(total_loss, gate_gradients=tf.train.Optimizer.GATE_OP)
 
         #######################################
         # Apply Gradients and setup train op #
@@ -240,9 +280,13 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
         if params['IMAGE_FP16']:
             # scale the losses
             scaling = 128
+            # Calculate the gradients for the current data batch
+            with tf.control_dependencies([loss_averages_op]):
+                grads_vars = opt.compute_gradients(total_loss*scaling, gate_gradients=tf.train.Optimizer.GATE_NONE)
+
             # One of the gradients is None so below won't work
             #TODO: check why one of the gradients is None. Probably variable initialized as trainable and shouldn't be
-            #grads_vars = [(grads[0]/scaling,grads[1]) for grads in grads_vars]
+            grads_vars = [(grads[0]/scaling,grads[1]) for grads in grads_vars]
             new_grads_vars = []
             for grads in grads_vars:
                 if grads[0] is not None: new_grads = grads[0]/scaling
@@ -250,8 +294,11 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
                 new_grads_vars.append((new_grads, grads[1]))
 
             apply_gradient_op = opt.apply_gradients(new_grads_vars, global_step=global_step)
+
+            # apply_gradient_op = opt.apply_gradients(grads_vars, global_step=global_step)
         else:
-            apply_gradient_op = opt.apply_gradients(grads_vars, global_step=global_step)
+            with tf.control_dependencies([loss_averages_op]):
+                apply_gradient_op = opt.minimize(total_loss, gate_gradients=tf.train.Optimizer.GATE_NONE)
 
 
         # Gather all training related ops into a single one.
@@ -282,7 +329,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
         sess.run(sync_op)
 
         # prefill pipeline first
-        print('Prefilling I/O pipeline...')
+        print_rank('Prefilling I/O pipeline...')
         for i in range(len(IO_ops)):
             sess.run(IO_ops[:i + 1])
 
@@ -295,16 +342,16 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
             # Here we log some stats
             if step % params['log_frequency'] == 0:
                 start_time = time.time()
-                loss_value = sess.run([train_op, total_loss], options=run_options, run_metadata=run_metadata) [-1]
+                loss_value = sess.run([train_op, total_loss])[-1]
                 duration = time.time() - start_time
-                examples_per_sec = params['batch_size']/duration
-                flops = n_net.ops * params['batch_size']/duration
+                examples_per_sec = params['batch_size'] * hvd.size()/duration
+                flops = n_net.ops * params['batch_size'] * hvd.size()/duration
                 elapsed_epochs = step * params['batch_size'] * 1.0 * hvd.size() / params['NUM_EXAMPLES_PER_EPOCH']
-                format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
-                              'sec/batch/gpu), total flops = %3.2e')
-                print(format_str % (datetime.now(), step, elapsed_epochs, loss_value,
-                                    examples_per_sec, duration, flops))
-
+                format_str = ('step = %d, epoch = %2.2e, loss = %.2f\nTotal Stats over %d ranks: %.1f examples/sec; flops = %3.2e')
+                print_rank(format_str % (step, elapsed_epochs, loss_value, hvd.size(), examples_per_sec, flops))
+            if step == 306:
+                print_rank('Running Hardware+Software Trace...')
+                sess.run(train_op, options=run_options, run_metadata=run_metadata)
                 # Writing trace to json file. open with chrome://tracing
                 trace = timeline.Timeline(step_stats=run_metadata.step_stats)
                 with open('timeline.ctf.' + str(hvd.rank()) + '.json', 'w') as f:
