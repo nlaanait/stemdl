@@ -224,6 +224,7 @@ class DatasetTFRecords(object):
 
         return images, labels
 
+
 def decode_image_label(record, params):
     """
     Returns: image, label decoded from tfrecords
@@ -246,16 +247,20 @@ def decode_image_label(record, params):
     image = tf.image.per_image_standardization(image)
     return image, label
 
-def minibatch(batchsize, params):
+
+def minibatch(batchsize, params, mode='train'):
     """
     Returns minibatch of images and labels from TF records file.
-    :param batchsize:
-    :param params:
+    :param batchsize: int,
+    :param params: dict, json input parameters
+    :param mode: str, "train" or "test", default "train
     :return:
     """
+    if mode != 'train' or mode != 'test':
+        mode = 'train'
 
     record_input = data_flow_ops.RecordInput(
-        file_pattern=os.path.join(params['data_dir'], '*_%s.tfrecords' % 'train'),
+        file_pattern=os.path.join(params['data_dir'], '*_%s.tfrecords' % mode),
         parallelism=params['IO_threads'],
         # Note: This causes deadlock during init if larger than dataset
         buffer_size=params['buffer_cap'],
@@ -291,8 +296,12 @@ def minibatch(batchsize, params):
             images = tf.cast(images, tf.float32)
     return images, labels
 
+
 def stage(tensors):
-    """Stages the given tensors in a StagingArea for asynchronous put/get.
+    """
+    Stages the given tensors in a StagingArea for asynchronous put/get
+    :param tensors: tf.Tensor
+    :return: get and put tf.Op operations.
     """
     stage_area = data_flow_ops.StagingArea(
         dtypes=[tensor.dtype       for tensor in tensors],

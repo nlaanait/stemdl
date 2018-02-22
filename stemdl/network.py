@@ -12,10 +12,6 @@ from tensorflow.python.training import moving_averages
 import horovod.tensorflow as hvd
 
 
-# If a model is trained with multiple GPUs, prefix all Op names with worker_name
-# to differentiate the operations. But then remove from the summaries
-worker_name = 'worker'
-
 
 class ConvNet(object):
     """
@@ -68,7 +64,7 @@ class ConvNet(object):
         self.model_output = None
 
     def print_rank(self, *args, **kwargs):
-        if hvd.local_rank() == 0:
+        if hvd.rank() == 0:
             print(*args, **kwargs)
 
     def build_model(self, summaries=False):

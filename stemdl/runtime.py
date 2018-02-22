@@ -6,19 +6,23 @@ email: laanaitn@ornl.gov
 
 import time
 from datetime import datetime
-import tensorflow as tf
+import os
+import sys
 import re
 import numpy as np
-from . import network
-from . import inputs
-from . import inputs_dev_cifar_eg
-import os
+import tensorflow as tf
 from collections import OrderedDict
 import horovod.tensorflow as hvd
 from tensorflow.python.client import timeline
-from tensorflow.python.ops import data_flow_ops
+
+
+from . import network
+from . import inputs
+
+
 
 hvd.init()
+
 
 class _LoggerHook(tf.train.SessionRunHook):
     """Logs loss and runtime stats."""
@@ -55,19 +59,55 @@ class _LoggerHook(tf.train.SessionRunHook):
                                 examples_per_sec, sec_per_batch, self.net_ops/duration))
 
 
-def float32_variable_storage_getter(getter, name, shape=None, dtype=None,
-                                    initializer=None, regularizer=None,
-                                    trainable=True,
-                                    *args, **kwargs):
-    storage_dtype = tf.float32 if trainable else dtype
-    variable = getter(name, shape, dtype=storage_dtype,
-                      initializer=initializer, regularizer=regularizer,
-                      trainable=trainable,
-                      *args, **kwargs)
-    if trainable and dtype != tf.float32:
-        variable = tf.cast(variable, dtype)
-    return variable
+class TrainHelper(object):
+    def __init__(self, params, saver, writer, net_ops, last_step=0):
+        self.params = params
+        self.last_step = last_step
+        self.net_ops = net_ops
+        self.start_time = time.time()
+        self.saver = saver
+        self.writer = writer
 
+    def before_run(self):
+        self.last_step +=1
+        self.start_time = time.time()
+        self.elapsed_epochs = self.last_step * self.params['batch_size'] * 1.0 * hvd.size() / \
+                              self.params['NUM_EXAMPLES_PER_EPOCH']
+        # call to hvd forces global namespace into class on purpose.
+
+    def write_summaries(self, summary):
+        if hvd.rank() == 0:
+            with tf.summary.FileWriter(self.params['checkpt_dir']) as summary_writer:
+                if self.last_step == 0:
+                    summary_writer.add_graph()
+                summary_writer.add_summary(summary)
+        print_rank('Saved Summaries.')
+
+    def save_checkpoint(self):
+        pass
+
+    @staticmethod
+    def save_trace(run_metadata):
+        # Writing trace to json file. open with chrome://tracing
+        trace = timeline.Timeline(step_stats=run_metadata.step_stats)
+        with open('timeline.ctf.' + str(hvd.rank()) + '.json', 'w') as f:
+            f.write(trace.generate_chrome_trace_format())
+        print_rank('Run & Saved GPU Trace.')
+
+    def log_stats(self, loss_value):
+        self.nanloss(loss_value)
+        duration = time.time() - self.start_time
+        examples_per_sec = self.params['batch_size'] * hvd.size() / duration
+        flops = self.net_ops * self.params['batch_size'] * hvd.size() / duration
+        format_str = (
+            'step = %d, epoch = %2.2e, loss = %.2f, step_time= %2.2f sec.Total Stats over %d ranks: %.1f examples/sec; flops = %3.2e')
+        print_rank(format_str % (self.last_step, self.elapsed_epochs, loss_value, duration, hvd.size(), examples_per_sec, flops))
+
+    @staticmethod
+    def nanloss(loss_value):
+        if np.isnan(loss_value):
+            print_rank('loss is nan...')
+            sys.exit(0)
 
 
 def _add_loss_summaries(total_loss, losses, params, summaries=False):
@@ -142,7 +182,7 @@ def get_optimizer(params, hyper_params, global_step):
     # optimizer
     if hyper_params['optimization'] == 'SGD':
         opt = tf.train.GradientDescentOptimizer(LEARNING_RATE)
-  
+
     if hyper_params['optimization'] == 'Momentum':
         opt = tf.train.MomentumOptimizer(LEARNING_RATE, momentum= hyper_params['momentum'], use_nesterov=True)
 
@@ -174,8 +214,9 @@ def loss_func(labels, model, hyper_params, var_scope):
     loss += hyper_params['weight_decay'] * l2_loss
     return loss, logits
 
+
 def print_rank(*args, **kwargs):
-    if hvd.local_rank() == 0:
+    if hvd.rank() == 0:
         print(*args, **kwargs)
 
 
@@ -190,13 +231,6 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     :param data_path: string, path to data.
     :return: None
     """
-    # Check if training is a restart from checkpoint
-    ckpt = tf.train.get_checkpoint_state(params['checkpt_dir'])
-    if ckpt is None:
-        last_step = 0
-    else:
-        last_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
-
 
     # Config file for tf.Session()
     config = tf.ConfigProto(allow_soft_placement=params['allow_soft_placement'],
@@ -216,7 +250,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
         with tf.name_scope('Input') as _:
             # filename_queue = tf.train.string_input_producer([data_path], num_epochs=params['num_epochs'])
             # pass the filename_queue to the inputs classes to decode
-            images, labels = inputs.minibatch(params['batch_size'], params)
+            images, labels = inputs.minibatch(params['batch_size'], params, mode='train')
             # Staging images on host
             staging_op, (images, labels) = inputs.stage([images, labels])
             global_step = tf.train.get_or_create_global_step()
@@ -279,7 +313,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
         # Apply gradients to trainable variables
         if params['IMAGE_FP16']:
             # scale the losses
-            scaling = 128
+            scaling = 1
             # Calculate the gradients for the current data batch
             with tf.control_dependencies([loss_averages_op]):
                 grads_vars = opt.compute_gradients(total_loss*scaling, gate_gradients=tf.train.Optimizer.GATE_NONE)
@@ -308,270 +342,83 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
         with tf.control_dependencies([all_ops]):
                 train_op = tf.no_op(name='train')
 
-        ###############################
-        # Setting up training session #
-        ###############################
-
-        # Stats and summaries
-        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-        run_metadata = tf.RunMetadata()
-        summary_writer = tf.summary.FileWriter(params['checkpt_dir'])
-        # Add Summary histograms for trainable variables and their gradients
-        summary_merged = tf.summary.merge_all()
-
-        #Initialize variables
-        sess = tf.Session(config=config)
-        init_op = tf.global_variables_initializer()
-        sess.run(init_op)
-
-        # Sync
-        sync_op = hvd.broadcast_global_variables(0)
-        sess.run(sync_op)
-
-        # prefill pipeline first
-        print_rank('Prefilling I/O pipeline...')
-        for i in range(len(IO_ops)):
-            sess.run(IO_ops[:i + 1])
+    #########################
+    # Start Session         #
+    #########################
+    sess = tf.Session(config=config)
 
 
-        # TODO:checkpoint restarts, summaries, and hardware traces are not implemented below.
-        # Train
-        step = 0
-        while step < params['max_steps']:
-            step += 1
-            # Here we log some stats
-            if step % params['log_frequency'] == 0:
-                start_time = time.time()
-                loss_value = sess.run([train_op, total_loss])[-1]
-                duration = time.time() - start_time
-                examples_per_sec = params['batch_size'] * hvd.size()/duration
-                flops = n_net.ops * params['batch_size'] * hvd.size()/duration
-                elapsed_epochs = step * params['batch_size'] * 1.0 * hvd.size() / params['NUM_EXAMPLES_PER_EPOCH']
-                format_str = ('step = %d, epoch = %2.2e, loss = %.2f\nTotal Stats over %d ranks: %.1f examples/sec; flops = %3.2e')
-                print_rank(format_str % (step, elapsed_epochs, loss_value, hvd.size(), examples_per_sec, flops))
-            if step == 306:
-                print_rank('Running Hardware+Software Trace...')
-                sess.run(train_op, options=run_options, run_metadata=run_metadata)
-                # Writing trace to json file. open with chrome://tracing
-                trace = timeline.Timeline(step_stats=run_metadata.step_stats)
-                with open('timeline.ctf.' + str(hvd.rank()) + '.json', 'w') as f:
-                    f.write(trace.generate_chrome_trace_format())
-            # Just train
-            else:
-                sess.run(train_op)
+    ##########################################
+    # Setting up Checkpointing and Summaries #
+    #########################################
 
-        # This won't exit cleanly if there's a divergence in loss
-        sess.close()
+    # Stats and summaries
+    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+    run_metadata = tf.RunMetadata()
+    summary_writer = tf.summary.FileWriter(params['checkpt_dir'])
+    # Add Summary histograms for trainable variables and their gradients
+    summary_merged = tf.summary.merge_all()
 
-
-def train_horovod(network_config, hyper_params, data_path, params, num_GPUS=1):
-    """
-    Train the network for a number of steps using horovod
-    # At each step (global_step):
-    # 1. propagate examples through the neural net.
-    # 2. calculate the losses/gradients for each worker.
-    # 3. average over gradients.
-    # 4. update the neural net weights.
-    # 5. repeat.
-    :param network_config: OrderedDict, network configuration
-    :param hyper_params: OrderedDict, hyper_parameters
-    :param params: dict
-    :param num_GPUS: int, default 1.
-    :param data_path: string, path to data.
-    :return: None
-    """
+    # Saver and Checkpoint restore
+    saver = tf.train.Saver()
+    checkpoint_file = os.path.join(params['checkpt_dir'], 'model.ckpt')
     # Check if training is a restart from checkpoint
     ckpt = tf.train.get_checkpoint_state(params['checkpt_dir'])
     if ckpt is None:
         last_step = 0
     else:
         last_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
+        saver.restore(sess, ckpt.model_checkpoint_path)
+        print_rank("Restoring from previous checkpoint @ step=%d" %last_step)
 
-    # Only neural net ops will live on GPU.
-    # Everything else (variable initialization, placement, updates) is on the host.
+    ###############################
+    # Setting up training session #
+    ###############################
 
-    # Config file for tf.Session()
-    config = tf.ConfigProto(allow_soft_placement=params['allow_soft_placement'],
-                            log_device_placement=params['log_device_placement'],
-                            )
-    config.gpu_options.visible_device_list = str(hvd.local_rank())
+    #Initialize variables
+    init_op = tf.global_variables_initializer()
+    sess.run(init_op)
 
-    ############################################
-    # Setup Graph, Input pipeline and optimizer#
-    ############################################
-    # Start building the graph
+    # Sync
+    sync_op = hvd.broadcast_global_variables(0)
+    sess.run(sync_op)
 
-    use_dev_reader = False
+    # prefill pipeline first
+    print_rank('Prefilling I/O pipeline...')
+    for i in range(len(IO_ops)):
+        sess.run(IO_ops[:i + 1])
 
-    graph = tf.Graph()
-    with graph.as_default(), tf.device('/gpu:%d' % hvd.local_rank()):
-        global_step = tf.train.get_or_create_global_step()
 
-        # Setup data stream
-        with tf.device(params['CPU_ID']):
-            with tf.name_scope('Input') as _:
-                filename_queue = tf.train.string_input_producer([data_path], num_epochs=params['num_epochs'])
-                # pass the filename_queue to the inputs classes to decode
-                if use_dev_reader:
-                    reader = inputs_dev_cifar_eg.CifarEgReader(filename_queue, params, num_gpus=num_GPUS,
-                                                               using_horovod=True)
-                    images, labels = reader._make_batch(distort=params['train_distort'], noise_min=params['noise_min'],
-                                                        noise_max=params['noise_max'], geometric=params['geometric'],
-                                                        random_glimpses=params['random_glimpses'])
+    # TODO:checkpoint restarts, summaries, are not implemented below.
+    # Train
 
-                else:
-                    dset = inputs.DatasetTFRecords(filename_queue, params, is_train=True,
-                                                   num_gpus=num_GPUS, using_horovod=True, max_cpu_utilization=0.9)
-                    # Process images and generate examples batch
-                    images, labels = dset.get_batch(distort=params['train_distort'], noise_min=params['noise_min'],
-                                                    noise_max=params['noise_max'], geometric=params['geometric'],
-                                                    random_glimpses=params['random_glimpses'])
-        # setup optimizer
-        opt = get_optimizer(params, hyper_params, global_step)
+    train_elf = TrainHelper(params, saver, summary_writer, n_net.ops, last_step=last_step)
 
-        ##################
-        # Building Model#
-        ##################
+    while train_elf.last_step < params['max_steps']:
+        nan = tf.train.NanTensorHook(total_loss)
+        nan.begin()
+        train_elf.before_run()
+        # Here we log some stats
+        if train_elf.last_step % params['log_frequency'] == 0:
+            loss_value = sess.run([train_op, total_loss])[-1]
+            train_elf.log_stats(loss_value)
 
-        # Build model, forward propagate, and calculate loss
-        # with tf.variable_scope(tf.get_variable_scope(), reuse=None):
-        scope = 'horovod'
-        summary = False
-        if hvd.local_rank() == 0:
-            summary = True
+        # Here we write summaries and checkpoint
+        if train_elf.last_step % params['save_frequency'] == 0:
+            summary = sess.run([train_op, summary_merged])[-1]
+            train_elf.write_summaries(summary)
+            if hvd.rank() == 0:
+                saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
+            print_rank('Saved Checkpoint.')
 
-        print('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
-                                                                format(labels.get_shape())))
+        # Here we do a device trace:
+        if train_elf.last_step == 101 and params['gpu_trace']:
+            sess.run(train_op, options=run_options, run_metadata=run_metadata)
+            train_elf.save_trace(run_metadata)
 
-        # Setup Neural Net
-        n_net = network.ResNet(scope, params, global_step, hyper_params, network_config, images, labels,
-                                operation='train', summary=False)
-
-        # Build it and propagate images through it.
-        n_net.build_model()
-
-        # calculate the total loss
-        n_net.get_loss()
-
-        # Assemble all of the losses.
-        losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
-        regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-
-        # Calculate the total loss for the current worker
-        total_loss = tf.add_n(losses + regularization, name='total_loss')
-
-        # Generate summaries for the losses and get corresponding op
-        loss_averages_op = _add_loss_summaries(total_loss, losses, params, summaries= summary)
-
-        # get summaries, except for the one produced by string_input_producer
-        # TODO: figure out the summaries nonsense.
-        # if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
-
-        # Calculate the gradients for the current data batch
-        with tf.control_dependencies([loss_averages_op]):
-            grads_vars = opt.compute_gradients(total_loss)
-
-        #######################################
-        # Apply Gradients and setup train op #
-        #######################################
-
-        # Apply gradients to trainable variables
-        if params['IMAGE_FP16']:
-            # scale the losses
-            scaling = 128
-            # One of the gradients is None so below won't work
-            #TODO: check why one of the gradients is None. Probably variable initialized as trainable and shouldn't be
-            #grads_vars = [(grads[0]/scaling,grads[1]) for grads in grads_vars]
-            new_grads_vars = []
-            for grads in grads_vars:
-                if grads[0] is not None: new_grads = grads[0]/scaling
-                else: new_grads = grads[0]
-                new_grads_vars.append((new_grads, grads[1]))
-
-            apply_gradient_op = opt.apply_gradients(new_grads_vars, global_step=global_step)
+        # And here... we just train
         else:
-            apply_gradient_op = opt.apply_gradients(grads_vars, global_step=global_step)
-
-        # Add Summary histograms for trainable variables and their gradients
-        summary_merged = tf.summary.merge_all()
-
-        # Gather all training related ops into a single one.
-        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-        all_ops = tf.group(*([apply_gradient_op] + update_ops ))
-        with tf.control_dependencies([all_ops]):
-            train_op = tf.no_op(name='train')
-
-        ###############################
-        # Setting up training session #
-        ###############################
-
-        # calculate loss and setup logger
-        avg_total_loss = tf.reduce_mean(total_loss)
-        logHook = _LoggerHook(params, avg_total_loss, num_GPUS, n_net.ops, last_step=last_step)
-
-        # Stats and summaries
-        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-        run_metadata = tf.RunMetadata()
-        summary_writer = tf.summary.FileWriter(params['checkpt_dir'])
-
-        # Start Training Session
-        if hvd.rank() == 0:
-            checkpoint_dir = params['checkpt_dir']
-        else:
-            checkpoint_dir = None
-        with tf.train.MonitoredTrainingSession(checkpoint_dir=checkpoint_dir,
-                                               hooks=[tf.train.StopAtStepHook(last_step=params['max_steps']),
-                                                      tf.train.NanTensorHook(avg_total_loss),
-                                                      hvd.BroadcastGlobalVariablesHook(0)],
-                                                      # logHook], config=config,
-                                                   config=config,
-                                               save_summaries_steps=None, save_summaries_secs=None,
-                                               save_checkpoint_secs=300) as mon_sess:
-
-            step = 0
-            while not mon_sess.should_stop():
-                step += 1
-                # Here we log some stats
-                if step % params['log_frequency'] == 0:
-                    start_time = time.time()
-                    loss_value = mon_sess.run([train_op, total_loss], options=run_options, run_metadata=run_metadata)[-1]
-                    duration = time.time() - start_time
-                    examples_per_sec = params['batch_size'] / duration
-                    flops = n_net.ops * params['batch_size'] / duration
-                    elapsed_epochs = step * params['batch_size'] * 1.0 * hvd.size() / params['NUM_EXAMPLES_PER_EPOCH']
-                    format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
-                                  'sec/batch/gpu), total flops = %3.2e')
-                    print(format_str % (datetime.now(), step, elapsed_epochs, loss_value,
-                                        examples_per_sec, duration, flops))
-
-                    # Writing trace to json file. open with chrome://tracing
-                    trace = timeline.Timeline(step_stats=run_metadata.step_stats)
-                    with open('timeline.ctf.' + str(hvd.rank()) + '.json', 'w') as f:
-                        f.write(trace.generate_chrome_trace_format())
-                # Just train
-                else:
-                    mon_sess.run(train_op)
-
-            # while not mon_sess.should_stop():
-            #     # TODO: code below does a hardware trace, write summaries and writes a checkpoint at the same time.
-            #     #  Must be separated.
-            #     if logHook._step % params['save_frequency'] == 0:
-            #         # Train, Record stats and save summaries
-            #         _, sum_merged = mon_sess.run([train_op, summary_merged], options=run_options,
-            #                                      run_metadata=run_metadata)
-            #         # Writing trace to json file. open with chrome://tracing
-            #         trace = timeline.Timeline(step_stats=run_metadata.step_stats)
-            #         with open('timeline.ctf.' + str(hvd.rank()) + '.json', 'w') as f:
-            #             f.write(trace.generate_chrome_trace_format())
-            #         summary_writer.add_run_metadata(run_metadata, 'step %s' % format(logHook._step),
-            #                                         global_step=logHook._step)
-            #         summary_writer.add_summary(sum_merged, global_step=logHook._step)
-            #         print('Running Stats and Saving Summaries...')
-            #     else:
-            #         # Just train
-            #         mon_sess.run(train_op)
-
-            summary_writer.close()
+            sess.run(train_op)
 
 
 def eval(network_config, hyper_params, data_path, params, num_GPUS=1):
