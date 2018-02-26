@@ -283,8 +283,8 @@ def minibatch(batchsize, params, mode='train'):
         labels = tf.reshape(labels, [-1, params['NUM_CLASSES']])
         images = tf.reshape(images, [-1, params['IMAGE_HEIGHT'], params['IMAGE_WIDTH'], params['IMAGE_DEPTH']])
 
-
-
+        # Display the training images in the Tensorboard visualizer.
+        #tf.summary.image("images", images, max_outputs=4)
 
         # change from NHWC to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
@@ -294,6 +294,7 @@ def minibatch(batchsize, params, mode='train'):
             images = tf.cast(images, tf.float16)
         else:
             images = tf.cast(images, tf.float32)
+
     return images, labels
 
 

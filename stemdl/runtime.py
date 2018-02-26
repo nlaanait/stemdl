@@ -78,9 +78,7 @@ class TrainHelper(object):
     def write_summaries(self, summary):
         if hvd.rank() == 0:
             with tf.summary.FileWriter(self.params['checkpt_dir']) as summary_writer:
-                if self.last_step == 0:
-                    summary_writer.add_graph()
-                summary_writer.add_summary(summary)
+                summary_writer.add_summary(summary, global_step=self.last_step)
         print_rank('Saved Summaries.')
 
     def save_checkpoint(self):
@@ -355,7 +353,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     # Stats and summaries
     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
     run_metadata = tf.RunMetadata()
-    summary_writer = tf.summary.FileWriter(params['checkpt_dir'])
+    summary_writer = tf.summary.FileWriter(params['checkpt_dir'], sess.graph)
     # Add Summary histograms for trainable variables and their gradients
     summary_merged = tf.summary.merge_all()
 
