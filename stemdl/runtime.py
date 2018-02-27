@@ -314,20 +314,13 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
             scaling = 1
             # Calculate the gradients for the current data batch
             with tf.control_dependencies([loss_averages_op]):
-                grads_vars = opt.compute_gradients(total_loss*scaling, gate_gradients=tf.train.Optimizer.GATE_NONE)
+                grads_vars = opt.compute_gradients(tf.cast(total_loss*scaling, tf.float16),
+                                                   gate_gradients=tf.train.Optimizer.GATE_NONE)
 
             # One of the gradients is None so below won't work
             #TODO: check why one of the gradients is None. Probably variable initialized as trainable and shouldn't be
-            grads_vars = [(grads[0]/scaling,grads[1]) for grads in grads_vars]
-            new_grads_vars = []
-            for grads in grads_vars:
-                if grads[0] is not None: new_grads = grads[0]/scaling
-                else: new_grads = grads[0]
-                new_grads_vars.append((new_grads, grads[1]))
-
+            new_grads_vars = [(grads[0]/scaling,grads[1]) for grads in grads_vars]
             apply_gradient_op = opt.apply_gradients(new_grads_vars, global_step=global_step)
-
-            # apply_gradient_op = opt.apply_gradients(grads_vars, global_step=global_step)
         else:
             with tf.control_dependencies([loss_averages_op]):
                 apply_gradient_op = opt.minimize(total_loss, gate_gradients=tf.train.Optimizer.GATE_NONE)
