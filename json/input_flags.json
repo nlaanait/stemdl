@@ -3,6 +3,7 @@
 	"allow_soft_placement": {"type":"bool", "value": true, "desc": "Whether to allow variable soft placement on the device This is needed for multi-gpu runs."},
 	"log_frequency": {"type":"int", "value": 50, "desc": "How often to log results to the console."},
 	"save_frequency": {"type":"int", "value": 5000, "desc": "How often to save summaries to disk."},
+	"eval_frequency": {"type":"int", "value": 100, "desc": "How often to do validation."},
 	"gpu_trace": {"type":"bool", "value": true, "desc": "Whether to run a hardware trace (timeline) at training step=101."},
     "max_steps": {"type":"int", "value": 2000, "desc": "Number of batches to run."},
 	"num_epochs": {"type":"int", "value": 500, "desc": "Number of Data Epochs to do training"},

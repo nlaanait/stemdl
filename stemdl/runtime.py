@@ -24,6 +24,19 @@ from . import inputs
 hvd.init()
 
 
+def float32_variable_storage_getter(getter, name, shape=None, dtype=None,
+                                    initializer=None, regularizer=None,
+                                    trainable=True,
+                                    *args, **kwargs):
+    storage_dtype = tf.float32 if trainable else dtype
+    variable = getter(name, shape, dtype=storage_dtype,
+                      initializer=initializer, regularizer=regularizer,
+                      trainable=trainable,
+                      *args, **kwargs)
+    if trainable and dtype != tf.float32:
+        variable = tf.cast(variable, dtype)
+    return variable
+
 class _LoggerHook(tf.train.SessionRunHook):
     """Logs loss and runtime stats."""
     def __init__(self, params, total_loss, num_gpus, net_ops, last_step=0):
@@ -104,11 +117,11 @@ class TrainHelper(object):
     @staticmethod
     def nanloss(loss_value):
         if np.isnan(loss_value):
-            print_rank('loss is nan...')
+            print_rank('loss is nan... Exiting!')
             sys.exit(0)
 
 
-def _add_loss_summaries(total_loss, losses, params, summaries=False):
+def _add_loss_summaries(total_loss, losses, summaries=False):
     """
     Add summaries for losses in model.
     Generates moving average for all losses and associated summaries for
@@ -121,15 +134,16 @@ def _add_loss_summaries(total_loss, losses, params, summaries=False):
     # Compute the moving average of all individual losses and the total loss.
     loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
     loss_averages_op = loss_averages.apply(losses + [total_loss])
+    # loss_averages_op = loss_averages.apply([total_loss])
 
     # Attach a scalar summary to all individual losses and the total loss;
     if summaries:
         for l in losses + [total_loss]:
             # Name each loss as '(raw)' and name the moving average version of the loss
             # as the original loss name.
-            loss_name = re.sub('%s_[0-9]*/' % params['worker_name'], '', l.op.name)
-            tf.summary.scalar(loss_name + ' (raw)', l)
-            tf.summary.scalar(loss_name, loss_averages.average(l))
+            # loss_name = re.sub('%s_[0-9]*/' % params['worker_name'], '', l.op.name)
+            tf.summary.scalar(l.op.name + ' (raw)', l)
+            tf.summary.scalar(l.op.name, loss_averages.average(l))
 
     return loss_averages_op
 
@@ -192,25 +206,39 @@ def get_optimizer(params, hyper_params, global_step):
     return opt
 
 
-def loss_func(labels, model, hyper_params, var_scope):
+def loss_func(model, hyper_params, var_scope, summary=False):
     # Build the forward model
     n_net = model
     n_net.build_model()
-    logits = n_net.model_output
-    if logits.dtype != tf.float32:
-        logits = tf.cast(logits, tf.float32)
-    loss = tf.losses.mean_squared_error(labels, predictions=logits,
-                                 reduction=tf.losses.Reduction.MEAN)
-    # loss = tf.losses.sparse_softmax_cross_entropy(
-    #     logits=logits, labels=labels)
-    # Add weight decay
-    params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
-                               scope=var_scope.name)
-    l2_loss = tf.add_n([tf.nn.l2_loss(w) for w in params])
-    if l2_loss.dtype != tf.float32:
-        l2_loss = tf.cast(l2_loss, tf.float32)
-    loss += hyper_params['weight_decay'] * l2_loss
-    return loss, logits
+    # logits = n_net.model_output
+    # if logits.dtype != tf.float32:
+    #     logits = tf.cast(logits, tf.float32)
+
+    n_net.get_loss()
+    losses = tf.get_collection(tf.GraphKeys.LOSSES)
+    regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+
+    # loss = tf.losses.mean_squared_error(labels, predictions=logits,
+    #                              reduction=tf.losses.Reduction.MEAN)
+
+    # Calculate the total loss for the current worker
+    total_loss = tf.add_n(losses + regularization, name='total_loss')
+
+    #Generate summaries for the losses and get corresponding op
+    loss_averages_op = _add_loss_summaries(total_loss, losses, summaries=summary)
+
+    return total_loss
+
+    # # loss = tf.losses.sparse_softmax_cross_entropy(
+    # #     logits=logits, labels=labels)
+    # # Add weight decay
+    # params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
+    #                            scope=var_scope.name)
+    # l2_loss = tf.add_n([tf.nn.l2_loss(w) for w in params])
+    # if l2_loss.dtype != tf.float32:
+    #     l2_loss = tf.cast(l2_loss, tf.float32)
+    # loss += hyper_params['weight_decay'] * l2_loss
+    # return loss, logits
 
 
 def print_rank(*args, **kwargs):
@@ -246,14 +274,11 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     # Setup data stream
     with tf.device(params['CPU_ID']):
         with tf.name_scope('Input') as _:
-            # filename_queue = tf.train.string_input_producer([data_path], num_epochs=params['num_epochs'])
-            # pass the filename_queue to the inputs classes to decode
             images, labels = inputs.minibatch(params['batch_size'], params, mode='train')
             # Staging images on host
             staging_op, (images, labels) = inputs.stage([images, labels])
             global_step = tf.train.get_or_create_global_step()
 
-    # with tf.device('/gpu:0'):
     with tf.device('/gpu:%d' % hvd.local_rank()):
 
         # Copy images from host to device
@@ -278,30 +303,34 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
         print_rank('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
                                                                 format(labels.get_shape())))
 
-        # Setup Neural Net
-        n_net = network.ResNet(scope, params, global_step, hyper_params, network_config, images, labels,
-                                operation='train', summary=False)
+        with tf.variable_scope(
+                'horovod',
+                # Force all variables to be stored as float32
+                custom_getter=float32_variable_storage_getter) as _:
+            # Setup Neural Net
+            n_net = network.ResNet(scope, params, global_step, hyper_params, network_config, images, labels,
+                                    operation='train', summary=False)
+            #
+            # # Build it and propagate images through it.
+            n_net.build_model()
 
-        # # Build it and propagate images through it.
-        n_net.build_model()
-
-        # calculate the total loss
-        n_net.get_loss()
+            # calculate the total loss
+            n_net.get_loss()
 
 
-        #Assemble all of the losses.
-        losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
-        regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+            #Assemble all of the losses.
+            losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
+            regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
 
-        # Calculate the total loss for the current worker
-        total_loss = tf.add_n(losses + regularization, name='total_loss')
 
-        #Generate summaries for the losses and get corresponding op
-        loss_averages_op = _add_loss_summaries(total_loss, losses, params, summaries= summary)
+            # Calculate the total loss for the current worker
+            total_loss = tf.add_n(losses + regularization, name='total_loss')
 
-        #get summaries, except for the one produced by string_input_producer
-        #TODO: figure out the summaries nonsense.
-        if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
+            #Generate summaries for the losses and get corresponding op
+            loss_averages_op = _add_loss_summaries(total_loss, losses, summaries=summary)
+
+            #get summaries, except for the one produced by string_input_producer
+            if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
 
 
         #######################################
@@ -314,11 +343,8 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
             scaling = 1
             # Calculate the gradients for the current data batch
             with tf.control_dependencies([loss_averages_op]):
-                grads_vars = opt.compute_gradients(tf.cast(total_loss*scaling, tf.float16),
-                                                   gate_gradients=tf.train.Optimizer.GATE_NONE)
+                grads_vars = opt.compute_gradients(tf.cast(total_loss*scaling, tf.float16))
 
-            # One of the gradients is None so below won't work
-            #TODO: check why one of the gradients is None. Probably variable initialized as trainable and shouldn't be
             new_grads_vars = [(grads[0]/scaling,grads[1]) for grads in grads_vars]
             apply_gradient_op = opt.apply_gradients(new_grads_vars, global_step=global_step)
         else:
@@ -379,8 +405,6 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     for i in range(len(IO_ops)):
         sess.run(IO_ops[:i + 1])
 
-
-    # TODO:checkpoint restarts, summaries, are not implemented below.
     # Train
 
     train_elf = TrainHelper(params, saver, summary_writer, n_net.ops, last_step=last_step)
@@ -407,9 +431,47 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
             sess.run(train_op, options=run_options, run_metadata=run_metadata)
             train_elf.save_trace(run_metadata)
 
+        # Here we do eval:
+        if train_elf.last_step % params['eval_frequency'] == 0:
+            # do eval over 100 batches.
+            eval_run(params, hyper_params, network_config, sess)
+
         # And here... we just train
         else:
             sess.run(train_op)
+
+
+def eval_run(params, hyper_params, network_config, sess, num_batches=100):
+    """
+    Runs evaluation with current weights
+    :param params:
+    :param hyper_params:
+    :param network_config:
+    :param sess:
+    :param num_batches: default 100.
+    :return:
+    """
+    print_rank("Running Validation over %d batches..." % num_batches)
+    # Get Test data
+    images, labels = inputs.minibatch(params['batch_size'], params, mode='test')
+
+    with tf.variable_scope('horovod', reuse=True) as _:
+        # Setup Neural Net
+        n_net = network.ResNet('horovod', params, 0, hyper_params, network_config, tf.cast(images, tf.float32),
+                               labels, operation='eval', summary=False)
+
+        # Build it and propagate images through it.
+        n_net.build_model()
+
+        logits = n_net.model_output
+
+        validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
+
+        # Average validation error over the batches
+        errors = np.array([sess.run(validation_error) for _ in range(num_batches)])
+        errors = errors.reshape(-1, params['NUM_CLASSES'])
+        avg_errors = errors.mean(0)
+        print_rank('Validation MSE: %s' % format(avg_errors))
 
 
 def eval(network_config, hyper_params, data_path, params, num_GPUS=1):

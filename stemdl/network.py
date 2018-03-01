@@ -12,6 +12,7 @@ from tensorflow.python.training import moving_averages
 import horovod.tensorflow as hvd
 
 
+worker_name='horovod'
 
 class ConvNet(object):
     """
@@ -46,10 +47,14 @@ class ConvNet(object):
         self.summary = summary
         self.num_weights = 0
         self.misc_ops = []
-        if self.scope == self.params['worker_name'] +'_0/' or self.scope == 'horovod' or self.operation == 'eval':
-            self.reuse = None
-        else:
+        # self.reuse = tf.AUTO_REUSE
+        self.reuse = None
+        # if self.scope == self.params['worker_name'] +'_0/' #or self.scope == 'horovod':# or self.operation == 'eval':
+        #     self.reuse = None
+        if self.operation == 'eval':
             self.reuse = True
+        # elif self.operation == 'eval':
+        #     self.reuse = True
         self.bytesize = 2
         if not self.params['IMAGE_FP16']: self.bytesize = 4
         self.mem = np.cumprod(self.images.get_shape().as_list())[-1]*self.bytesize/1024  # (in KB)
@@ -64,7 +69,7 @@ class ConvNet(object):
         self.model_output = None
 
     def print_rank(self, *args, **kwargs):
-        if hvd.rank() == 0:
+        if hvd.rank() == 0 and self.operation == 'train':
             print(*args, **kwargs)
 
     def build_model(self, summaries=False):
@@ -73,7 +78,7 @@ class ConvNet(object):
         :param summaries: bool, flag to print out summaries.
         """
         # Initiate 1st layer
-        print('Building Neural Net on %s_rank %d...' % (self.scope, hvd.local_rank()))
+        self.print_rank('Building Neural Net ...')
         self.print_rank('input: ---, dim: %s memory: %s MB' %(format(self.images.get_shape().as_list()), format(self.mem/1024)))
         layer_name, layer_params = list(self.network.items())[0]
         with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
@@ -127,7 +132,7 @@ class ConvNet(object):
                     # sometimes the same network json file is used for regression and classification.
                     # Taking the number of classes from the parameters / flags instead of the network json
                     if layer_params['bias'] != self.params['NUM_CLASSES']:
-                        print("Overriding the size of the bias ({}) and weights ({}) with the 'NUM_CLASSES' parm ({})"
+                        self.print_rank("Overriding the size of the bias ({}) and weights ({}) with the 'NUM_CLASSES' parm ({})"
                               "".format(layer_params['bias'], layer_params['weights'], self.params['NUM_CLASSES']))
                         layer_params['bias'] = self.params['NUM_CLASSES']
                         layer_params['weights'] = self.params['NUM_CLASSES']
@@ -147,7 +152,7 @@ class ConvNet(object):
                 out_shape = out.get_shape().as_list()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
 
-        print('Total # of layers: %d,  weights: %2.1e, memory: %s MB, ops: %3.2e \n' % (len(self.network),
+        self.print_rank('Total # of layers: %d,  weights: %2.1e, memory: %s MB, ops: %3.2e \n' % (len(self.network),
                                                                                         self.num_weights,
                                                                                         format(self.mem / 1024),
                                                                                         self.ops))
@@ -682,7 +687,7 @@ class ConvNet(object):
 
     # Variable placement, initialization, regularization
     # TODO: use local device setter to choose where variables are stored, i.e. cpu or gpu. instead of hardwired to cpu.
-    def _cpu_variable_init(self, name, shape, initializer, trainable=True, regularize=False):
+    def _cpu_variable_init(self, name, shape, initializer, trainable=True, regularize=True):
         """Helper to create a Variable stored on CPU memory.
 
         Args:
@@ -693,33 +698,28 @@ class ConvNet(object):
         Returns:
           Variable Tensor
         """
-        # # with tf.device(self.params['CPU_ID):
-        # if self.params['IMAGE_FP16']:
-        #     dtype = tf.float16
-        # else:
-        #     dtype = tf.float32
-        # var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype, trainable=trainable)
+        if self.params['IMAGE_FP16'] and self.operation == 'train':
+            dtype = tf.float16
+        else:
+            dtype = tf.float32
 
         if regularize:
-            var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable,
+            var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype, trainable=trainable,
                                   regularizer=self._weight_decay)
         else:
-            var = tf.get_variable(name, shape, initializer=initializer, dtype=tf.float32, trainable=trainable)
-
-        if self.params['IMAGE_FP16'] and trainable:
-            var = tf.cast(var, tf.float16)
+            var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype, trainable=trainable)
 
         return var
 
 
     def _weight_decay(self, tensor):
-        return tf.multiply(tf.nn.l2_loss(tensor), self.hyper_params['weight_decay'])
+        return tf.multiply(tf.nn.l2_loss(tf.cast(tensor, tf.float32)), self.hyper_params['weight_decay'])
 
 
 class ResNet(ConvNet):
 
-    def __init__(self, *args, **kwargs):
-        super(ResNet, self).__init__(*args, **kwargs)
+    # def __init__(self, *args, **kwargs):
+    #     super(ResNet, self).__init__(*args, **kwargs)
 
     def _add_branches(self, hidden, out, verbose=True):
         """

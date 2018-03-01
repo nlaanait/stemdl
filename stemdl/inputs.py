@@ -245,7 +245,30 @@ def decode_image_label(record, params):
     image = tf.reshape(image, [params['IMAGE_HEIGHT'], params['IMAGE_WIDTH'], params['IMAGE_DEPTH']])
     # standardize the image to [-1.,1.]
     image = tf.image.per_image_standardization(image)
+
+    # scale labels
+    # TODO: pull max and min values out of here and into input.json
+    label = label_minmaxscaling(label, [20., 60., -3., -3.],
+                                [200., 200., 3., 3.], scale_range=[-10., 10.])
+
     return image, label
+
+
+def label_minmaxscaling(label, min_vals, max_vals, scale_range=[0,1]):
+    """
+
+    :param label: tensor
+    :param min_vals: list, minimum value for each label dimension
+    :param max_vals: list, maximum value for each label dimension
+    :param range: list, range of label, default [0,1]
+    :return:
+    scaled label tensor
+    """
+    min_tensor = tf.constant(min_vals, dtype=tf.float64)
+    max_tensor = tf.constant(max_vals, dtype=tf.float64)
+    scaled_label = (label - min_tensor)/(max_tensor - min_tensor)
+    scaled_label = scaled_label * (scale_range[-1] - scale_range[0]) + scale_range[0]
+    return scaled_label
 
 
 def minibatch(batchsize, params, mode='train'):
