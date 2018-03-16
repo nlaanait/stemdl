@@ -25,7 +25,7 @@
 	"IMAGE_DTYPE": {"type":"str", "value":"float16", "desc": " precision of images stored in the tfRecords file."},
 	"LABEL_DTYPE": {"type":"str", "value":"float64", "desc": " precision of label stored in the tfRecords file."},
 
-	"train_distort": {"type":"bool", "value": false, "desc": "Whether to perform data distortion during training."},
+	"train_distort": {"type":"bool", "value": true, "desc": "Whether to perform data distortion during training."},
 	"validation_distort": {"type":"bool", "value": false, "desc": "Whether to perform data distortion during validation"},
 	"test_distort": {"type":"bool", "value": false, "desc": "Whether to perform data distortion during testing"},
 	"noise_min": {"value": 0.0, "type":"float", "desc":"minimum noise level"},
@@ -33,9 +33,9 @@
 	"geometric": {"value": false, "type":"bool", "desc":"geometric"},
 
 	"glimpse_mode": {"value": "normal", "type":"str", "desc":"kind of glimpse"},
-	"glimpse_height": {"value": 256, "type":"int", "desc":"Height of glimpse used for glimpse mode of 'fixed' only"},
-	"glimpse_width": {"value": 256, "type":"int", "desc":"Width of glimpse used for glimpse mode of 'fixed' only"},
-	"glimpse_normal_stdev": {"value": 4.0, "type":"float", "desc":"standard deviation used for glimpse mode of 'normal' only"},
+	"glimpse_height_off": {"value": 256, "type":"int", "desc":"Height offset for glimpse used for glimpse mode of 'fixed' only"},
+	"glimpse_width_off": {"value": 256, "type":"int", "desc":"Width offset for glimpse used for glimpse mode of 'fixed' only"},
+	"glimpse_normal_off_stdev": {"value": 4.0, "type":"float", "desc":"standard deviation for offsets used for glimpse mode of 'normal' only"},
 	"CROP_HEIGHT": {"type":"int", "value": 512, "desc": "CROP HEIGHT"},
 	"CROP_WIDTH": {"type":"int", "value": 512, "desc": "CROP WIDTH"},
 
