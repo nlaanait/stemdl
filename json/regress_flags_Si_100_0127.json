@@ -16,7 +16,6 @@
 	"num_examples": {"type":"int", "value": 10000, "desc": "Number of examples to run."},
 	"run_once": {"type":"bool", "value": false, "desc": "Whether to run evalulation only once."},
 	"output_labels": {"type":"str", "value":"alpha_mse; beta_mse; gamma_mse", "desc": "Labels to give the output of the NN. "},
-	"eval_distort": {"type":"bool", "value": false, "desc": "Whether to perform data distortion during evaluation."},
 
 	"NUM_EXAMPLES_PER_EPOCH": {"type":"int", "value": 18620, "desc": "Number of examples in training data."},
 	"NUM_CLASSES": {"type":"int", "value": 4, "desc": "Number of classes in training/evaluation data."},
@@ -27,12 +26,19 @@
 	"LABEL_DTYPE": {"type":"str", "value":"float64", "desc": " precision of label stored in the tfRecords file."},
 
 	"train_distort": {"type":"bool", "value": false, "desc": "Whether to perform data distortion during training."},
+	"validation_distort": {"type":"bool", "value": false, "desc": "Whether to perform data distortion during validation"},
+	"test_distort": {"type":"bool", "value": false, "desc": "Whether to perform data distortion during testing"},
 	"noise_min": {"value": 0.0, "type":"float", "desc":"minimum noise level"},
 	"noise_max": {"value": 0.3, "type":"float", "desc":"maximum noise level"},
-	"random_glimpses": {"value": false, "type":"bool", "desc":"kind of glimpse"},
 	"geometric": {"value": false, "type":"bool", "desc":"geometric"},
+
+	"glimpse_mode": {"value": "normal", "type":"str", "desc":"kind of glimpse"},
+	"glimpse_height": {"value": 256, "type":"int", "desc":"Height of glimpse used for glimpse mode of 'fixed' only"},
+	"glimpse_width": {"value": 256, "type":"int", "desc":"Width of glimpse used for glimpse mode of 'fixed' only"},
+	"glimpse_normal_stdev": {"value": 4.0, "type":"float", "desc":"standard deviation used for glimpse mode of 'normal' only"},
 	"CROP_HEIGHT": {"type":"int", "value": 512, "desc": "CROP HEIGHT"},
 	"CROP_WIDTH": {"type":"int", "value": 512, "desc": "CROP WIDTH"},
+
 	"RESIZE_HEIGHT": {"type":"int", "value": 512, "desc": "RESIZE HEIGHT"},
 	"RESIZE_WIDTH": {"type":"int", "value": 512, "desc": "RESIZE WIDTH"},
 
