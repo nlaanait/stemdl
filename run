@@ -1,0 +1,1 @@
+./train -np 2 --type=regress --json=./json/regress_flags_Si_100_0127.json
