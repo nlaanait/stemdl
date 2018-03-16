@@ -408,6 +408,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     # Train
 
     train_elf = TrainHelper(params, saver, summary_writer, n_net.ops, last_step=last_step)
+    next_validation_epoch = params['epochs_per_validation']
 
     while train_elf.last_step < params['max_steps']:
         nan = tf.train.NanTensorHook(total_loss)
@@ -431,23 +432,25 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
             sess.run(train_op, options=run_options, run_metadata=run_metadata)
             train_elf.save_trace(run_metadata)
 
-        # Here we do eval:
-        if train_elf.last_step % params['eval_frequency'] == 0:
-            # do eval over 100 batches.
-            eval_run(params, hyper_params, network_config, sess)
+        # Here we do validation:
+        if train_elf.elapsed_epochs > next_validation_epoch:
+            # do validation over 100 batches.
+            eval_run(params, hyper_params, network_config, sess, is_classification=params['is_classification'])
+            next_validation_epoch += params['epochs_per_validation']
 
         # And here... we just train
         else:
             sess.run(train_op)
 
 
-def eval_run(params, hyper_params, network_config, sess, num_batches=100):
+def eval_run(params, hyper_params, network_config, sess, is_classification=False, num_batches=100):
     """
     Runs evaluation with current weights
     :param params:
     :param hyper_params:
     :param network_config:
     :param sess:
+    :param is_classification: default False.
     :param num_batches: default 100.
     :return:
     """
@@ -465,7 +468,12 @@ def eval_run(params, hyper_params, network_config, sess, num_batches=100):
 
         logits = n_net.model_output
 
-        validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
+        if is_classification:
+            labels = tf.argmax(labels, axis=1)
+            validation_error = tf.cast(tf.nn.in_top_k(logits, labels, 1), tf.float32)
+            # in_top_5_op = tf.cast(tf.nn.in_top_k(logits, labels, 5), tf.float32)
+        else:
+            validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
 
         # Average validation error over the batches
         errors = np.array([sess.run(validation_error) for _ in range(num_batches)])
