@@ -511,8 +511,7 @@ def eval(network_config, hyper_params, data_path, params, num_GPUS=1):
                 # pass the filename_queue to the inputs classes to decode
                 dset = inputs.DatasetTFRecords(filename_queue, params, is_train=False)
                 # distort images and generate examples batch
-                images, labels = dset.get_batch(noise_min=0.05, noise_max=0.25, distort=params['eval_distort'],
-                                                random_glimpses='normal', geometric=False)
+                images, labels = dset.get_batch()
 
             with tf.variable_scope(tf.get_variable_scope(), reuse=None):
 
