@@ -246,7 +246,7 @@ def get_glimpses(batch_images, params):
     size = tf.constant(value=[crop_y_size, crop_x_size],
                        dtype=tf.int32)
 
-    if params['glimpse_mode'] is 'uniform':
+    if params['glimpse_mode'] == 'uniform':
         # generate uniform random window centers for the batch with overlap with input
         y_low, y_high = int(crop_y_size / 2), int(y_size - crop_y_size // 2)
         x_low, x_high = int(crop_x_size / 2), int(x_size - crop_x_size // 2)
@@ -254,24 +254,26 @@ def get_glimpses(batch_images, params):
         cen_x = tf.random_uniform([params['batch_size']], minval=x_low, maxval=x_high)
         offsets = tf.stack([cen_y, cen_x], axis=1)
 
-    if params['glimpse_mode'] is 'normal':
+    elif params['glimpse_mode'] == 'normal':
         # generate normal random window centers for the batch with overlap with input
-        cen_y = tf.random_normal([params['batch_size']], mean=y_size // 2, stddev=params['glimpse_normal_stdev'])
-        cen_x = tf.random_normal([params['batch_size']], mean=x_size // 2, stddev=params['glimpse_normal_stdev'])
+        cen_y = tf.random_normal([params['batch_size']], mean=y_size // 2, stddev=params['glimpse_normal_off_stdev'])
+        cen_x = tf.random_normal([params['batch_size']], mean=x_size // 2, stddev=params['glimpse_normal_off_stdev'])
         offsets = tf.stack([cen_y, cen_x], axis=1)
 
-    if params['glimpse_mode'] == 'fixed':
+    elif params['glimpse_mode'] == 'fixed':
         # fixed crop
-        cen_y = np.ones((params['batch_size'],), dtype=np.int32) * params['glimpse_height']
-        cen_x = np.ones((params['batch_size'],), dtype=np.int32) * params['glimpse_width']
+        cen_y = np.ones((params['batch_size'],), dtype=np.int32) * params['glimpse_height_off']
+        cen_x = np.ones((params['batch_size'],), dtype=np.int32) * params['glimpse_width_off']
         offsets = np.vstack([cen_y, cen_x]).T
         offsets = tf.constant(value=offsets, dtype=tf.float32)
 
+    else:
+        # should not come here:
+        return batch_images
+
     # extract glimpses
-    glimpse_batch = tf.image.extract_glimpse(batch_images, size, offsets, centered=False,
-                                             normalized=False,
-                                             uniform_noise=False,
-                                             name='batch_glimpses')
+    glimpse_batch = tf.image.extract_glimpse(batch_images, size, offsets, centered=False, normalized=False,
+                                             uniform_noise=False, name='batch_glimpses')
     return glimpse_batch
 
 
@@ -302,8 +304,10 @@ def minibatch(batchsize, params, mode='train'):
     with tf.name_scope('input_pipeline'):
         for i, record in enumerate(records):
             image, label = decode_image_label(record, params)
+
             if params[mode + '_distort']:
                 image = distort(image, params)
+
             images.append(image)
             labels.append(label)
         # Stack images and labels back into a single tensor
