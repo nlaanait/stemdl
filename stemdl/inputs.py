@@ -68,15 +68,116 @@ class DatasetTFRecords(object):
         image = tf.image.per_image_standardization(image)
         return image, label
 
-    def get_batch(self):
+    def _distort(self, image, noise_min, noise_max, geometric=False):
+        """
+        Performs distortions on an image: noise + global affine transformations.
+        Args:
+            image: 3D Tensor
+            noise_min:float, lower limit in (0,1)
+            noise_max:float, upper limit in (0,1)
+            geometric: bool, apply affine distortion
+
+        Returns:
+            distorted_image: 3D Tensor
+        """
+
+        # Apply random global affine transformations
+        # if geometric:
+
+        # 1. Apply random global affine transformations, sampled from a normal distributions.
+        # Setting bounds and generating random values for scaling and rotations
+        scale_X = np.random.normal(1.0, 0.05, size=1)
+        scale_Y = np.random.normal(1.0, 0.05, size=1)
+        theta_angle = np.random.normal(0., 1, size=1)
+        nu_angle = np.random.normal(0., 1, size=1)
+
+        # Constructing transfomation matrix
+        a_0 = scale_X * np.cos(np.deg2rad(theta_angle))
+        a_1 = -scale_Y * np.sin(np.deg2rad(theta_angle + nu_angle))
+        a_2 = 0.
+        b_0 = scale_X * np.sin(np.deg2rad(theta_angle))
+        b_1 = scale_Y * np.cos(np.deg2rad(theta_angle + nu_angle))
+        b_2 = 0.
+        c_0 = 0.
+        c_1 = 0.
+        affine_transform = tf.constant(np.array([a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1]).flatten(),
+                                       dtype=tf.float32)
+        # Transform
+        aff_image = tf.contrib.image.transform(image, affine_transform,
+                                           interpolation='BILINEAR')
+        # 2. Apply isotropic scaling, sampled from a normal distribution.
+        zoom_factor = np.random.normal(1.0, 0.05, size=1)
+        crop_y_size, crop_x_size = self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']
+        size = tf.constant(value=[int(np.round(crop_y_size / zoom_factor)),
+                                  int(np.round(crop_x_size / zoom_factor))], dtype=tf.int32)
+        cen_y = np.ones((1,), dtype=np.float32) * int(self.params['IMAGE_HEIGHT'] / 2)
+        cen_x = np.ones((1,), dtype=np.float32) * int(self.params['IMAGE_WIDTH'] / 2)
+        offsets = tf.stack([cen_y, cen_x], axis=1)
+        scaled_image = tf.expand_dims(aff_image, axis=0)
+        scaled_image = tf.image.extract_glimpse(scaled_image, size, offsets,
+                                         centered=False,
+                                         normalized=False,
+                                         uniform_noise=False)
+        scaled_image = tf.reshape(scaled_image, (scaled_image.shape[1].value, scaled_image.shape[2].value,
+                                                 scaled_image.shape[3].value))
+        scaled_image = tf.image.resize_images(scaled_image, (self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']))
+
+        # Apply noise
+        alpha = tf.random_uniform([1], minval=noise_min, maxval=noise_max)
+        noise = tf.random_uniform(scaled_image.shape, dtype=tf.float32)
+        trans_image = (1 - alpha[0]) * scaled_image + alpha[0] * noise
+
+        return trans_image
+
+    def _get_glimpses(self, batch_images, random=False):
+        """
+        Get bounded glimpses from images, corresponding to ~ 2x1 supercell
+        :param batch_images: batch of training images
+        :return: batch of glimpses
+        """
+        # set size of glimpses
+        y_size, x_size = self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']
+        crop_y_size, crop_x_size = self.params['CROP_HEIGHT'], self.params['CROP_WIDTH']
+        size = tf.constant(value=[crop_y_size, crop_x_size],
+                           dtype=tf.int32)
+
+        if random is 'uniform':
+            # generate uniform random window centers for the batch with overlap with input
+            y_low, y_high = int(crop_y_size / 2), int(y_size - crop_y_size / 2)
+            x_low, x_high = int(crop_x_size / 2), int(x_size - crop_x_size / 2)
+            cen_y = tf.random_uniform([self.params['batch_size']], minval=y_low, maxval=y_high)
+            cen_x = tf.random_uniform([self.params['batch_size']], minval=x_low, maxval=x_high)
+            offsets = tf.stack([cen_y, cen_x], axis=1)
+
+        if random is 'normal':
+            # generate normal random window centers for the batch with overlap with input
+            cen_y = tf.random_normal([self.params['batch_size']], mean=y_size / 2, stddev=4.)
+            cen_x = tf.random_normal([self.params['batch_size']], mean=x_size / 2, stddev=4.)
+            offsets = tf.stack([cen_y, cen_x], axis=1)
+
+        if not random:
+            # fixed crop
+            cen_y = np.ones((self.params['batch_size'],), dtype=np.int32) * 38
+            cen_x = np.ones((self.params['batch_size'],), dtype=np.int32) * 70
+            offsets = np.vstack([cen_y, cen_x]).T
+            offsets = tf.constant(value=offsets, dtype=tf.float32)
+
+        # extract glimpses
+        glimpse_batch = tf.image.extract_glimpse(batch_images, size, offsets, centered=False,
+                                                 normalized=False,
+                                                 uniform_noise=False,
+                                                 name='batch_glimpses')
+        return glimpse_batch
+
+    def get_batch(self, distort=False, noise_min=0., noise_max=0.3, random_glimpses=True, geometric=False):
 
         image_raw, label = self._decode_image_label()
 
-        if self.params['train_distort']:  # Note that this could also be called by eval. Different param
+        if distort:
             # we first cast to float32 to do some image operations
             image = tf.cast(image_raw, tf.float32)
             # Apply image distortions
-            image = distort(image, self.params)
+            image = self._distort(image, noise_min, noise_max, geometric=geometric)
         else:
             image = image_raw
 
@@ -103,7 +204,8 @@ class DatasetTFRecords(object):
                                                 name='shuffle_batch')
 
         # Extract glimpses from training batch
-        images = get_glimpses(images, self.params)
+        if random_glimpses is not None:
+            images = self._get_glimpses(images, random=random_glimpses)
 
         # Display the training images in the Tensorboard visualizer.
         tf.summary.image(tensor_name, images, max_outputs=1)
@@ -169,114 +271,6 @@ def label_minmaxscaling(label, min_vals, max_vals, scale_range=[0,1]):
     return scaled_label
 
 
-def distort(image, params):
-    """
-    Performs distortions on an image: noise + global affine transformations.
-    Args:
-        image: 3D Tensor
-        noise_min:float, lower limit in (0,1)
-        noise_max:float, upper limit in (0,1)
-        geometric: bool, apply affine distortion
-
-    Returns:
-        distorted_image: 3D Tensor
-    """
-
-    # Apply random global affine transformations
-    # if geometric:
-
-    # 1. Apply random global affine transformations, sampled from a normal distributions.
-    # Setting bounds and generating random values for scaling and rotations
-    scale_X = np.random.normal(1.0, 0.05, size=1)
-    scale_Y = np.random.normal(1.0, 0.05, size=1)
-    theta_angle = np.random.normal(0., 1, size=1)
-    nu_angle = np.random.normal(0., 1, size=1)
-
-    # Constructing transfomation matrix
-    a_0 = scale_X * np.cos(np.deg2rad(theta_angle))
-    a_1 = -scale_Y * np.sin(np.deg2rad(theta_angle + nu_angle))
-    a_2 = 0.
-    b_0 = scale_X * np.sin(np.deg2rad(theta_angle))
-    b_1 = scale_Y * np.cos(np.deg2rad(theta_angle + nu_angle))
-    b_2 = 0.
-    c_0 = 0.
-    c_1 = 0.
-    affine_transform = tf.constant(np.array([a_0, a_1, a_2, b_0, b_1, b_2, c_0, c_1]).flatten(),
-                                   dtype=tf.float32)
-    # Transform
-    aff_image = tf.contrib.image.transform(image, affine_transform,
-                                           interpolation='BILINEAR')
-    # 2. Apply isotropic scaling, sampled from a normal distribution.
-    zoom_factor = np.random.normal(1.0, 0.05, size=1)
-    crop_y_size, crop_x_size = params['IMAGE_HEIGHT'], params['IMAGE_WIDTH']
-    size = tf.constant(value=[int(np.round(crop_y_size / zoom_factor)),
-                              int(np.round(crop_x_size / zoom_factor))], dtype=tf.int32)
-    cen_y = np.ones((1,), dtype=np.float32) * int(params['IMAGE_HEIGHT'] / 2)
-    cen_x = np.ones((1,), dtype=np.float32) * int(params['IMAGE_WIDTH'] / 2)
-    offsets = tf.stack([cen_y, cen_x], axis=1)
-    scaled_image = tf.expand_dims(aff_image, axis=0)
-    scaled_image = tf.image.extract_glimpse(scaled_image, size, offsets,
-                                            centered=False,
-                                            normalized=False,
-                                            uniform_noise=False)
-    scaled_image = tf.reshape(scaled_image, (scaled_image.shape[1].value, scaled_image.shape[2].value,
-                                             scaled_image.shape[3].value))
-    scaled_image = tf.image.resize_images(scaled_image, (params['IMAGE_HEIGHT'], params['IMAGE_WIDTH']))
-
-    # Apply noise
-    alpha = tf.random_uniform([1], minval=params['noise_min'], maxval=params['noise_max'])
-    noise = tf.random_uniform(scaled_image.shape, dtype=tf.float32)
-    trans_image = (1 - alpha[0]) * scaled_image + alpha[0] * noise
-
-    return trans_image
-
-
-def get_glimpses(batch_images, params):
-    """
-    Get bounded glimpses from images, corresponding to ~ 2x1 supercell
-    :param batch_images: batch of training images
-    :return: batch of glimpses
-    """
-    if params['glimpse_mode'] not in ['uniform', 'normal', 'fixed']:
-        return batch_images
-
-    # set size of glimpses
-    y_size, x_size = params['IMAGE_HEIGHT'], params['IMAGE_WIDTH']
-    crop_y_size, crop_x_size = params['CROP_HEIGHT'], params['CROP_WIDTH']
-    size = tf.constant(value=[crop_y_size, crop_x_size],
-                       dtype=tf.int32)
-
-    if params['glimpse_mode'] == 'uniform':
-        # generate uniform random window centers for the batch with overlap with input
-        y_low, y_high = int(crop_y_size / 2), int(y_size - crop_y_size // 2)
-        x_low, x_high = int(crop_x_size / 2), int(x_size - crop_x_size // 2)
-        cen_y = tf.random_uniform([params['batch_size']], minval=y_low, maxval=y_high)
-        cen_x = tf.random_uniform([params['batch_size']], minval=x_low, maxval=x_high)
-        offsets = tf.stack([cen_y, cen_x], axis=1)
-
-    elif params['glimpse_mode'] == 'normal':
-        # generate normal random window centers for the batch with overlap with input
-        cen_y = tf.random_normal([params['batch_size']], mean=y_size // 2, stddev=params['glimpse_normal_off_stdev'])
-        cen_x = tf.random_normal([params['batch_size']], mean=x_size // 2, stddev=params['glimpse_normal_off_stdev'])
-        offsets = tf.stack([cen_y, cen_x], axis=1)
-
-    elif params['glimpse_mode'] == 'fixed':
-        # fixed crop
-        cen_y = np.ones((params['batch_size'],), dtype=np.int32) * params['glimpse_height_off']
-        cen_x = np.ones((params['batch_size'],), dtype=np.int32) * params['glimpse_width_off']
-        offsets = np.vstack([cen_y, cen_x]).T
-        offsets = tf.constant(value=offsets, dtype=tf.float32)
-
-    else:
-        # should not come here:
-        return batch_images
-
-    # extract glimpses
-    glimpse_batch = tf.image.extract_glimpse(batch_images, size, offsets, centered=False, normalized=False,
-                                             uniform_noise=False, name='batch_glimpses')
-    return glimpse_batch
-
-
 def minibatch(batchsize, params, mode='train'):
     """
     Returns minibatch of images and labels from TF records file.
@@ -285,7 +279,7 @@ def minibatch(batchsize, params, mode='train'):
     :param mode: str, "train" or "test", default "train
     :return:
     """
-    if mode not in ['train', 'validation', 'test']:
+    if mode != 'train' or mode != 'test':
         mode = 'train'
 
     record_input = data_flow_ops.RecordInput(
@@ -304,25 +298,16 @@ def minibatch(batchsize, params, mode='train'):
     with tf.name_scope('input_pipeline'):
         for i, record in enumerate(records):
             image, label = decode_image_label(record, params)
-
-            if params[mode + '_distort']:
-                image = distort(image, params)
-
             images.append(image)
             labels.append(label)
-        # Stack images and labels back into a single tensor
+        # Stack images back into a single tensor
         images = tf.parallel_stack(images)
         labels = tf.concat(labels, 0)
-
-        # reshape them to the expected shape:
         labels = tf.reshape(labels, [-1, params['NUM_CLASSES']])
         images = tf.reshape(images, [-1, params['IMAGE_HEIGHT'], params['IMAGE_WIDTH'], params['IMAGE_DEPTH']])
 
-        # glimpse images:
-        images = get_glimpses(images, params)
-
         # Display the training images in the Tensorboard visualizer.
-        # tf.summary.image("images", images, max_outputs=4)
+        #tf.summary.image("images", images, max_outputs=4)
 
         # change from NHWC to NCHW format
         images = tf.transpose(images, perm=[0, 3, 1, 2])
