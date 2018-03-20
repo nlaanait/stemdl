@@ -274,7 +274,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     # Setup data stream
     with tf.device(params['CPU_ID']):
         with tf.name_scope('Input') as _:
-            images, labels = inputs.minibatch(params['batch_size'], params, mode='train')
+            images, labels = inputs.minibatch(params['batch_size'], params, hyper_params, mode='train')
             # Staging images on host
             staging_op, (images, labels) = inputs.stage([images, labels])
             global_step = tf.train.get_or_create_global_step()
@@ -340,7 +340,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
         # Apply gradients to trainable variables
         if params['IMAGE_FP16']:
             # scale the losses
-            scaling = 1
+            scaling = hyper_params['scaling']
             # Calculate the gradients for the current data batch
             with tf.control_dependencies([loss_averages_op]):
                 grads_vars = opt.compute_gradients(tf.cast(total_loss*scaling, tf.float16))
@@ -453,7 +453,7 @@ def eval_run(params, hyper_params, network_config, sess, num_batches=100):
     """
     print_rank("Running Validation over %d batches..." % num_batches)
     # Get Test data
-    images, labels = inputs.minibatch(params['batch_size'], params, mode='test')
+    images, labels = inputs.minibatch(params['batch_size'], params, hyper_params, mode='test')
 
     with tf.variable_scope('horovod', reuse=True) as _:
         # Setup Neural Net
@@ -465,13 +465,22 @@ def eval_run(params, hyper_params, network_config, sess, num_batches=100):
 
         logits = n_net.model_output
 
-        validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
+        if hyper_params['network_type'] == 'regressor':
+            validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
 
-        # Average validation error over the batches
-        errors = np.array([sess.run(validation_error) for _ in range(num_batches)])
-        errors = errors.reshape(-1, params['NUM_CLASSES'])
-        avg_errors = errors.mean(0)
-        print_rank('Validation MSE: %s' % format(avg_errors))
+            # Average validation error over the batches
+            errors = np.array([sess.run(validation_error) for _ in range(num_batches)])
+            errors = errors.reshape(-1, params['NUM_CLASSES'])
+            avg_errors = errors.mean(0)
+            print_rank('Validation MSE: %s' % format(avg_errors))
+        else:
+            labels = tf.argmax(labels, axis=1)
+            in_top_1_op = tf.cast(tf.nn.in_top_k(logits, labels, 1), tf.float32)
+            in_top_5_op = tf.cast(tf.nn.in_top_k(logits, labels, 5), tf.float32)
+            eval_ops = [in_top_1_op, in_top_5_op]
+            output = np.array([sess.run(eval_ops) for _ in range(num_batches)])
+            accuracy = output.sum(axis=(0,-1))/(num_batches*params['batch_size'])*100
+            print_rank('Validation Accuracy (.pct), Top-1: %2.2f , Top-5: %2.2f' %(accuracy[0], accuracy[1]))
 
 
 def eval(network_config, hyper_params, data_path, params, num_GPUS=1):
