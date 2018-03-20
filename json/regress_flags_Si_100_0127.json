@@ -3,16 +3,19 @@
 	"allow_soft_placement": {"type":"bool", "value": true, "desc": "Whether to allow variable soft placement on the device This is needed for multi-gpu runs."},
 	"log_frequency": {"type":"int", "value": 50, "desc": "How often to log results to the console."},
 	"save_frequency": {"type":"int", "value": 5000, "desc": "How often to save summaries to disk."},
+	"epochs_per_validation": {"type":"float", "value": 1, "desc": "Validate per how many epochs"},
+	"gpu_trace": {"type":"bool", "value": true, "desc": "Whether to run a hardware trace (timeline) at training step=101."},
 	"max_steps": {"type":"int", "value": 2000, "desc": "Number of batches to run."},
 	"num_epochs": {"type":"int", "value": 500, "desc": "Number of Data Epochs to do training"},
 	"worker_name": {"type":"str", "value": "worker", "desc": "Name of gpu worker to append to each device ops, scope, etc..."},
 	"CPU_ID": { "type": "str", "value":"/cpu:0", "desc": "Which CPU to use in a multi-CPU machine.Default 0"},
+	"IO_threads": {"type": "int", "value": 10, "desc": "number of cpu threads per rank to use for I/O."},
+	"buffer_cap": {"type": "int", "value": 1000, "desc": "max number of data records per rank to keep in the I/O buffer."},
 
 	"eval_interval_secs": {"type":"int", "value": 30, "desc": "How often to run model evaluation."},
 	"num_examples": {"type":"int", "value": 10000, "desc": "Number of examples to run."},
 	"run_once": {"type":"bool", "value": false, "desc": "Whether to run evalulation only once."},
 	"output_labels": {"type":"str", "value":"alpha_mse; beta_mse; gamma_mse", "desc": "Labels to give the output of the NN. "},
-	"eval_distort": {"type":"bool", "value": false, "desc": "Whether to perform data distortion during evaluation."},
 
 	"NUM_EXAMPLES_PER_EPOCH": {"type":"int", "value": 18620, "desc": "Number of examples in training data."},
 	"NUM_CLASSES": {"type":"int", "value": 4, "desc": "Number of classes in training/evaluation data."},
@@ -22,25 +25,30 @@
 	"IMAGE_DTYPE": {"type":"str", "value":"float16", "desc": " precision of images stored in the tfRecords file."},
 	"LABEL_DTYPE": {"type":"str", "value":"float64", "desc": " precision of label stored in the tfRecords file."},
 
-	"train_distort": {"type":"bool", "value": false, "desc": "Whether to perform data distortion during training."},
+	"train_distort": {"type":"bool", "value": true, "desc": "Whether to perform data distortion during training."},
+	"validation_distort": {"type":"bool", "value": false, "desc": "Whether to perform data distortion during validation"},
+	"test_distort": {"type":"bool", "value": false, "desc": "Whether to perform data distortion during testing"},
 	"noise_min": {"value": 0.0, "type":"float", "desc":"minimum noise level"},
 	"noise_max": {"value": 0.3, "type":"float", "desc":"maximum noise level"},
-	"random_glimpses": {"value": false, "type":"bool", "desc":"kind of glimpse"},
 	"geometric": {"value": false, "type":"bool", "desc":"geometric"},
+
+	"glimpse_mode": {"value": "normal", "type":"str", "desc":"kind of glimpse"},
+	"glimpse_height_off": {"value": 256, "type":"int", "desc":"Height offset for glimpse used for glimpse mode of 'fixed' only"},
+	"glimpse_width_off": {"value": 256, "type":"int", "desc":"Width offset for glimpse used for glimpse mode of 'fixed' only"},
+	"glimpse_normal_off_stdev": {"value": 4.0, "type":"float", "desc":"standard deviation for offsets used for glimpse mode of 'normal' only"},
 	"CROP_HEIGHT": {"type":"int", "value": 512, "desc": "CROP HEIGHT"},
 	"CROP_WIDTH": {"type":"int", "value": 512, "desc": "CROP WIDTH"},
+
 	"RESIZE_HEIGHT": {"type":"int", "value": 512, "desc": "RESIZE HEIGHT"},
 	"RESIZE_WIDTH": {"type":"int", "value": 512, "desc": "RESIZE WIDTH"},
 
 	"IMAGE_FP16": {"type":"bool", "value": true, "desc": " Whether to use half-precision format for images."},
-	"batch_size": { "type": "int", "value":16, "desc": "number of images per batch to propagate through the network. Powers of 2 are processed more efficiently.Default 64."},
+	"batch_size": { "type": "int", "value":4, "desc": "number of images per batch to propagate through the network. Powers of 2 are processed more efficiently.Default 64."},
 
-	"data_dir": {"type": "str", "value":"../../data/Si_100_0127_train.tfrecords", "desc": "path to tfrecords file with images + labels."},
+	"data_dir": {"type": "str", "value":"../data/Si_100/", "desc": "path to tfrecords file with images + labels."},
 	"checkpt_dir": { "type": "str", "value":"stemdl_checkpoint", "desc": "path where to save directory with training data, visualization, and TensorBoard events."},
-	"network_config": { "type": "str", "value":"../json/network_ResNet_50.json", "desc": "path to .json file with neural net architecture."},
-	"hyper_params": { "type": "str", "value":"../json/hyper_params_regressor_resnet.json", "desc": "path to .json file with hyper-parameters."},
-	"mode": { "type": "str", "value":"train", "desc": "operation mode, must be 'train' or 'eval' .Default: 'train'"},
-	"num_gpus": { "type": "int", "value":2, "desc": "number of gpus to use during training.Default 1."},
-	"IO_threads": {"type": "int", "value": 10, "desc": "number of cpu threads per rank to use for I/O."},
-	"buffer_cap": {"type": "int", "value": 1000, "desc": "max number of data records per rank to keep in the I/O buffer."}
+	"network_config": { "type": "str", "value":"./json/networks/network_ResNet_50.json", "desc": "path to .json file with neural net architecture."},
+	"hyper_params": { "type": "str", "value":"./json/hyper_params/hyper_params_regressor_resnet.json", "desc": "path to .json file with hyper-parameters."},
+	"is_classification": { "type": "bool", "value":false, "desc": "Whether or not this is a classification problem"},
+	"mode": { "type": "str", "value":"train", "desc": "operation mode, must be 'train' or 'eval' .Default: 'train'"}
 }

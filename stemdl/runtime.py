@@ -274,7 +274,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     # Setup data stream
     with tf.device(params['CPU_ID']):
         with tf.name_scope('Input') as _:
-            images, labels = inputs.minibatch(params['batch_size'], params, hyper_params, mode='train')
+            images, labels = inputs.minibatch(params['batch_size'], params, mode='train')
             # Staging images on host
             staging_op, (images, labels) = inputs.stage([images, labels])
             global_step = tf.train.get_or_create_global_step()
@@ -340,7 +340,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
         # Apply gradients to trainable variables
         if params['IMAGE_FP16']:
             # scale the losses
-            scaling = hyper_params['scaling']
+            scaling = 1
             # Calculate the gradients for the current data batch
             with tf.control_dependencies([loss_averages_op]):
                 grads_vars = opt.compute_gradients(tf.cast(total_loss*scaling, tf.float16))
@@ -408,6 +408,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     # Train
 
     train_elf = TrainHelper(params, saver, summary_writer, n_net.ops, last_step=last_step)
+    next_validation_epoch = params['epochs_per_validation']
 
     while train_elf.last_step < params['max_steps']:
         nan = tf.train.NanTensorHook(total_loss)
@@ -431,29 +432,31 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
             sess.run(train_op, options=run_options, run_metadata=run_metadata)
             train_elf.save_trace(run_metadata)
 
-        # Here we do eval:
-        if train_elf.last_step % params['eval_frequency'] == 0:
-            # do eval over 100 batches.
-            eval_run(params, hyper_params, network_config, sess)
+        # Here we do validation:
+        if train_elf.elapsed_epochs > next_validation_epoch:
+            # do validation over 100 batches.
+            eval_run(params, hyper_params, network_config, sess, is_classification=params['is_classification'])
+            next_validation_epoch += params['epochs_per_validation']
 
         # And here... we just train
         else:
             sess.run(train_op)
 
 
-def eval_run(params, hyper_params, network_config, sess, num_batches=100):
+def eval_run(params, hyper_params, network_config, sess, is_classification=False, num_batches=100):
     """
     Runs evaluation with current weights
     :param params:
     :param hyper_params:
     :param network_config:
     :param sess:
+    :param is_classification: default False.
     :param num_batches: default 100.
     :return:
     """
     print_rank("Running Validation over %d batches..." % num_batches)
     # Get Test data
-    images, labels = inputs.minibatch(params['batch_size'], params, hyper_params, mode='test')
+    images, labels = inputs.minibatch(params['batch_size'], params, mode='test')
 
     with tf.variable_scope('horovod', reuse=True) as _:
         # Setup Neural Net
@@ -465,22 +468,18 @@ def eval_run(params, hyper_params, network_config, sess, num_batches=100):
 
         logits = n_net.model_output
 
-        if hyper_params['network_type'] == 'regressor':
+        if is_classification:
+            labels = tf.argmax(labels, axis=1)
+            validation_error = tf.cast(tf.nn.in_top_k(logits, labels, 1), tf.float32)
+            # in_top_5_op = tf.cast(tf.nn.in_top_k(logits, labels, 5), tf.float32)
+        else:
             validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
 
-            # Average validation error over the batches
-            errors = np.array([sess.run(validation_error) for _ in range(num_batches)])
-            errors = errors.reshape(-1, params['NUM_CLASSES'])
-            avg_errors = errors.mean(0)
-            print_rank('Validation MSE: %s' % format(avg_errors))
-        else:
-            labels = tf.argmax(labels, axis=1)
-            in_top_1_op = tf.cast(tf.nn.in_top_k(logits, labels, 1), tf.float32)
-            in_top_5_op = tf.cast(tf.nn.in_top_k(logits, labels, 5), tf.float32)
-            eval_ops = [in_top_1_op, in_top_5_op]
-            output = np.array([sess.run(eval_ops) for _ in range(num_batches)])
-            accuracy = output.sum(axis=(0,-1))/(num_batches*params['batch_size'])*100
-            print_rank('Validation Accuracy (.pct), Top-1: %2.2f , Top-5: %2.2f' %(accuracy[0], accuracy[1]))
+        # Average validation error over the batches
+        errors = np.array([sess.run(validation_error) for _ in range(num_batches)])
+        errors = errors.reshape(-1, params['NUM_CLASSES'])
+        avg_errors = errors.mean(0)
+        print_rank('Validation MSE: %s' % format(avg_errors))
 
 
 def eval(network_config, hyper_params, data_path, params, num_GPUS=1):
@@ -512,8 +511,7 @@ def eval(network_config, hyper_params, data_path, params, num_GPUS=1):
                 # pass the filename_queue to the inputs classes to decode
                 dset = inputs.DatasetTFRecords(filename_queue, params, is_train=False)
                 # distort images and generate examples batch
-                images, labels = dset.get_batch(noise_min=0.05, noise_max=0.25, distort=params['eval_distort'],
-                                                random_glimpses='normal', geometric=False)
+                images, labels = dset.get_batch()
 
             with tf.variable_scope(tf.get_variable_scope(), reuse=None):
 
