@@ -169,23 +169,15 @@ def label_minmaxscaling(label, min_vals, max_vals, scale_range=[0,1]):
     return scaled_label
 
 
-def distort(image, params):
+def rotate_image(image, params):
     """
-    Performs distortions on an image: noise + global affine transformations.
-    Args:
-        image: 3D Tensor
-        noise_min:float, lower limit in (0,1)
-        noise_max:float, upper limit in (0,1)
-        geometric: bool, apply affine distortion
+    Apply random global affine transformations, sampled from a normal distributions.
 
-    Returns:
-        distorted_image: 3D Tensor
+    :param image: 2D tensor
+    :param params: dict, optional
+    :return: 2D tensor
     """
 
-    # Apply random global affine transformations
-    # if geometric:
-
-    # 1. Apply random global affine transformations, sampled from a normal distributions.
     # Setting bounds and generating random values for scaling and rotations
     scale_X = np.random.normal(1.0, 0.05, size=1)
     scale_Y = np.random.normal(1.0, 0.05, size=1)
@@ -206,7 +198,18 @@ def distort(image, params):
     # Transform
     aff_image = tf.contrib.image.transform(image, affine_transform,
                                            interpolation='BILINEAR')
-    # 2. Apply isotropic scaling, sampled from a normal distribution.
+    return aff_image
+
+
+def glimpse_at_image(image, params):
+    """
+    Apply isotropic scaling, sampled from a normal distribution.
+
+    :param image: 2D tensor
+    :param params: dict, image dimension parameters must be included
+    :return: 2D tensor
+    """
+
     zoom_factor = np.random.normal(1.0, 0.05, size=1)
     crop_y_size, crop_x_size = params['IMAGE_HEIGHT'], params['IMAGE_WIDTH']
     size = tf.constant(value=[int(np.round(crop_y_size / zoom_factor)),
@@ -214,7 +217,7 @@ def distort(image, params):
     cen_y = np.ones((1,), dtype=np.float32) * int(params['IMAGE_HEIGHT'] / 2)
     cen_x = np.ones((1,), dtype=np.float32) * int(params['IMAGE_WIDTH'] / 2)
     offsets = tf.stack([cen_y, cen_x], axis=1)
-    scaled_image = tf.expand_dims(aff_image, axis=0)
+    scaled_image = tf.expand_dims(image, axis=0)
     scaled_image = tf.image.extract_glimpse(scaled_image, size, offsets,
                                             centered=False,
                                             normalized=False,
@@ -222,13 +225,47 @@ def distort(image, params):
     scaled_image = tf.reshape(scaled_image, (scaled_image.shape[1].value, scaled_image.shape[2].value,
                                              scaled_image.shape[3].value))
     scaled_image = tf.image.resize_images(scaled_image, (params['IMAGE_HEIGHT'], params['IMAGE_WIDTH']))
+    return scaled_image
 
-    # Apply noise
+
+def add_noise_image(image, params):
+    """
+    Adds random noise to the provided image
+
+    :param image: 2D image specified as a tensor
+    :param params: dict, parameters required - noise_min and noise_max
+    :return: 2d tensor
+    """
+
     alpha = tf.random_uniform([1], minval=params['noise_min'], maxval=params['noise_max'])
-    noise = tf.random_uniform(scaled_image.shape, dtype=tf.float32)
-    trans_image = (1 - alpha[0]) * scaled_image + alpha[0] * noise
-
+    noise = tf.random_uniform(image.shape, dtype=tf.float32)
+    trans_image = (1 - alpha[0]) * image + alpha[0] * noise
     return trans_image
+
+
+def distort(image, params):
+    """
+    Performs distortions on an image: noise + global affine transformations.
+    Args:
+        image: 3D Tensor
+        noise_min:float, lower limit in (0,1)
+        noise_max:float, upper limit in (0,1)
+        geometric: bool, apply affine distortion
+
+    Returns:
+        distorted_image: 3D Tensor
+    """
+
+    # Apply random global affine transformations
+    # if geometric:
+
+    image = rotate_image(image, params)
+
+    image = glimpse_at_image(image, params)
+
+    image = add_noise_image(image, params)
+
+    return image
 
 
 def get_glimpses(batch_images, params):
@@ -238,6 +275,11 @@ def get_glimpses(batch_images, params):
     :return: batch of glimpses
     """
     if params['glimpse_mode'] not in ['uniform', 'normal', 'fixed']:
+        """
+        print('No image glimpsing will be performed since mode: "{}" is not'
+               'among "uniform", "normal", "fixed"'
+               '.'.format(params['glimpse_mode']))
+        """
         return batch_images
 
     # set size of glimpses
@@ -302,12 +344,14 @@ def minibatch(batchsize, params, mode='train'):
     images = []
     labels = []
     with tf.name_scope('input_pipeline'):
+        if params[mode + '_distort']:
+            print('images will be distorted')
+
         for i, record in enumerate(records):
             image, label = decode_image_label(record, params)
-
+            # print('Looking for {} which has a value of {}'.format(mode + '_distort', params[mode + '_distort']))
             if params[mode + '_distort']:
-                image = distort(image, params)
-
+                image = add_noise_image(image, params)
             images.append(image)
             labels.append(label)
         # Stack images and labels back into a single tensor
