@@ -49,8 +49,7 @@ while [ ! $# -eq 0 ]; do
   esac
 done
 
-echo "num_gpus = ${NRANKS}" > "${TRAIN_SCRIPT_PATH}/json_flags.py"
-echo "JSON_FLAGS = \"${JSON_FLAGS}\"" >> "${TRAIN_SCRIPT_PATH}/json_flags.py"
+echo "JSON_FLAGS = \"${JSON_FLAGS}\"" > "${TRAIN_SCRIPT_PATH}/json_flags.py"
 
 BATCH_SIZE=`extract_json_field batch_size`
 CHECKPOINT_DIR=`extract_json_field checkpt_dir`

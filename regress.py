@@ -4,6 +4,7 @@ Created on 12/15/17.
 """
 
 import tensorflow as tf
+import argparse
 import sys
 import os
 import horovod.tensorflow as hvd
@@ -14,18 +15,15 @@ from stemdl import io_utils
 
 
 # NOTE because of summitdev/container problems, we can't pass any flags
-# whatsoever, so we have to hard code the name of parameters file
-from json_flags import JSON_FLAGS, num_gpus
+# whatsoever, so we have to hard code this path
+from json_flags import JSON_FLAGS
 
 
 def main():
     # initiate horovod
     hvd.init()
 
-    # read all parameters to a python dictionary
     params = io_utils.get_dict_from_json(JSON_FLAGS)
-    # update the number of GPUs from the python file:
-    params['num_gpus'] = num_gpus
 
     checkpt_dir = params['checkpt_dir']
     # Also need a directory within the checkpoint dir for event files coming from eval
@@ -50,7 +48,7 @@ def main():
 
     # train or evaluate
     if params['mode'] == 'train':
-        runtime.train_horovod_mod(network_config, hyper_params, params['data_dir'], params, num_GPUS=params['num_gpus'])
+        runtime.train_horovod(network_config, hyper_params, params['data_dir'], params, num_GPUS=params['num_gpus'])
     else:
         runtime.eval(network_config, hyper_params, params['data_dir'], params, num_GPUS=params['num_gpus'])
 
