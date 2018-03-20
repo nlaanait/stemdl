@@ -225,7 +225,7 @@ class DatasetTFRecords(object):
         return images, labels
 
 
-def decode_image_label(record, params):
+def decode_image_label(record, params, hyper_params):
     """
     Returns: image, label decoded from tfrecords
     """
@@ -246,10 +246,15 @@ def decode_image_label(record, params):
     # standardize the image to [-1.,1.]
     image = tf.image.per_image_standardization(image)
 
-    # scale labels
-    # TODO: pull max and min values out of here and into input.json
-    label = label_minmaxscaling(label, [20., 60., -3., -3.],
-                                [200., 200., 3., 3.], scale_range=[-10., 10.])
+    # Manipulate labels
+    # turn into 1-hot vector for classification. So that we don't modify the data.
+    if hyper_params['network_type'] == 'classifier' and label_dtype == tf.float64:
+        label = onehot(label)
+    elif hyper_params['network_type'] == 'regressor':
+        # scale labels for regression
+        # TODO: pull max and min values out of here and into input.json
+        label = label_minmaxscaling(label, [20., 60., -3., -3.],
+                                    [200., 200., 3., 3.], scale_range=[-10., 10.])
 
     return image, label
 
@@ -270,8 +275,14 @@ def label_minmaxscaling(label, min_vals, max_vals, scale_range=[0,1]):
     scaled_label = scaled_label * (scale_range[-1] - scale_range[0]) + scale_range[0]
     return scaled_label
 
+def onehot(label):
+    index = tf.cast(label[0],tf.int32)
+    full_vec = tf.cast(tf.linspace(20., 200., 91),tf.int32)
+    bool_vector = tf.equal(index, full_vec)
+    onehot_vector = tf.cast(bool_vector, tf.int64)
+    return onehot_vector
 
-def minibatch(batchsize, params, mode='train'):
+def minibatch(batchsize, params, hyper_params, mode='train'):
     """
     Returns minibatch of images and labels from TF records file.
     :param batchsize: int,
@@ -297,7 +308,7 @@ def minibatch(batchsize, params, mode='train'):
     labels = []
     with tf.name_scope('input_pipeline'):
         for i, record in enumerate(records):
-            image, label = decode_image_label(record, params)
+            image, label = decode_image_label(record, params, hyper_params)
             images.append(image)
             labels.append(label)
         # Stack images back into a single tensor
