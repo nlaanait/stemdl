@@ -49,6 +49,6 @@
 	"checkpt_dir": { "type": "str", "value":"stemdl_checkpoint", "desc": "path where to save directory with training data, visualization, and TensorBoard events."},
 	"network_config": { "type": "str", "value":"./json/networks/network_ResNet_50.json", "desc": "path to .json file with neural net architecture."},
 	"hyper_params": { "type": "str", "value":"./json/hyper_params/hyper_params_regressor_resnet.json", "desc": "path to .json file with hyper-parameters."},
-	"is_classification": { "type": "bool", "value":false, "desc": "Whether or not this is a classification problem"},
+	"network_type": { "type": "str", "value":"regressor", "desc": "Options - regressor and classifier"},
 	"mode": { "type": "str", "value":"train", "desc": "operation mode, must be 'train' or 'eval' .Default: 'train'"}
 }
