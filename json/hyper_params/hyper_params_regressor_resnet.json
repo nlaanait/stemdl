@@ -24,5 +24,6 @@
 	},
 	"initializer": {
 		"type": "uniform_unit_scaling"
-	}
+	},
+	"scaling": 1
 }
