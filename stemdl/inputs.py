@@ -144,12 +144,25 @@ def decode_image_label(record, params):
     # standardize the image to [-1.,1.]
     image = tf.image.per_image_standardization(image)
 
-    # scale labels
-    # TODO: pull max and min values out of here and into input.json
-    label = label_minmaxscaling(label, [20., 60., -3., -3.],
-                                [200., 200., 3., 3.], scale_range=[-10., 10.])
+    # Manipulate labels
+    # turn into 1-hot vector for classification. So that we don't modify the data.
+    if params['network_type'] == 'classifier' and label_dtype == tf.float64:
+        label = onehot(label)
+    elif params['network_type'] == 'regressor':
+        # scale labels for regression
+        # TODO: pull max and min values out of here and into input.json
+        label = label_minmaxscaling(label, [20., 60., -3., -3.],
+                                    [200., 200., 3., 3.], scale_range=[-10., 10.])
 
     return image, label
+
+
+def onehot(label):
+    index = tf.cast(label[0],tf.int32)
+    full_vec = tf.cast(tf.linspace(20., 200., 91),tf.int32)
+    bool_vector = tf.equal(index, full_vec)
+    onehot_vector = tf.cast(bool_vector, tf.int64)
+    return onehot_vector
 
 
 def label_minmaxscaling(label, min_vals, max_vals, scale_range=[0,1]):
