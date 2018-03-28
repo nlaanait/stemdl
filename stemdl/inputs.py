@@ -290,8 +290,8 @@ def minibatch(batchsize, params, hyper_params, mode='train'):
     :param mode: str, "train" or "test", default "train
     :return:
     """
-    if mode != 'train' or mode != 'test':
-        mode = 'train'
+    # if mode != 'train' or mode != 'test':
+    #     mode = 'train'
 
     record_input = data_flow_ops.RecordInput(
         file_pattern=os.path.join(params['data_dir'], '*_%s.tfrecords' % mode),
