@@ -203,7 +203,7 @@ def get_optimizer(params, hyper_params, global_step):
         opt = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE, beta1= hyper_params['momentum'])
 
     opt = hvd.DistributedOptimizer(opt)
-    return opt
+    return opt, LEARNING_RATE
 
 
 def loss_func(model, hyper_params, var_scope, summary=False):
@@ -287,7 +287,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
 
 
         # setup optimizer
-        opt = get_optimizer(params, hyper_params, global_step)
+        opt, learning_rate = get_optimizer(params, hyper_params, global_step)
 
         ##################
         # Building Model#

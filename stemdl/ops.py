@@ -3,9 +3,11 @@ Created on 03/27/18.
 @author: Numan Laanait.
 email: laanaitn@ornl.gov
 """
-from collections import OrderedDict
 import json
+import numpy
+from collections import OrderedDict
 import sys
+
 
 def load_hardware_trace_json(file):
     """
@@ -47,6 +49,29 @@ def get_all_ops(trace_dic):
     return all_ops
 
 
+def get_stream_all(trace_dic):
+    """
+    Params:
+    trace_dic: collections.OrderedDict of traceEvent
+    Return: pid of GPU/stream:all, (stream, pid) dictionary
+    """
+    try:
+        traceEvents = trace_dic['traceEvents']
+    except KeyError:
+        print('Not valid GPU trace dict object.')
+        sys.exit()
+    all_procs = []
+    for trace in traceEvents:
+        try:
+            if trace['name'] == 'process_name':
+                all_procs.append((trace['args']['name'], trace['pid']))
+        except KeyError:
+            pass
+    dic_procs = dict(all_procs)
+    pid = dic_procs['/device:GPU:0/stream:all Compute']
+    return dic_procs, pid
+
+
 def get_unique_ops_names(all_ops):
     '''
     Find unique op names.
@@ -65,7 +90,7 @@ def get_wall_duration(op_names, all_ops, pid_list=[11, 7, 13, 15, 9]):
     pid_list: list (str), names of pid to include.
     all_ops: output of get_all_ops().
     Return:
-    total wall duration (summed over all ops in op_names), dict['op_name'] = wall duration.
+    total wall duration, dict['op'] = wall duration.
     '''
     # 1. Construct dictionary of op with name matching op_names
     ops_dic = OrderedDict()
@@ -87,7 +112,16 @@ def get_wall_duration(op_names, all_ops, pid_list=[11, 7, 13, 15, 9]):
         op_dict[op_name] = op_dur * 1e-3  # convert from us to ms
         total_dur += op_dur * 1e-3
 
-    print('Wall Duration (ms): %4.3f' % total_dur)
+    print('Total Wall Duration (ms): %4.3f\n' % total_dur)
+    sorted_dur = sorted(op_dict.items(), key=lambda x: x[1])[::-1]
+    print('OPS with wall duration > 5 ms:')
+    for itm in sorted_dur:
+        if itm[1] > 5:
+            if itm[0] == 'unknown':
+                name = 'unknown (nccl AllReduceKernel_sum_)'
+            else:
+                name = itm[0]
+            print('%s : %3.3f ms' % (name, itm[1]))
     return total_dur, op_dict
 
 def calc_flops(timeline, analytical_ops, op_names):
