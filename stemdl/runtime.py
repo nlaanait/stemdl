@@ -82,7 +82,7 @@ class TrainHelper(object):
         self.writer = writer
 
     def before_run(self):
-        self.last_step +=1
+        self.last_step += 1
         self.start_time = time.time()
         self.elapsed_epochs = self.last_step * self.params['batch_size'] * 1.0 * hvd.size() / \
                               self.params['NUM_EXAMPLES_PER_EPOCH']
@@ -105,21 +105,24 @@ class TrainHelper(object):
             f.write(trace.generate_chrome_trace_format())
         print_rank('Run & Saved GPU Trace.')
 
-    def log_stats(self, loss_value):
+    def log_stats(self, loss_value, learning_rate):
+        # self.last_step += 1
         self.nanloss(loss_value)
         duration = time.time() - self.start_time
         examples_per_sec = self.params['batch_size'] * hvd.size() / duration
         flops = self.net_ops * self.params['batch_size'] * hvd.size() / duration
         format_str = (
-            'step = %d, epoch = %2.2e, loss = %.2f, step_time= %2.2f sec.Total Stats over %d ranks: %.1f examples/sec; flops = %3.2e')
-        print_rank(format_str % (self.last_step, self.elapsed_epochs, loss_value, duration, hvd.size(), examples_per_sec, flops))
+            'step= %d, epoch= %2.2e, loss= %2.2f, lr= %2.2e, step_time= %2.2f sec, ranks= %d, examples/sec= %2.2f, flops= %3.2e')
+        print_rank(format_str % (self.last_step , self.elapsed_epochs, loss_value, learning_rate, duration, hvd.size(),
+                                 examples_per_sec, flops))
 
     @staticmethod
     def nanloss(loss_value):
         if np.isnan(loss_value):
             print_rank('loss is nan... Exiting!')
             sys.exit(0)
-
+    def after_run(self):
+        self.last_step += 1
 
 def _add_loss_summaries(total_loss, losses, summaries=False):
     """
@@ -163,7 +166,7 @@ def get_optimizer(params, hyper_params, global_step):
     WARM_UP_LEARNING_RATE_MAX = hyper_params['warm_up_max_learning_rate']
 
     # Set parameters that affect the learning rate.
-    num_batches_per_epoch = params['NUM_EXAMPLES_PER_EPOCH'] / params['batch_size']
+    num_batches_per_epoch = params['NUM_EXAMPLES_PER_EPOCH'] / params['batch_size'] / hvd.size()
     decay_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
     ramp_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_RAMP)
     ramp_up_steps = int(num_batches_per_epoch * NUM_EPOCHS_IN_WARM_UP)
@@ -174,7 +177,8 @@ def get_optimizer(params, hyper_params, global_step):
         lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step, ramp_steps, LEARNING_RATE_DECAY_FACTOR,
                                         staircase=True)
         lr = INITIAL_LEARNING_RATE ** 2 * tf.pow(lr, tf.constant(-1.))
-        return tf.cast(lr, tf.float32)
+        # return tf.cast(lr, tf.float32)
+        return lr
 
     def decay():
         lr = tf.train.exponential_decay(WARM_UP_LEARNING_RATE_MAX, global_step, decay_steps, LEARNING_RATE_DECAY_FACTOR,
@@ -191,11 +195,13 @@ def get_optimizer(params, hyper_params, global_step):
     # Summarize learning rate
     tf.summary.scalar('learning_rate', LEARNING_RATE)
 
+    # LEARNING_RATE = tf.cond(global_step < 100, lambda: 2e-2, lambda: 1e-2)
+
     # optimizer
     if hyper_params['optimization'] == 'SGD':
         opt = tf.train.GradientDescentOptimizer(LEARNING_RATE)
 
-    if hyper_params['optimization'] == 'Momentum':
+    elif hyper_params['optimization'] == 'Momentum':
         opt = tf.train.MomentumOptimizer(LEARNING_RATE, momentum= hyper_params['momentum'], use_nesterov=True)
 
     else:
@@ -229,17 +235,6 @@ def loss_func(model, hyper_params, var_scope, summary=False):
 
     return total_loss
 
-    # # loss = tf.losses.sparse_softmax_cross_entropy(
-    # #     logits=logits, labels=labels)
-    # # Add weight decay
-    # params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
-    #                            scope=var_scope.name)
-    # l2_loss = tf.add_n([tf.nn.l2_loss(w) for w in params])
-    # if l2_loss.dtype != tf.float32:
-    #     l2_loss = tf.cast(l2_loss, tf.float32)
-    # loss += hyper_params['weight_decay'] * l2_loss
-    # return loss, logits
-
 
 def print_rank(*args, **kwargs):
     if hvd.rank() == 0:
@@ -271,13 +266,14 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     ############################################
     # Start building the graph
 
+    global_step = tf.train.get_or_create_global_step()
+
     # Setup data stream
     with tf.device(params['CPU_ID']):
         with tf.name_scope('Input') as _:
             images, labels = inputs.minibatch(params['batch_size'], params, hyper_params, mode='train')
             # Staging images on host
             staging_op, (images, labels) = inputs.stage([images, labels])
-            global_step = tf.train.get_or_create_global_step()
 
     with tf.device('/gpu:%d' % hvd.local_rank()):
 
@@ -410,17 +406,17 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     train_elf = TrainHelper(params, saver, summary_writer, n_net.ops, last_step=last_step)
 
     while train_elf.last_step < params['max_steps']:
-        nan = tf.train.NanTensorHook(total_loss)
-        nan.begin()
         train_elf.before_run()
+
         # Here we log some stats
         if train_elf.last_step % params['log_frequency'] == 0:
-            loss_value = sess.run([train_op, total_loss])[-1]
-            train_elf.log_stats(loss_value)
+            loss_value, lr = sess.run([train_op, total_loss, learning_rate])[-2:]
+            train_elf.log_stats(loss_value, lr)
+
 
         # Here we write summaries and checkpoint
         if train_elf.last_step % params['save_frequency'] == 0:
-            summary = sess.run([train_op, summary_merged])[-1]
+            summary = sess.run([train_op,summary_merged])[-1]
             train_elf.write_summaries(summary)
             if hvd.rank() == 0:
                 saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
@@ -436,8 +432,8 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
             # do eval over 100 batches.
             eval_run(params, hyper_params, network_config, sess)
 
-        # And here... we just train
         else:
+            # Train
             sess.run(train_op)
 
 
