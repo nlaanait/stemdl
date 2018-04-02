@@ -253,6 +253,9 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     :return: None
     """
 
+    #########################
+    # Start Session         #
+    #########################
     # Config file for tf.Session()
     config = tf.ConfigProto(allow_soft_placement=params['allow_soft_placement'],
                             log_device_placement=params['log_device_placement'],
@@ -260,13 +263,26 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     config.gpu_options.visible_device_list = str(hvd.local_rank())
     config.intra_op_parallelism_threads = 1
     # config.inter_op_parallelism_threads = 12
+    sess = tf.Session(config=config)
 
-    ############################################
-    # Setup Graph, Input pipeline and optimizer#
-    ############################################
+    ############################
+    # Setting up Checkpointing #
+    ###########################
+    # Check if you can restore
+    checkpoint_file = os.path.join(params['checkpt_dir'], 'model.ckpt')
+    # Check if training is a restart from checkpoint
+    ckpt = tf.train.get_checkpoint_state(params['checkpt_dir'])
+    if ckpt is None:
+        last_step = 0
+    else:
+        last_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
+
+    global_step = tf.Variable(last_step, name='global_step',trainable=False)
+
+    ###############################
+    # Setup Graph, and Input pipeline #
+    ##############################
     # Start building the graph
-
-    global_step = tf.train.get_or_create_global_step()
 
     # Setup data stream
     with tf.device(params['CPU_ID']):
@@ -281,9 +297,6 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
         gpucopy_op, (images, labels) = inputs.stage([images, labels])
         IO_ops = [staging_op, gpucopy_op]
 
-
-        # setup optimizer
-        opt, learning_rate = get_optimizer(params, hyper_params, global_step)
 
         ##################
         # Building Model#
@@ -304,7 +317,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
                 # Force all variables to be stored as float32
                 custom_getter=float32_variable_storage_getter) as _:
             # Setup Neural Net
-            n_net = network.ResNet(scope, params, global_step, hyper_params, network_config, images, labels,
+            n_net = network.ResNet(scope, params, hyper_params, network_config, images, labels,
                                     operation='train', summary=False)
             #
             # # Build it and propagate images through it.
@@ -328,10 +341,12 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
             #get summaries, except for the one produced by string_input_producer
             if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
 
-
         #######################################
         # Apply Gradients and setup train op #
         #######################################
+
+        # setup optimizer
+        opt, learning_rate = get_optimizer(params, hyper_params, global_step)
 
         # Apply gradients to trainable variables
         if params['IMAGE_FP16']:
@@ -355,15 +370,10 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
         with tf.control_dependencies([all_ops]):
                 train_op = tf.no_op(name='train')
 
-    #########################
-    # Start Session         #
-    #########################
-    sess = tf.Session(config=config)
 
-
-    ##########################################
-    # Setting up Checkpointing and Summaries #
-    #########################################
+    #########################
+    # Setting up Summaries #
+    #########################
 
     # Stats and summaries
     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
@@ -372,17 +382,6 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
     # Add Summary histograms for trainable variables and their gradients
     summary_merged = tf.summary.merge_all()
 
-    # Saver and Checkpoint restore
-    saver = tf.train.Saver()
-    checkpoint_file = os.path.join(params['checkpt_dir'], 'model.ckpt')
-    # Check if training is a restart from checkpoint
-    ckpt = tf.train.get_checkpoint_state(params['checkpt_dir'])
-    if ckpt is None:
-        last_step = 0
-    else:
-        last_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
-        saver.restore(sess, ckpt.model_checkpoint_path)
-        print_rank("Restoring from previous checkpoint @ step=%d" %last_step)
 
     ###############################
     # Setting up training session #
@@ -402,6 +401,11 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
         sess.run(IO_ops[:i + 1])
 
     # Train
+    # Check if training is a restart from checkpoint
+    saver = tf.train.Saver()
+    if ckpt is not None:
+        saver.restore(sess, ckpt.model_checkpoint_path)
+        print_rank("Restoring from previous checkpoint @ step=%d" % last_step)
 
     train_elf = TrainHelper(params, saver, summary_writer, n_net.ops, last_step=last_step)
 
@@ -419,7 +423,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
             summary = sess.run([train_op,summary_merged])[-1]
             train_elf.write_summaries(summary)
             if hvd.rank() == 0:
-                saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
+                saver.save(sess, checkpoint_file, global_step=global_step)
             print_rank('Saved Checkpoint.')
 
         # Here we do a device trace:
@@ -453,7 +457,7 @@ def eval_run(params, hyper_params, network_config, sess, num_batches=100):
 
     with tf.variable_scope('horovod', reuse=True) as _:
         # Setup Neural Net
-        n_net = network.ResNet('horovod', params, 0, hyper_params, network_config, tf.cast(images, tf.float32),
+        n_net = network.ResNet('horovod', params, hyper_params, network_config, tf.cast(images, tf.float32),
                                labels, operation='eval', summary=False)
 
         # Build it and propagate images through it.
