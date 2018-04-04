@@ -37,40 +37,6 @@ def float32_variable_storage_getter(getter, name, shape=None, dtype=None,
         variable = tf.cast(variable, dtype)
     return variable
 
-class _LoggerHook(tf.train.SessionRunHook):
-    """Logs loss and runtime stats."""
-    def __init__(self, params, total_loss, num_gpus, net_ops, last_step=0):
-        self.params = params
-        self.total_loss = total_loss
-        self.num_gpus = num_gpus
-        self.last_step = last_step
-        self.net_ops = net_ops * num_gpus * self.params['batch_size'] * self.params['log_frequency']
-
-    def begin(self):
-        self._step = -1 + self.last_step
-        self._start_time = time.time()
-        self.epoch = 0.
-
-    def before_run(self, run_context):
-        self._step += 1
-        return tf.train.SessionRunArgs(self.total_loss)  # Asks for loss value.
-
-    def after_run(self, run_context, run_values):
-        if self._step % self.params['log_frequency'] == 0:
-            current_time = time.time()
-            duration = current_time - self._start_time
-            self._start_time = current_time
-
-            loss_value = run_values.results
-            examples_per_sec = self.num_gpus * self.params['log_frequency'] * self.params['batch_size'] / duration
-            sec_per_batch = float(duration / self.params['log_frequency'])
-            elapsed_epochs = self.num_gpus * self._step * self.params['batch_size'] * 1.0 / self.params['NUM_EXAMPLES_PER_EPOCH']
-            self.epoch += elapsed_epochs
-            format_str = ('%s: step = %d, epoch = %2.2e, loss = %.2f (%.1f examples/sec; %.3f '
-                          'sec/batch/gpu), total flops = %3.2e')
-            print(format_str % (datetime.now(), self._step, elapsed_epochs, loss_value,
-                                examples_per_sec, sec_per_batch, self.net_ops/duration))
-
 
 class TrainHelper(object):
     def __init__(self, params, saver, writer, net_ops, last_step=0):
@@ -123,6 +89,7 @@ class TrainHelper(object):
             sys.exit(0)
     def after_run(self):
         self.last_step += 1
+
 
 def _add_loss_summaries(total_loss, losses, summaries=False):
     """
@@ -317,7 +284,7 @@ def train_horovod_mod(network_config, hyper_params, data_path, params, num_GPUS=
                 # Force all variables to be stored as float32
                 custom_getter=float32_variable_storage_getter) as _:
             # Setup Neural Net
-            n_net = network.ResNet(scope, params, hyper_params, network_config, images, labels,
+            n_net = network.ResNet(scope, params, global_step, hyper_params, network_config, images, labels,
                                     operation='train', summary=False)
             #
             # # Build it and propagate images through it.
@@ -457,13 +424,24 @@ def eval_run(params, hyper_params, network_config, sess, num_batches=100):
 
     with tf.variable_scope('horovod', reuse=True) as _:
         # Setup Neural Net
-        n_net = network.ResNet('horovod', params, hyper_params, network_config, tf.cast(images, tf.float32),
+        n_net = network.ResNet('horovod', params, 0, hyper_params, network_config, tf.cast(images, tf.float32),
                                labels, operation='eval', summary=False)
 
         # Build it and propagate images through it.
         n_net.build_model()
 
         logits = n_net.model_output
+
+        if checkpt:
+            ckpt = tf.train.get_checkpoint_state(params['checkpt_dir'])
+            saver = tf.train.Saver()
+            if ckpt is not None:
+                last_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
+                saver.restore(sess, ckpt.model_checkpoint_path)
+                print_rank("Restoring from previous checkpoint @ step=%d" % last_step)
+            else:
+                print_rank('No checkpoint found. Exiting!')
+                sys.exit()
 
         if hyper_params['network_type'] == 'regressor':
             validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
@@ -481,6 +459,76 @@ def eval_run(params, hyper_params, network_config, sess, num_batches=100):
             output = np.array([sess.run(eval_ops) for _ in range(num_batches)])
             accuracy = output.sum(axis=(0,-1))/(num_batches*params['batch_size'])*100
             print_rank('Validation Accuracy (.pct), Top-1: %2.2f , Top-5: %2.2f' %(accuracy[0], accuracy[1]))
+
+
+def eval_ckpt(params, hyper_params, network_config, num_batches=100):
+    """
+    Runs evaluation with current weights
+    :param params:
+    :param hyper_params:
+    :param network_config:
+    :param num_batches: default 100.
+    :return:
+    """
+    #########################
+    # Start Session         #
+    #########################
+    # Config file for tf.Session()
+    config = tf.ConfigProto(allow_soft_placement=params['allow_soft_placement'],
+                            log_device_placement=params['log_device_placement'],
+                            )
+    config.gpu_options.visible_device_list = str(hvd.local_rank())
+    config.intra_op_parallelism_threads = 1
+    # config.inter_op_parallelism_threads = 12
+    sess = tf.Session(config=config)
+
+    print_rank("Running Validation over %d batches..." % num_batches)
+    # Get Test data
+    images, labels = inputs.minibatch(params['batch_size'], params, hyper_params, mode='test')
+
+    # with tf.variable_scope('test', reuse=tf.AUTO_REUSE) as scope:
+    scope='horovod'
+    # Setup Neural Net
+    n_net = network.ResNet(scope, params, 0, hyper_params, network_config, images,
+                           labels, operation='eval', summary=False)
+
+    # Build it and propagate images through it.
+    n_net.build_model()
+
+    logits = n_net.model_output
+
+    # Initialize variables
+    init_op = tf.global_variables_initializer()
+    sess.run(init_op)
+
+    # Load Model from checkpoint
+    ckpt = tf.train.get_checkpoint_state(params['checkpt_dir'])
+    saver = tf.train.Saver()
+    if ckpt is not None:
+        last_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
+        saver.restore(sess, ckpt.model_checkpoint_path)
+        print_rank("Restoring from previous checkpoint @ step=%d" % last_step)
+    else:
+        print_rank('No checkpoint found. Exiting!')
+        sys.exit()
+
+    # Validate model
+    if hyper_params['network_type'] == 'regressor':
+        validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
+
+        # Average validation error over the batches
+        errors = np.array([sess.run(validation_error) for _ in range(num_batches)])
+        errors = errors.reshape(-1, params['NUM_CLASSES'])
+        avg_errors = errors.mean(0)
+        print_rank('Validation MSE: %s' % format(avg_errors))
+    else:
+        labels = tf.argmax(labels, axis=1)
+        in_top_1_op = tf.cast(tf.nn.in_top_k(logits, labels, 1), tf.float32)
+        in_top_5_op = tf.cast(tf.nn.in_top_k(logits, labels, 5), tf.float32)
+        eval_ops = [in_top_1_op, in_top_5_op]
+        output = np.array([sess.run(eval_ops) for _ in range(num_batches)])
+        accuracy = output.sum(axis=(0,-1))/(num_batches*params['batch_size'])*100
+        print_rank('Validation Accuracy (.pct), Top-1: %2.2f , Top-5: %2.2f' %(accuracy[0], accuracy[1]))
 
 
 def eval(network_config, hyper_params, data_path, params, num_GPUS=1):

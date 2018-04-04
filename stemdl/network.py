@@ -42,7 +42,7 @@ class ConvNet(object):
         assert self.net_type == 'regressor' or self.net_type == 'classifier',\
             "'net_type' must be 'regressor' or 'classifier'"
         self.operation = operation
-        assert self.operation == 'train' or self.operation == 'eval',\
+        assert self.operation == 'train' or self.operation == 'eval_run' or self.operation == 'eval_ckpt',\
             "'operation' must be 'train' or 'eval'"
         self.summary = summary
         self.num_weights = 0
@@ -51,8 +51,11 @@ class ConvNet(object):
         self.reuse = None
         # if self.scope == self.params['worker_name'] +'_0/' #or self.scope == 'horovod':# or self.operation == 'eval':
         #     self.reuse = None
-        if self.operation == 'eval':
+        if self.operation == 'eval_run':
             self.reuse = True
+            self.operation == 'eval'
+        elif self.operation == 'eval_ckpt':
+            self.operation == 'eval'
         # elif self.operation == 'eval':
         #     self.reuse = True
         self.bytesize = 2

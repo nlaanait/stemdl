@@ -7,6 +7,7 @@ import json
 import numpy
 from collections import OrderedDict
 import sys
+import re
 
 
 def load_hardware_trace_json(file):
@@ -149,3 +150,39 @@ def calc_flops(timeline, analytical_ops, op_names):
 
     pass
 
+
+def cal_nvprofs_flops(nvprof_csv, runtime=1):
+    """
+    Extract data from nvprof and calculate/return OPS, FLOPS.
+    """
+    p = re.compile(r'Device')
+    with open(nvprof_csv) as f:
+        skip_ln = 0
+        while(True):
+            line = f.readline()
+            match = p.search(line)
+            if match:
+                fields = line
+                skip_ln += 1
+                break
+            if skip_ln > 20:
+                print('The provided file is missing nvprof headers!')
+                break
+            skip_ln += 1
+    fields = fields.split(',')
+    print('Extracted Fields: ')
+    print(fields)
+    arr = np.genfromtxt(nvprof_csv,skip_header=skip_ln, delimiter='Floating Point Operations(Single Precision)',
+                    comments='==',dtype=None, encoding=None)
+    print(arr[0,1].split(','))
+    data = np.array([itm.split(',')[1:] for itm in arr[:,-1]]).astype(np.float64)
+    Min, Max, Avg = data.T
+# #     return Min, Max, Avg
+#     return arr
+    OPS = np.array([Min.sum(), Max.sum(), Avg.sum()])
+    # Return OPS
+    print('Min: %2.3e , Max: %2.3e, Avg: %2.3e  (Total Kernel OPS)'%(OPS[0],OPS[1],OPS[2]))
+    # Return FLOPS
+    FLOPS = OPS/runtime
+    print('Min: %2.3e , Max: %2.3e, Avg: %2.3e  (FLOPS)'%(FLOPS[0], FLOPS[1], FLOPS[2]))
+    return OPS, FLOPS
