@@ -5,7 +5,7 @@ Created on 03/27/18.
 import json
 import numpy
 from collections import OrderedDict
-import joblib
+import multiprocessing as mp
 import sys
 from os import listdir, path
 import re
@@ -173,8 +173,10 @@ def parse_all_timeline_files(folder, prefix='timeline', suffix='.json'):
     tot_times = []
     if len(files) > 16:
         cores = 4
-        values = [joblib.delayed(parse_single_timeline)(curr_file) for curr_file in files]
-        results = joblib.Parallel(n_jobs=cores)(values)
+        pool = mp.Pool(cores)
+        jobs = pool.imap(parse_single_timeline, files)
+        results = [j for j in jobs]
+        pool.close()
         for item in results:
             dicts.append(item[0])
             tot_times.append(item[1])
