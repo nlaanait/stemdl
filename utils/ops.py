@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 
-def load_hardware_trace_json(file):
+def json_to_ordered_dict(file):
     """
     Reads a timeline.json file output by Tensorflow/libcupti and returns and OrderedDict object
     :param file: .json file.
@@ -36,12 +36,12 @@ def get_all_ops(trace_dic):
     Return: list of dictionaries of all ops.
     """
     try:
-        traceEvents = trace_dic['traceEvents']
+        trace_events = trace_dic['traceEvents']
     except KeyError:
         print('Not valid GPU trace dict object.')
         sys.exit()
     all_ops = []
-    for trace in traceEvents:
+    for trace in trace_events:
         try:
             if trace['cat'] == 'Op':
                 all_ops.append(trace)
@@ -57,12 +57,12 @@ def get_stream_all(trace_dic):
     Return: pid of GPU/stream:all, (stream, pid) dictionary
     """
     try:
-        traceEvents = trace_dic['traceEvents']
+        trace_events = trace_dic['traceEvents']
     except KeyError:
         print('Not valid GPU trace dict object.')
         sys.exit()
     all_procs = []
-    for trace in traceEvents:
+    for trace in trace_events:
         try:
             if trace['name'] == 'process_name':
                 all_procs.append((trace['args']['name'], trace['pid']))
@@ -74,17 +74,17 @@ def get_stream_all(trace_dic):
 
 
 def get_unique_ops_names(all_ops):
-    '''
+    """
     Find unique op names.
     Params:
     all_ops: list, of dictionary of all operations.
     Return: list of unique op names.
-    '''
+    """
     return set(op['name'] for op in all_ops)
 
 
-def get_wall_duration(op_names, all_ops, pid_list=[11, 7, 13, 15, 9]):
-    '''
+def get_wall_duration(op_names, all_ops, pid_list=(11, 7, 13, 15, 9)):
+    """
     Calculates wall duration for each op in op_names.
     Params:
     op_names: list (str), names of ops of interest.
@@ -92,7 +92,7 @@ def get_wall_duration(op_names, all_ops, pid_list=[11, 7, 13, 15, 9]):
     all_ops: output of get_all_ops().
     Return:
     total wall duration, dict['op'] = wall duration.
-    '''
+    """
     # 1. Construct dictionary of op with name matching op_names
     ops_dic = OrderedDict()
     for name in op_names:
@@ -145,7 +145,7 @@ def parse_single_timeline(curr_file):
     :return dicts: OrderedDict object with time per op. Times in msec
     :return tot_times: Number - total wall time per step. Time in msec
     """
-    dic = load_hardware_trace_json(curr_file)
+    dic = json_to_ordered_dict(curr_file)
     all_ops = get_all_ops(dic)
     unique_op_names = get_unique_ops_names(all_ops)
     proc_dic, stream_all_pid = get_stream_all(dic)
@@ -187,7 +187,7 @@ def parse_all_timeline_files(folder, prefix='timeline', suffix='.json'):
     return dicts, tot_times
 
 
-def visualize_times(dicts, tot_times, do_hists=True, nrows=3, ncols=3):
+def visualize_op_times(dicts, tot_times, do_hists=True, nrows=3, ncols=3):
     """
     Plots the total time, time taken by the N-1 most time consuming ops
 
@@ -300,3 +300,99 @@ def cal_nvprofs_flops(nvprof_csv, runtime=1):
     FLOPS = OPS/runtime
     print('Min: %2.3e , Max: %2.3e, Avg: %2.3e  (FLOPS)'%(FLOPS[0], FLOPS[1], FLOPS[2]))
     return OPS, FLOPS
+
+
+# http://imatge-upc.github.io/telecombcn-2016-dlcv/slides/D2L1-memory.pdf
+
+def conv(inputs, params, bytesize):
+    # NCHW not NHWC
+    num_weights = np.prod(params['kernel'] + [params['features'], inputs[1]])
+    outputs = tuple([inputs[0], params['features'], inputs[2] // params['stride'][0], inputs[3] // params['stride'][1]])
+    mem = np.prod(outputs) * bytesize
+    this_ops = np.prod(params['kernel'] + list(inputs[1:]) + [params['features']])
+    return outputs, num_weights, mem, this_ops
+
+
+def linear(inputs, params, bytesize):
+    if len(inputs) == 4:
+        inputs = (inputs[0], np.prod(inputs[1:]))
+    outputs = (inputs[0], params['bias'])
+    num_weights = params['bias'] + np.prod([params['bias'], inputs[1]]) + batch_norm(inputs)
+    mem = np.prod(outputs) * bytesize
+    this_ops = inputs[1] * params['weights']
+    return outputs, num_weights, mem, this_ops
+
+
+def pool(inputs, params, bytesize):
+    outputs = (inputs[0], inputs[1], inputs[2] // params['stride'][0], inputs[3] // params['stride'][1])
+    mem = np.prod(outputs) * bytesize
+    return outputs, 0, mem, 0
+
+
+def residual(orig_inputs, params, bytesize):
+    weights = 0
+    mem = 0
+    ops = 0
+    inputs = orig_inputs
+    for layer_name, layer_params in list(params.items()):
+        if not layer_name.startswith('conv'):
+            continue
+        outputs, curr_weights, curr_mem, curr_ops = conv(inputs, layer_params, bytesize)
+        weights += curr_weights + batch_norm(outputs)
+        mem += curr_mem
+        ops += curr_ops
+        # print('\t%s - %s, weights: %3.1e, memory: %3.1f MB, ops: %3.1e' % \
+        # (layer_name, outputs, curr_weights, curr_mem / 1024**2, curr_ops))
+        inputs = outputs
+    # last conv for
+    if outputs != orig_inputs:
+        shortcut_parms = {"kernel": [1, 1], "features": outputs[1], "batch_norm": True, "stride": [1, 1]}
+        orig_inputs, curr_weights, curr_mem, curr_ops = conv(orig_inputs, shortcut_parms, bytesize)
+        weights += curr_weights
+        mem += curr_mem
+        ops += curr_ops
+    return outputs, weights, mem, ops
+
+
+def batch_norm(inputs):
+    return 2 * inputs[1]
+
+
+def calculate_network(inputs, network, is_fp16=False):
+    bytesize = 4
+    if is_fp16:
+        bytesize = 2
+
+    readouts = []
+    tot_weights = 0
+    tot_mem = np.prod(inputs) * bytesize
+    tot_ops = 0
+
+    print('Inputs: %s, memory: %3.1f MB' % (inputs, tot_mem / 1024 ** 2))
+    for layer_name, layer_params in list(network.items()):
+        # print('-------------------------')
+        # print(layer_name, layer_params)
+        if layer_params['type'] == 'convolutional':
+            func = conv
+        elif layer_params['type'] == 'pooling':
+            func = pool
+        elif layer_params['type'] in ['fully_connected', 'linear_output']:
+            func = linear
+        elif layer_params['type'] == 'residual':
+            func = residual
+        else:
+            print('Unrecognized layer type ' + layer_params['type'])
+            break
+        outputs, weights, mem, this_ops = func(inputs, layer_params, bytesize)
+        print('%s - %s, weights: %d, memory: %3.1f MB, ops: %3.1e' % (
+        layer_name, outputs, weights, mem / 1024 ** 2, this_ops))
+        inputs = outputs
+        tot_ops += this_ops
+        tot_mem += mem
+        tot_weights += weights
+        readouts.append([layer_name, outputs, weights, mem, this_ops])
+    print('Total # of layers: %d,  weights: %3.1e, memory: %s MB, ops: %3.2e \n' % (len(network),
+                                                                                    tot_weights,
+                                                                                    tot_mem / 1024 ** 2,
+                                                                                    tot_ops))
+    return readouts, tot_weights, tot_mem, tot_ops
