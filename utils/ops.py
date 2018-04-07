@@ -267,14 +267,14 @@ def calc_flops(timeline, analytical_ops, op_names):
     pass
 
 
-def cal_nvprofs_flops(nvprof_csv, runtime=1):
+def parse_nvprof_csv(nvprof_csv):
     """
     Extract data from nvprof and calculate/return OPS, FLOPS.
     """
     p = re.compile(r'Device')
     with open(nvprof_csv) as f:
         skip_ln = 0
-        while(True):
+        while (True):
             line = f.readline()
             match = p.search(line)
             if match:
@@ -286,22 +286,83 @@ def cal_nvprofs_flops(nvprof_csv, runtime=1):
                 break
             skip_ln += 1
     fields = fields.split(',')
-    print('Extracted Fields: ')
-    print(fields)
-    arr = np.genfromtxt(nvprof_csv,skip_header=skip_ln, delimiter='Floating Point Operations(Single Precision)',
-                    comments='==',dtype=None, encoding=None)
-    print(arr[0,1].split(','))
-    data = np.array([itm.split(',')[1:] for itm in arr[:,-1]]).astype(np.float64)
-    Min, Max, Avg = data.T
-# #     return Min, Max, Avg
-#     return arr
-    OPS = np.array([Min.sum(), Max.sum(), Avg.sum()])
-    # Return OPS
-    print('Min: %2.3e , Max: %2.3e, Avg: %2.3e  (Total Kernel OPS)'%(OPS[0],OPS[1],OPS[2]))
-    # Return FLOPS
-    FLOPS = OPS/runtime
-    print('Min: %2.3e , Max: %2.3e, Avg: %2.3e  (FLOPS)'%(FLOPS[0], FLOPS[1], FLOPS[2]))
-    return OPS, FLOPS
+    # Now that the number of header rows are known, the rest can be extracted easily
+    arr = np.genfromtxt(nvprof_csv, skip_header=skip_ln, delimiter='Floating Point Operations(Single Precision)',
+                        comments='==', dtype=None, encoding=None)
+
+    logs = dict()
+    # it would have been easier if we could use pandas dataframes but that's not available
+    for lhs, rhs in arr:
+        lhs_splits = lhs.split(',')
+        rhs_splits = rhs.split(',')
+        logs[','.join(lhs_splits[1:-3])] = {'invocations': int(lhs_splits[-3]),
+                                            'min_ops': int(float(rhs_splits[1])),
+                                            'max_ops': int(float(rhs_splits[2])),
+                                            'avg_ops': int(float(rhs_splits[3]))}
+    return logs
+
+
+def sum_nvprof_ops(nvprof_dict):
+    sum_min = 0
+    sum_max = 0
+    sum_avg = 0
+    for key, val in nvprof_dict.items():
+        sum_min += val['min_ops']
+        sum_max += val['max_ops']
+        sum_avg += val['avg_ops']
+    return sum_min, sum_max, sum_avg
+
+
+def cluster_nvprof_ops(nvprof_dict, verbose=False):
+    translation = {'convolve_sgemm': 'conv', 'volta_gcgemm': 'volta_gcgemm', 'relu': 'relu',
+                   'fft2d_r2c': 'fft2d_r2c', 'fft2d_c2r': 'fft2d_c2r',
+                   'EigenMetaKernel<Eigen::TensorEvaluator': 'EigenMetaKernel<Eigen::TensorEvaluator',
+                   'stridedB': 'volta_scudnn_stridedB_splitK', 'gcgemm': 'volta_gcgemm_nt',
+                   'cgemm': 'volta_cgemm_tn', 'cudnn::detail::wgrad_alg0_engine': 'cudnn::detail::wgrad_alg0_engine',
+                   'volta_sgemm': 'volta_sgemm', 'void cudnn::detail::dgrad_engine': 'void cudnn::detail::dgrad_engine',
+                   'void DSE::vector_fft': 'void DSE::vector_fft',
+                   'void pooling_bw_kernel_max_nchw': 'void pooling_bw_kernel_max_nchw',
+                   'pooling_bw_kernel': 'pooling_bw_kernel', 'pooling_fw': 'pooling_fw',
+                   'winograd_nonfused': 'winograd_nonfused', 'regular_fft': 'regular_fft', 'bn_bw': 'batch_norm_bw',
+                   'bn_fw': 'batch_norm_forward', }
+    new_dict = dict()
+    count = 0
+    for key, val in nvprof_dict.items():
+        grouped = False
+        new_val = val.copy()
+        for spec_name, gen_name in translation.items():
+            if spec_name in key and not grouped:
+                if verbose:
+                    print(key[:30] + ' >> contains >> ' + spec_name)
+                old_val = new_dict.get(gen_name, None)
+                if old_val is not None:
+                    if verbose:
+                        print('existing entry:', old_val)
+                        print('current entry:', new_val)
+                    for prop_name in ['min_ops', 'max_ops', 'avg_ops', 'invocations']:
+                        new_val[prop_name] += old_val[prop_name]
+                else:
+                    if verbose:
+                        print('no prior entry found. Using current entry:', new_val)
+                new_dict[gen_name] = new_val
+                grouped = True
+                count += 1
+        if not grouped:
+            if verbose:
+                print('Could not group key:', key)
+            new_dict[key] = new_val
+        if verbose:
+            print('')
+    print('Collapsed {} of {} entries'.format(count, len(nvprof_dict)))
+    return new_dict
+
+
+def sort_nvprof_dict(nvprof_dict, sort_key='avg_ops'):
+    new_dict = dict()
+    for key, val_dict in nvprof_dict.items():
+        new_dict[key] = val_dict[sort_key]
+    sorted_dict = sorted(new_dict.items(), key=lambda x: x[1])[::-1]
+    return OrderedDict(sorted_dict)
 
 
 # http://imatge-upc.github.io/telecombcn-2016-dlcv/slides/D2L1-memory.pdf
@@ -360,7 +421,7 @@ def batch_norm(inputs):
     return 2 * inputs[1]
 
 
-def calculate_network_complexity(inputs, network, is_fp16=False):
+def calculate_network_complexity(inputs, network, is_fp16=False, verbose=False):
     bytesize = 4
     if is_fp16:
         bytesize = 2
@@ -370,7 +431,8 @@ def calculate_network_complexity(inputs, network, is_fp16=False):
     tot_mem = np.prod(inputs) * bytesize
     tot_ops = 0
 
-    print('Inputs: %s, memory: %3.1f MB' % (inputs, tot_mem / 1024 ** 2))
+    if verbose:
+        print('Inputs: %s, memory: %3.1f MB' % (inputs, tot_mem / 1024 ** 2))
     for layer_name, layer_params in list(network.items()):
         # print('-------------------------')
         # print(layer_name, layer_params)
@@ -386,16 +448,16 @@ def calculate_network_complexity(inputs, network, is_fp16=False):
             print('Unrecognized layer type ' + layer_params['type'])
             break
         outputs, weights, mem, this_ops = func(inputs, layer_params, bytesize)
-        print('%s - %s, weights: %d, memory: %3.1f MB, ops: %3.1e' % (
-        layer_name, outputs, weights, mem / 1024 ** 2, this_ops))
+        if verbose:
+            print('%s - %s, weights: %d, memory: %3.1f MB, ops: %3.1e' % (
+                  layer_name, outputs, weights, mem / 1024 ** 2, this_ops))
         inputs = outputs
         tot_ops += this_ops
         tot_mem += mem
         tot_weights += weights
         layer_stats.append({'name': layer_name, 'shape': outputs, 'weights': weights, 'memory': mem, 'ops': this_ops,
                             'type': layer_params['type']})
-    print('Total # of layers: %d,  weights: %3.1e, memory: %s MB, ops: %3.2e \n' % (len(network),
-                                                                                    tot_weights,
-                                                                                    tot_mem / 1024 ** 2,
-                                                                                    tot_ops))
+    if verbose:
+        print('Total # of layers: %d,  weights: %3.1e, memory: %s MB, ops: %3.2e \n' % (len(network), tot_weights,
+                                                                                        tot_mem / 1024 ** 2, tot_ops))
     return layer_stats, tot_weights, tot_mem, tot_ops
