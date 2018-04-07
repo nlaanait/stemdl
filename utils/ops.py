@@ -3,7 +3,7 @@ Created on 03/27/18.
 @author: Numan Laanait, Suhas Somnath
 """
 import json
-import numpy
+import numpy as np
 from collections import OrderedDict
 import multiprocessing as mp
 import sys
@@ -360,12 +360,12 @@ def batch_norm(inputs):
     return 2 * inputs[1]
 
 
-def calculate_network(inputs, network, is_fp16=False):
+def calculate_network_complexity(inputs, network, is_fp16=False):
     bytesize = 4
     if is_fp16:
         bytesize = 2
 
-    readouts = []
+    layer_stats = []
     tot_weights = 0
     tot_mem = np.prod(inputs) * bytesize
     tot_ops = 0
@@ -392,9 +392,10 @@ def calculate_network(inputs, network, is_fp16=False):
         tot_ops += this_ops
         tot_mem += mem
         tot_weights += weights
-        readouts.append([layer_name, outputs, weights, mem, this_ops])
+        layer_stats.append({'name': layer_name, 'shape': outputs, 'weights': weights, 'memory': mem, 'ops': this_ops,
+                            'type': layer_params['type']})
     print('Total # of layers: %d,  weights: %3.1e, memory: %s MB, ops: %3.2e \n' % (len(network),
                                                                                     tot_weights,
                                                                                     tot_mem / 1024 ** 2,
                                                                                     tot_ops))
-    return readouts, tot_weights, tot_mem, tot_ops
+    return layer_stats, tot_weights, tot_mem, tot_ops
