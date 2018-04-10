@@ -372,7 +372,8 @@ def conv(inputs, params, bytesize):
     num_weights = np.prod(params['kernel'] + [params['features'], inputs[1]])
     outputs = tuple([inputs[0], params['features'], inputs[2] // params['stride'][0], inputs[3] // params['stride'][1]])
     mem = np.prod(outputs) * bytesize
-    this_ops = np.prod(params['kernel'] + list(inputs[1:]) + [params['features']])
+    # account for the stride as well!
+    this_ops = np.prod(list(params['kernel']) + [inputs[1]] + list(outputs[2:]) + [params['features']])
     return outputs, num_weights, mem, this_ops
 
 
