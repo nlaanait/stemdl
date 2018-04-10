@@ -345,7 +345,8 @@ class ConvNet(object):
         # batch * width * height * in_channels * kern_h * kern_w * features
         # input = batch_size (ignore), channels, height, width
         # http://imatge-upc.github.io/telecombcn-2016-dlcv/slides/D2L1-memory.pdf
-        this_ops = np.prod(params['kernel'] + input.get_shape().as_list()[1:] + [features])
+
+        this_ops = np.prod(params['kernel'] + output.get_shape().as_list()[1:] + [input.get_shape().as_list()[1]])
         if verbose:
             self.print_rank('\tops: %3.2e' % (this_ops))
         """
