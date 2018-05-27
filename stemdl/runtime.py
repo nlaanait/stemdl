@@ -634,7 +634,7 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=300,
         # Copy images from host to device
         gpucopy_op, (images, labels) = dset.stage([images, labels])
         IO_ops = [staging_op, gpucopy_op]
-        
+
     with tf.variable_scope('horovod', reuse=tf.AUTO_REUSE) as scope:
         # Setup Neural Net
         n_net = network.ResNet(scope, params, hyper_params, network_config, tf.cast(images, tf.float32),
