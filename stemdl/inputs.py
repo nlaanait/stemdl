@@ -74,6 +74,8 @@ class DatasetTFRecords(object):
         elif self.dataset is None:
             self.features_specs = None
 
+    def set_mode(self,mode='train'):
+        self.mode = mode
 
     def decode_image_label(self, record):
         """

@@ -547,11 +547,11 @@ def train_horovod_mod(network_config, hyper_params, params):
         # Here we do validation:
         if train_elf.elapsed_epochs > next_validation_epoch:
             # do validation over 300 batches.
-            validate(hyper_params, params, network_config, sess)
+            validate(hyper_params, params, network_config, sess, dset)
             next_validation_epoch += params['epochs_per_validation']
 
 
-def validate(hyper_params, params, network_config, sess, num_batches=300):
+def validate(hyper_params, params, network_config, sess, dset, num_batches=300):
     """
     Runs validation with current weights
     :param params:
@@ -563,7 +563,8 @@ def validate(hyper_params, params, network_config, sess, num_batches=300):
     """
     print_rank("Running Validation over %d batches..." % num_batches)
     # Get Test data
-    images, labels = inputs.minibatch(params['batch_size'], params, mode='test')
+    dset.set_mode(mode='test')
+    images, labels = dset.minibatch()
 
     with tf.variable_scope('horovod', reuse=True) as _:
         # Setup Neural Net
@@ -621,16 +622,19 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=300,
     sess = tf.Session(config=config)
 
     # Get Test data
-    with tf.name_scope('Input') as _:
-        images, labels = inputs.minibatch(params['batch_size'], params, mode='test')
-        # Staging images on host
-        staging_op, (images, labels) = inputs.stage([images, labels])
+
+    with tf.device(params['CPU_ID']):
+        with tf.name_scope('Input') as _:
+            dset = inputs.DatasetTFRecords(params, dataset=params['dataset'], mode='test')
+            images, labels = dset.minibatch()
+            # Staging images on host
+            staging_op, (images, labels) = dset.stage([images, labels])
 
     with tf.device('/gpu:%d' % hvd.local_rank()):
         # Copy images from host to device
-        gpucopy_op, (images, labels) = inputs.stage([images, labels])
+        gpucopy_op, (images, labels) = dset.stage([images, labels])
         IO_ops = [staging_op, gpucopy_op]
-
+        
     with tf.variable_scope('horovod', reuse=tf.AUTO_REUSE) as scope:
         # Setup Neural Net
         n_net = network.ResNet(scope, params, hyper_params, network_config, tf.cast(images, tf.float32),
