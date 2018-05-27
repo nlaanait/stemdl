@@ -20,7 +20,7 @@ def write_json_network_config(file, layer_keys, layer_params):
     assert len(layer_keys) == len(layer_params), '# of layer names and # of layer parameter dictionaries do not match!'
     network_config = OrderedDict(zip(layer_keys, layer_params))
     with open(file, mode='w') as f:
-        json.dump(network_config, f, indent="\t")
+        json.dump(network_config, f, indent=4)
     print('Wrote %d NN layers to %s' % (len(network_config.keys()), file))
 
 
@@ -52,8 +52,9 @@ def write_json_hyper_params(file, hyper_params):
     :param hyper_params: dict, hyper-paramters.
     :return: None
     """
+
     with open(file, mode='w') as f:
-        json.dump(hyper_params, f, indent="\t")
+        json.dump(hyper_params, f, indent=4)
     print('Wrote %d hyperparameters to %s' % (len(hyper_params.keys()), file))
 
 
@@ -69,3 +70,56 @@ def load_json_hyper_params(file):
     return hyper_params
 
 
+def load_flags_from_simple_json(file_path, flags, verbose=False):
+    image_parms = load_json_hyper_params(file_path)
+    for parm_name in image_parms.keys():
+        val = image_parms[parm_name]
+        if verbose:
+            print('\t{}: {}'.format(parm_name, val))
+        if isinstance(val, bool):
+            dtype = 'boolean'
+            func = flags.DEFINE_boolean
+        elif isinstance(val, int):
+            dtype ='integer'
+            func = flags.DEFINE_integer
+        elif isinstance(val, float):
+            dtype = 'float'
+            func = flags.DEFINE_float
+        elif type(val) in [str, unicode]:
+            dtype = 'string'
+            func = flags.DEFINE_string
+        else:
+            raise NotImplemented('{} : {} of type that we cannot handle now'.format(parm_name, val))
+        if verbose:
+            print('{} : {} saved as {}'.format(parm_name, val, dtype))
+        func(parm_name, val, """""")
+
+
+def get_dict_from_json(file_path):
+    json_dict = load_json_hyper_params(file_path)
+    new_dict = dict()
+    for key, val in json_dict.items():
+        assert isinstance(val, dict)
+        new_dict[key] = val['value']
+    return new_dict
+
+
+def load_flags_from_json(file_path, flags, verbose=False):
+    image_parms = load_json_hyper_params(file_path)
+    for parm_name, parm_values in list(image_parms.items()):
+        if verbose:
+            print('\t{}: {}'.format(parm_name, parm_values))
+        if parm_values['type'] == 'bool':
+            func = flags.DEFINE_boolean
+        elif parm_values['type'] == 'int':
+            func = flags.DEFINE_integer
+        elif parm_values['type'] == 'float':
+            func = flags.DEFINE_float
+        elif parm_values['type'] == 'str':
+            func = flags.DEFINE_string
+        else:
+            raise NotImplemented('Cannot handle type: {} for parameter: {}'.format(parm_values['type'], parm_name))
+        if verbose:
+            print('{} : {} saved as {} with description: {}'.format(parm_name, parm_values['value'],
+                                                                    parm_values['type'], parm_values['desc']))
+        func(parm_name, parm_values['value'], parm_values['desc'])

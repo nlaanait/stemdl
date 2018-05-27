@@ -1,0 +1,13 @@
+{
+	"moving_average_decay": 0.9999,
+	"weight_decay": 0.0001,
+	"num_epochs_per_decay": 3,
+	"warm_up_max_learning_rate": 0.001,
+	"network_type": "classifier",
+	"learning_rate_decay_factor": 0.5,
+	"optimization": "SGD",
+	"num_epochs_per_ramp": 10,
+	"num_epochs_in_warm_up": 100,
+	"warm_up": false,
+	"initial_learning_rate": 0.1
+}
