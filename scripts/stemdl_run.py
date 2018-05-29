@@ -182,7 +182,7 @@ def main():
 
     # train or evaluate
     if params['mode'] == 'train':
-        runtime.train_horovod_mod(network_config, hyper_params, params['data_dir'], params, num_GPUS=params['num_gpus'])
+        runtime.train_horovod_mod(network_config, hyper_params, params)
     elif params['mode'] == 'eval':
         params[ 'IMAGE_FP16' ] = False
         runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, sleep=0)
