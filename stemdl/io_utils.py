@@ -1,6 +1,6 @@
 """
 Created on 10/8/17.
-@author: Numan Laanait.
+@author: Numan Laanait, Mike Matheson
 email: laanaitn@ornl.gov
 """
 from collections import OrderedDict
@@ -8,6 +8,11 @@ import json
 
 # JSON utility functions
 
+import horovod.tensorflow as hvd
+
+def print_rank(self, *args, **kwargs):
+   if hvd.rank() == 0 :
+       print(*args, **kwargs)
 
 def write_json_network_config(file, layer_keys, layer_params):
     """
@@ -41,7 +46,7 @@ def load_json_network_config(file):
         output = json.load(f, object_hook=_as_ordered_dict, object_pairs_hook=_as_ordered_dict)
         network_config = OrderedDict(output)
 
-    print('Read %d NN layers from %s' % (len(network_config.keys()), file))
+    print_rank('Read %d NN layers from %s' % (len(network_config.keys()), file))
     return network_config
 
 
@@ -66,7 +71,8 @@ def load_json_hyper_params(file):
     """
     with open(file, mode='r') as f:
         hyper_params = json.load(f)
-    print('Read %d hyperparameters from %s' % (len(hyper_params.keys()), file))
+
+    print_rank('Read %d hyperparameters from %s' % (len(hyper_params.keys()), file))
     return hyper_params
 
 

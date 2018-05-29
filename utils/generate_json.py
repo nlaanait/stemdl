@@ -8,7 +8,7 @@ from collections import OrderedDict
 import sys
 sys.path.append('../')
 from stemdl import io_utils
-
+import numpy as np
 
 #################################
 # templates for network_config  #
@@ -123,10 +123,139 @@ def generate_vgg_net_json(num_layers=16, output_features=4):
     io_utils.write_json_network_config('network_VGGNet_' + str(num_layers) + '_w_batch_norm.json', vgg_names, vgg_parms)
 
 
+###############
+# FC_DenseNet #
+##############
+
+def generate_fcdensenet_json(random=False, growth_rate=64, kernel= [5,5], n_pool= 5, n_layers= 2, model= 'FCDenseNet_custom', output_channels=256, dropout_prob=0.2, name='', save=True):
+    DB_conv_kernel = [3, 3]
+    if model == 'FC-DenseNet56':
+        n_pool=5
+        growth_rate=12
+        n_layers_per_block=4
+    elif model == 'FC-DenseNet67':
+        n_pool=5
+        growth_rate=16
+        n_layers_per_block=5
+    elif model == 'FC-DenseNet103':
+        n_pool=5
+        growth_rate=16
+        n_layers_per_block=[4, 5, 7, 10, 12, 15, 12, 10, 7, 5, 4]
+    elif model == 'FC-DenseNet103_custom':
+        n_pool=5
+        growth_rate=32
+        n_layers_per_block=[2, 2, 2, 4, 5, 5, 5, 4, 2, 2, 2]
+        # n_layers_per_block=3
+        DB_conv_kernel = [5, 5]
+    elif model == 'FCDenseNet_custom_18TF':
+        n_pool=5
+        growth_rate=64
+        n_layers_per_block=[2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+        # n_layers_per_block=3
+        DB_conv_kernel = [7, 7]
+    elif model == 'FCDenseNet_custom':
+        if random:
+            n_pool= 3
+            num_db = np.random.randint(1, 6, size=4)
+            n_layers = np.append(num_db, num_db[::-1][1:])
+            n_layers_per_block = [int(itm) for itm in n_layers]
+            kernel_w = np.array([3,5,7])[np.random.randint(3,size=1)[0]]
+            DB_conv_kernel = [int(kernel_w), int(kernel_w)]
+            growth_rate = int(np.array([64,128,256])[np.random.randint(3,size=1)[0]])
+        else:
+            n_pool=n_pool
+            growth_rate=growth_rate
+            n_layers_per_block=n_layers
+            # n_layers_per_block=3
+            DB_conv_kernel = kernel
+            # 25 TFLOPS: kernel=5, growth=128, pool=3, layers=2
+    if type(n_layers_per_block) == int:
+        n_layers_per_block = [n_layers_per_block] * (2 * n_pool + 1)
+
+    std_conv = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': DB_conv_kernel, 'features': growth_rate,
+                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': False})
+    deconv = OrderedDict({'type': ''})
+    layer = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': DB_conv_kernel, 'features': growth_rate,
+                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout':dropout_prob})
+    pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
+
+
+    layers_params_list = []
+    layers_keys_list = []
+
+    # 3x3 conv
+    layers_params_list.append(std_conv)
+    layers_keys_list.append('CONV_INIT')
+    n_filters = std_conv['features']
+
+    # Transition Down
+    for i in range(n_pool):
+        # Dense Block
+        conv_layers = []
+        for j in range(n_layers_per_block[i]):
+            conv_layers.append(('conv_%s'%j, layer))
+
+        conv_layers = OrderedDict(conv_layers)
+        DB = OrderedDict({'type': 'dense_block_down', 'conv':conv_layers})
+        layers_params_list.append(DB)
+        layers_keys_list.append('DB_'+str(i))
+        n_filters += growth_rate * n_layers_per_block[i]
+        n_filters -= n_filters % 8
+        # Transition Down
+        TD = OrderedDict({'type': "transition_down", 'conv':
+                                {'type': 'convolutional', 'stride': [1, 1], 'kernel': [1, 1],
+                                'features': n_filters,
+                                'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout':dropout_prob},
+                                'pool':pool})
+        layers_params_list.append(TD)
+        layers_keys_list.append('TD_'+str(i))
+
+    # Bottleneck
+    conv_layers = []
+    for j in range(n_layers_per_block[n_pool]):
+        conv_layers.append(('conv_%s'%j, layer))
+
+    conv_layers = OrderedDict(conv_layers)
+    DB = OrderedDict({'type': 'dense_block_bottleneck', 'conv':conv_layers})
+    layers_params_list.append(DB)
+    layers_keys_list.append('DB_'+str(i+1))
+    offset = i+2
+
+    # Transition Up
+    for i in range(n_pool):
+        n_filters_keep = growth_rate * n_layers_per_block[n_pool + i]
+        n_filters_keep -= n_filters % 8
+        TU = OrderedDict({'type': "transition_up", 'deconv':
+                                {'type': 'deconvolutional', 'stride': [2, 2], 'kernel': [3, 3],
+                                'features': n_filters_keep,'padding': 'SAME', 'upsample':pool['kernel'][0]}
+                                })
+        layers_params_list.append(TU)
+        layers_keys_list.append('TU_'+str(i))
+        # Dense Block
+        conv_layers = []
+        for j in range(n_layers_per_block[n_pool + i + 1]):
+            conv_layers.append(('conv_%s'%j, layer))
+
+        conv_layers = OrderedDict(conv_layers)
+        DB = OrderedDict({'type': 'dense_block_up', 'conv':conv_layers})
+        layers_params_list.append(DB)
+        layers_keys_list.append('DB_'+str(offset+i))
+
+    # 1x1 conv
+    conv_1by1 = OrderedDict({'type': 'convolutional', 'stride': [1, 1], 'kernel': [1, 1], 'features': output_channels,
+                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': False})
+    layers_params_list.append(conv_1by1)
+    layers_keys_list.append('CONV_FIN')
+
+    # write to json_dict
+    if save:
+        io_utils.write_json_network_config('network_'+ model + '.json', layers_keys_list, layers_params_list)
+    print('growth_rate=%s,kernel=%s,n_layers=%s' %(format(growth_rate),format(DB_conv_kernel),format(n_layers_per_block)))
+#return OrderedDict(zip(layers_keys_list,layers_params_list))
+
 # ########
 # ResNet #
 # ########
-
 
 def generate_res_net_json(num_layers=18, output_features=4):
 
@@ -249,5 +378,11 @@ hyper_params_classification = {'network_type': 'classifier',  # 'network_type': 
                                'moving_average_decay': 0.9999}
 
 if __name__ == '__main__':
-    io_utils.write_json_hyper_params('hyper_params_classifier_VGG16.json', hyper_params_classification)
-    _ = io_utils.load_json_hyper_params('hyper_params_classifier_VGG16.json')
+    args = sys.argv
+    if len(args) > 1:
+        generate_fcdensenet_json(random=True)
+        #generate_fcdensenet_json(growth_rate= int(args[1]), kernel=[int(args[2]), int(args[2])], n_pool=int(args[3]), n_layers=int(args[4]))
+    else:
+        generate_fcdensenet_json()
+    # io_utils.write_json_hyper_params('hyper_params_classifier_VGG16.json', hyper_params_classification)
+    # _ = io_utils.load_json_hyper_params('hyper_params_classifier_VGG16.json')

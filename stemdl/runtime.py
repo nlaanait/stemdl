@@ -551,7 +551,7 @@ def train_horovod_mod(network_config, hyper_params, params):
             next_validation_epoch += params['epochs_per_validation']
 
 
-def validate(hyper_params, params, network_config, sess, dset, num_batches=300):
+def validate(network_config, hyper_params, params, sess, dset, num_batches=300):
     """
     Runs validation with current weights
     :param params:
