@@ -273,8 +273,8 @@ def generate_res_net_json(num_layers=18, output_features=4):
                               'padding': 'SAME'})
     avg_pool_7 = OrderedDict({'type': 'pooling', 'stride': [7, 7], 'kernel': [7, 7], 'pool_type': 'avg',
                               'padding': 'SAME'})
-    fully_connected = OrderedDict({'type': 'fully_connected', 'weights': 1000, 'bias': 1000, 'activation': 'relu',
-                                   'regularize': True})
+    # fully_connected = OrderedDict({'type': 'fully_connected', 'weights': 1000, 'bias': 1000, 'activation': 'relu',
+    #                                'regularize': True})
     linear_output = OrderedDict({'type': 'linear_output', 'weights': output_features, 'bias': output_features,
                                  'regularize': False})
     if num_layers < 50:
@@ -293,6 +293,7 @@ def generate_res_net_json(num_layers=18, output_features=4):
                         ('res2', res_2, 2), ('pool2', max_pool_2, 1),
                         ('res3', res_3, 2), ('pool3', max_pool_2, 1),
                         ('res4', res_4, 2), ('pool4', avg_pool_7, 1),
+                        # ('linear_output', linear_output, 1)]
                         ('linear_output', linear_output, 1)]
         else:  # 34
             sequence = [('conv0', conv_0, 1), ('pool0', pool_0, 1),
@@ -300,6 +301,7 @@ def generate_res_net_json(num_layers=18, output_features=4):
                         ('res2', res_2, 4), ('pool2', max_pool_2, 1),
                         ('res3', res_3, 6), ('pool3', max_pool_2, 1),
                         ('res4', res_4, 3), ('pool4', avg_pool_7, 1),
+                        # ('linear_output', linear_output, 1)]
                         ('linear_output', linear_output, 1)]
     else:
 
