@@ -9,8 +9,6 @@ import multiprocessing as mp
 import sys
 from os import listdir, path
 import re
-import matplotlib.pyplot as plt
-import matplotlib as mpl
 import os
 
 
@@ -188,84 +186,6 @@ def parse_all_timeline_files(folder, prefix='timeline', suffix='.json'):
             tot_times.append(total_dur)
 
     return dicts, tot_times
-
-
-def visualize_op_times(dicts, tot_times, do_hists=True, nrows=3, ncols=3):
-    """
-    Plots the total time, time taken by the N-1 most time consuming ops
-
-    :param dicts: list of OrderedDict objects per timeline file. Times in msec
-    :param tot_times: list of Numbers with the total wall time per step. Times in msec
-    :param do_hists: bool, optional - if True - plots histograms of the times. Else, bar graph
-    :param nrows: int, optional - Number of rows in the plot
-    :param ncols: int, optional - Number of columns in the plot
-    :return: fig: matplotlib.pyplot.Figure object
-    """
-    mpl.rc('figure', figsize=(5, 5))
-    mpl.rc('lines', linewidth=2)
-    mpl.rc('axes', labelsize=16, titlesize=16)
-    mpl.rc('figure', titlesize=20)
-    mpl.rc('font', size=14)  # global font size
-    mpl.rc('legend', fontsize=16, fancybox=True)
-    mpl.rc('xtick.major', size=6)
-    mpl.rc('xtick.minor', size=4)
-
-    if do_hists:
-        y_label = 'Counts'
-        x_label = 'Time (msec)'
-    else:
-        y_label = 'Time (msec)'
-        x_label = 'Horovod Rank'
-
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(3.75 * nrows, 3 * ncols))
-    if do_hists:
-        axes.flat[0].hist(tot_times)
-    else:
-        axes.flat[0].bar(range(len(tot_times)), tot_times)
-    axes.flat[0].set_title('Step time (msec)')
-    axes.flat[0].set_ylabel(y_label)
-    for ind, axis, name in zip(range(1, nrows * ncols), axes.flat[1:], list(dicts[0].keys())[:nrows * ncols - 1]):
-        vals = [x[name] for x in dicts]
-        if do_hists:
-            axis.hist(vals)
-        else:
-            axis.bar(range(len(vals)), vals)
-        axis.set_title(name)
-        if ind % ncols == 0:
-            axis.set_ylabel(y_label)
-        if ind >= (nrows - 1) * ncols:
-            axis.set_xlabel(x_label)
-
-    fig.suptitle('Wall Times', y=1.03)
-    fig.tight_layout()
-
-    return fig
-
-
-def calc_flops(timeline, analytical_ops, op_names):
-    """
-    Calculate FLOPS using duration per OP (from CUPTI) and analytical # of ops
-    :param timeline:
-    :param analytical_ops:
-    :param op_names:
-    :return: Total FLOPS (summed over all ops in op_names), dict['op_name'] = FLOPS
-    """
-
-    # TODO:
-
-    # 1. Need dictionary with keys matching names in op_names that provides the total # of ops.
-
-    # 2. parse timeline with load_hardware_trace_json(file)
-
-    # 3. get all ops info with get_all_ops(trace_dic)
-
-    # 4. get wall duration for each op in op_names with get_wall_duration()
-
-    # 5. divide analytical ops by wall duration for each op in op_names.
-
-    # 6. Return total FLOPS and dictionary with key=op_name and val= FLOPS.
-
-    pass
 
 
 def parse_nvprof_csv(nvprof_csv):

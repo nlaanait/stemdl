@@ -142,10 +142,8 @@ class ConvNet(object):
                         out = self._dropout(input=out, keep_prob= keep_prob, name=scope.name+ '_dropout')
                     if self.summary: self._activation_summary(out)
 
-                if layer_params['type'] == 'linear_output':
+                if layer_params['type'] == 'linear_output' and self.net_type is not 'hybrid' :
                     in_shape = out.get_shape().as_list()
-                    # sometimes the same network json file is used for regression and classification.
-                    # Taking the number of classes from the parameters / flags instead of the network json
                     if layer_params['bias'] != self.params['NUM_CLASSES']:
                         self.print_verbose("Overriding the size of the bias ({}) and weights ({}) with the 'NUM_CLASSES' parm ({})"
                               "".format(layer_params['bias'], layer_params['weights'], self.params['NUM_CLASSES']))
@@ -173,10 +171,10 @@ class ConvNet(object):
                                                                                         self.get_ops()))
 
         # reference the output
-        if self.params['IMAGE_FP16']:
-            self.model_output = tf.cast(out, tf.float32)
-        else:
-            self.model_output = out
+        # if self.params['IMAGE_FP16']:
+        #     self.model_output = tf.cast(out, tf.float32)
+        # else:
+        self.model_output = out
 
     def _compound_layer(self, out, layer_params, scope):
         """
@@ -257,12 +255,23 @@ class ConvNet(object):
         # self.print_verbose('Using default Xavier instead')
         return tf.contrib.layers.xavier_initializer()
 
+
     def get_loss(self):
         with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
+            if self.params['IMAGE_FP16']:
+                self.model_output = self.model_output
             if self.net_type == 'regressor':
-                self._calculate_loss_regressor(self.hyper_params['loss_function'])
+                self._calculate_loss_regressor()
             if self.net_type == 'classifier':
                 self._calculate_loss_classifier()
+            if self.net_type == 'hybrid':
+                self._calculate_loss_hybrid()
+
+    def get_output(self):
+        if self.params['IMAGE_FP16']:
+            self.model_output = tf.cast(self.model_output, tf.float32)
+            return self.model_output
+        return self.model_output
 
     #TODO: return ops per type of layer
     def get_ops(self):
@@ -273,13 +282,36 @@ class ConvNet(object):
         return ops
 
     # Loss calculation and regularization helper methods
-    def _calculate_loss_regressor(self, params):
+
+    def _calculate_loss_hybrid(self):
+        dim = self.labels.get_shape().as_list()[-1]
+        num_classes = self.params['NUM_CLASSES']
+        regress_labels, class_labels = tf.split(self.labels,[dim-num_classes,num_classes],1)
+        outputs = []
+        for layer_name, labels in zip(['linear_output_class', 'linear_output_regress'],
+                                            [class_labels, regress_labels]):
+            with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
+                layer_params={'bias':labels.get_shape().as_list()[-1], 'weights':labels.get_shape().as_list()[-1],
+                    'regularize':True}
+                out = tf.cast(self._linear(input=self.model_output, name=scope.name, params=layer_params), tf.float32)
+                self.print_rank('Output Layer : %s' %format(out.get_shape().as_list()))
+                outputs.append(out)
+        mixing = self.hyper_params['mixing']
+        cost = (1-mixing)*self._calculate_loss_classifier(net_output=outputs[0], labels=class_labels) + \
+                        mixing*self._calculate_loss_regressor(net_output=outputs[1], labels=regress_labels)
+        return cost
+
+    def _calculate_loss_regressor(self, net_output=None, labels=None):
         """
         Calculate the loss objective for regression
         :param params: dictionary, specifies the objective to use
         :return: cost
         """
-        labels = self.labels
+        if net_output is None:
+            net_output = self.get_output()
+        if labels is None:
+            labels = self.labels
+        params = self.hyper_params['loss_function']
         assert params['type'] == 'Huber' or params['type'] == 'MSE',\
             "Type of regression loss function must be 'Huber' or 'MSE'"
         if params['type'] == 'Huber':
@@ -296,29 +328,34 @@ class ConvNet(object):
             if self.summary:
                 tf.summary.scalar('residual_cutoff', residual_tol)
             # calculate the cost
-            cost = tf.losses.huber_loss(labels, predictions=self.model_output, delta=residual_tol,
+            cost = tf.losses.huber_loss(labels, predictions=net_output, delta=residual_tol,
                                         reduction=tf.losses.Reduction.MEAN)
         if params['type'] == 'MSE':
-            cost = tf.losses.mean_squared_error(labels, predictions=self.model_output,
+            cost = tf.losses.mean_squared_error(labels, predictions=net_output,
                                                 reduction=tf.losses.Reduction.MEAN)
 
         return cost
 
-    def _calculate_loss_classifier(self):
+    def _calculate_loss_classifier(self, net_output=None, labels=None):
         """
         Calculate the loss objective for classification
         :param params: dictionary, specifies the objective to use
         :return: cost
         """
-        labels = self.labels
+        if labels is None:
+            labels = self.labels
+        if labels.dtype is not tf.int64:
+            labels = tf.cast(labels, tf.int64)
+        if net_output is None:
+            net_output = self.get_output()
         labels = tf.argmax(labels, axis=1)
         cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
-            labels=labels, logits=self.model_output)
+            labels=labels, logits=net_output)
         cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy')
         precision_1 = tf.scalar_mul(1. / self.params['batch_size'],
-                                    tf.reduce_sum(tf.cast(tf.nn.in_top_k(self.model_output, labels, 1), tf.float32)))
+                                    tf.reduce_sum(tf.cast(tf.nn.in_top_k(net_output, labels, 1), tf.float32)))
         precision_5 = tf.scalar_mul(1. / self.params['batch_size'],
-                                    tf.reduce_sum(tf.cast(tf.nn.in_top_k(self.model_output, labels, 5), tf.float32)))
+                                    tf.reduce_sum(tf.cast(tf.nn.in_top_k(net_output, labels, 5), tf.float32)))
         if self.summary :
             tf.summary.scalar('precision@1_train', precision_1)
             tf.summary.scalar('precision@5_train', precision_5)

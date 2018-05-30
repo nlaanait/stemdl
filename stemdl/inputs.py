@@ -67,7 +67,7 @@ class DatasetTFRecords(object):
         elif self.dataset == 'spacegroup_chemicalcomp':
             self.features_specs = {'specs':spacegroup,
                             'image_keys':['image_raw'],
-                            'label_keys':['chemical_comp', 'spacegroup']}
+                            'label_keys':['chemical_comp', 'space_group']}
         elif self.dataset == '3d_reconstruction':
             self.features_specs = {'image_keys': ['cbed'],
                             'label_keys': ['potential'], 'specs': reconstruction }
@@ -113,12 +113,15 @@ class DatasetTFRecords(object):
                 label = tf.decode_raw(features[label_key], label_dtype)
                 label.set_shape(np.prod(np.array(label_shape)))
                 label = tf.reshape(label, label_shape)
+                if specs[label_key]['dtype'] == 'int64':
+                    label = tf.cast(label, tf.float64)
                 labels.append(label)
-            if len(labels) > 1:
+            if len(labels) == 1:
                 label = labels[0]
             else:
+                label = tf.concat([tf.expand_dims(label, 0) for label in labels], 1)
                 # TODO stack labels and return as one
-                pass
+                # pass
 
             # process images
             images = []
@@ -132,6 +135,7 @@ class DatasetTFRecords(object):
             if len(images) > 1:
                 image = images[0]
             else:
+                image = tf.concat(images, 1)
                 # TODO stack images and return as one
                 pass
         if self.features_specs is None or specs['preprocess']:
@@ -153,10 +157,10 @@ class DatasetTFRecords(object):
                                             [200., 200., 3., 3.], scale_range=[-10., 10.])
 
             #check for nan
-            max_vec = tf.ones([230],dtype=tf.int64)
-            min_vec = tf.zeros([230],dtype=tf.int64)
-            label = tf.where(tf.is_nan(tf.cast(label, tf.float32)), tf.zeros_like(label), label)
-            label = tf.maximum(tf.minimum(label,max_vec),min_vec)
+            # max_vec = tf.ones([230],dtype=tf.int64)
+            # min_vec = tf.zeros([230],dtype=tf.int64)
+            # label = tf.where(tf.is_nan(tf.cast(label, tf.float32)), tf.zeros_like(label), label)
+            # label = tf.maximum(tf.minimum(label,max_vec),min_vec)
 
         return image, label
 
@@ -219,7 +223,7 @@ class DatasetTFRecords(object):
         # Apply random global affine transformations
         # if geometric:
 
-        image = self.rotate_image(image)
+        # image = self.rotate_image(image)
 
         # image = self.glimpse_at_image(image)
 
@@ -314,12 +318,12 @@ class DatasetTFRecords(object):
                 images.append(image)
                 labels.append(label)
             # Stack images and labels back into a single tensor
+            labels = tf.parallel_stack(labels)
             images = tf.parallel_stack(images)
-            labels = tf.concat(labels, 0)
 
             # reshape them to the expected shape:
-            labels = tf.reshape(labels, [-1, self.params['NUM_CLASSES']])
-            images = tf.reshape(images, [-1, self.params['IMAGE_HEIGHT'],
+            labels = tf.reshape(labels, [batch_size, -1])
+            images = tf.reshape(images, [batch_size, self.params['IMAGE_HEIGHT'],
                         self.params['IMAGE_WIDTH'], self.params['IMAGE_DEPTH']])
 
             # glimpse images: moved to GPU

@@ -134,10 +134,10 @@ def main():
     checkpt_dir = params[ 'checkpt_dir' ]
     # Also need a directory within the checkpoint dir for event files coming from eval
     eval_dir = os.path.join( checkpt_dir, '_eval' )
-
-    print( 'Creating checkpoint directory %s' % checkpt_dir )
-    tf.gfile.MakeDirs( checkpt_dir )
-    tf.gfile.MakeDirs( eval_dir )
+    if hvd.rank( ) == 0 :
+        print( 'Creating checkpoint directory %s' % checkpt_dir )
+        tf.gfile.MakeDirs( checkpt_dir )
+        tf.gfile.MakeDirs( eval_dir )
 
     if params[ 'gpu_trace' ] :
         if tf.gfile.Exists( params[ 'trace_dir' ] ) :

@@ -339,7 +339,7 @@ def train_horovod_mod(network_config, hyper_params, params):
                             )
     config.gpu_options.visible_device_list = str(hvd.local_rank())
     config.intra_op_parallelism_threads = 1
-    config.inter_op_parallelism_threads = int(cpu_count()/4)
+    config.inter_op_parallelism_threads = int(cpu_count()/6)
     #config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
     # JIT causes gcc errors on dgx-dl and is built without on Summit.
     sess = tf.Session(config=config)
@@ -372,6 +372,7 @@ def train_horovod_mod(network_config, hyper_params, params):
         with tf.name_scope('Input') as _:
             dset = inputs.DatasetTFRecords(params, dataset=params['dataset'])
             images, labels = dset.minibatch()
+            print("shape of labels %s" %format(labels.get_shape()))
             # Staging images on host
             staging_op, (images, labels) = dset.stage([images, labels])
 
@@ -574,9 +575,9 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=300):
         # Build it and propagate images through it.
         n_net.build_model()
 
-        logits = n_net.model_output
+        logits = n_net.get_output()
 
-        if params['network_type'] == 'regressor':
+        if hyper_params['network_type'] == 'regressor':
             validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
 
             # Average validation error over the batches
@@ -643,7 +644,7 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=300,
         # Build it and propagate images through it.
         n_net.build_model()
 
-        logits = n_net.model_output
+        logits = n_net.get_output()
 
     # Initialize variables
     init_op = tf.global_variables_initializer()
