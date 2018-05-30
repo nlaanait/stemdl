@@ -372,7 +372,6 @@ def train_horovod_mod(network_config, hyper_params, params):
         with tf.name_scope('Input') as _:
             dset = inputs.DatasetTFRecords(params, dataset=params['dataset'])
             images, labels = dset.minibatch()
-            print("shape of labels %s" %format(labels.get_shape()))
             # Staging images on host
             staging_op, (images, labels) = dset.stage([images, labels])
 
