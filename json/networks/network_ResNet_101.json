@@ -1663,15 +1663,8 @@
             7
         ]
     }, 
-    "fc": {
-        "regularize": true, 
-        "weights": 1000, 
-        "activation": "relu", 
-        "bias": 1000, 
-        "type": "fully_connected"
-    }, 
     "linear_output": {
-        "regularize": false, 
+        "regularize": true, 
         "weights": 4, 
         "bias": 4, 
         "type": "linear_output"

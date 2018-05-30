@@ -2479,13 +2479,6 @@
             7
         ]
     }, 
-    "fc": {
-        "regularize": true, 
-        "weights": 1000, 
-        "activation": "relu", 
-        "bias": 1000, 
-        "type": "fully_connected"
-    }, 
     "linear_output": {
         "regularize": false, 
         "weights": 4, 

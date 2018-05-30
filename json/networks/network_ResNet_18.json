@@ -343,15 +343,8 @@
 			7
 		]
 	},
-	"fc": {
-		"activation": "relu",
-		"type": "fully_connected",
-		"bias": 1000,
-		"weights": 1000,
-		"regularize": true
-	},
 	"linear_output": {
-		"regularize": false,
+		"regularize": true,
 		"type": "linear_output",
 		"bias": 27,
 		"weights": 27
