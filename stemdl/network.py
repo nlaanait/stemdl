@@ -43,7 +43,7 @@ class ConvNet(object):
         if self.params['IMAGE_FP16'] and self.images.dtype is not tf.float16 and operation == 'train':
             self.images = tf.cast(self.images, tf.float16)
         image_shape = images.get_shape().as_list()
-        if self.params['TENSOR_FORMAT'] == 'NCHW' or image_shape[-1] != image_shape[1]:
+        if self.params['TENSOR_FORMAT'] != 'NCHW' or image_shape[-1] != image_shape[-2]:
             # change from NHWC to NCHW format
             # TODO: add flag to swith between 2 ....
             self.images = tf.transpose(self.images, perm=[0, 3, 1, 2])
@@ -1006,11 +1006,17 @@ class FCDenseNet(ConvNet):
             with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
                 in_shape = out.get_shape().as_list()
                 if layer_params['type'] == 'convolutional':
+                    self.print_verbose(">>> Adding Conv Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out, _ = self._conv(input=out, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
                     if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] == 'pooling':
+                    self.print_verbose(">>> Adding Pooling Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out = self._pool(input=out, name=scope.name, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
 
                 if layer_params['type'] == 'linear_output':
                     in_shape = out.get_shape().as_list()
@@ -1028,29 +1034,36 @@ class FCDenseNet(ConvNet):
 
                 if layer_params['type'] == 'dense_block_down':
                     self.print_verbose(">>> Adding Dense Block Down: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out, _ = self._dense_block(out, layer_params, scope)
                     skip_connection_list.append(out)
                     skip_hub += 1
-                    self.print_verbose('>>> output: %s' %format(out.get_shape().as_list()))
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
 
                 if layer_params['type'] == 'dense_block_bottleneck':
                     self.print_verbose(">>> Adding Dense Block Bottleneck: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out, block_features = self._dense_block(out, layer_params, scope)
-                    self.print_verbose('>>> output: %s' %format(out.get_shape().as_list()))
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
 
                 if layer_params['type'] == 'dense_block_up':
                     self.print_verbose(">>> Adding Dense Block Up: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out, block_features = self._dense_block(out, layer_params, scope)
-                    self.print_verbose('>>> output: %s' %format(out.get_shape().as_list()))
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
 
                 if layer_params['type'] == 'transition_up':
                     self.print_verbose(">>> Adding Transition Up: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out = self._transition_up(block_features, skip_connection_list[skip_hub], layer_params, scope)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
                     skip_hub -= 1
 
                 if layer_params['type'] == 'transition_down':
                     self.print_verbose(">>> Adding Transition Down: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out = self._transition_down(out, layer_params, scope)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
 
                 # print layer specs and generate Tensorboard summaries
                 if out is None:
@@ -1066,10 +1079,7 @@ class FCDenseNet(ConvNet):
 
     def get_loss(self):
         with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
-            # if self.net_type == 'regressor':
-            self._calculate_loss_regressor(self.hyper_params['loss_function'])
-            # if self.net_type == 'classifier':
-                # self._calculate_loss_classifier()
+            self._calculate_loss_regressor()
 
     def _transition_up(self, input, block_connect, layer_params, scope):
         """

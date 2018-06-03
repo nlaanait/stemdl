@@ -6,6 +6,7 @@ email: laanaitn@ornl.gov
 
 import tensorflow as tf
 import numpy as np
+import sys
 import os
 from itertools import chain
 from tensorflow.python.ops import data_flow_ops
@@ -26,7 +27,7 @@ spacegroup = {'energy': {'dtype':'float64', 'shape':[1]},
                        # image
                       'image_raw': {'dtype': 'float16', 'shape':[512,512,1]},
                       'preprocess': True}
-reconstruction = {'energy': {'dtype':'float64', 'shape':[1]},
+reconstruction_2d = {'energy': {'dtype':'float64', 'shape':[1]},
                       'material_name': {'dtype':'str', 'shape':[1]},
                       'space_group': {'dtype': 'int64', 'shape':[230]},
                       'a': {'dtype':'float64', 'shape':[1]},
@@ -38,7 +39,7 @@ reconstruction = {'energy': {'dtype':'float64', 'shape':[1]},
                       'chemical_comp': {'dtype': 'float64', 'shape':[94]},
                        # images
                       'cbed': {'dtype': 'float16', 'shape':[64,512,512]},
-                      'potential': {'dtype': 'float16', 'shape':[256,512,512]},
+                      'potential': {'dtype': 'float16', 'shape':[1,512,512]},
                       'preprocess': False}
 
 def print_rank(*args, **kwargs):
@@ -68,14 +69,15 @@ class DatasetTFRecords(object):
             self.features_specs = {'specs':spacegroup,
                             'image_keys':['image_raw'],
                             'label_keys':['chemical_comp', 'space_group']}
-        elif self.dataset == '3d_reconstruction':
+        elif self.dataset == '2d_reconstruction':
             self.features_specs = {'image_keys': ['cbed'],
-                            'label_keys': ['potential'], 'specs': reconstruction }
+                            'label_keys': ['potential'], 'specs': reconstruction_2d}
         elif self.dataset is None:
             self.features_specs = None
 
     def set_mode(self,mode='train'):
         self.mode = mode
+
 
     def decode_image_label(self, record):
         """
@@ -293,6 +295,8 @@ class DatasetTFRecords(object):
         if mode not in ['train', 'validation', 'test']:
             mode = 'train'
 
+        self.inspect_tfrecords(mode)
+
         record_input = data_flow_ops.RecordInput(
             file_pattern=os.path.join(self.params['data_dir'], '%s/*.tfrecords' % mode),
             parallelism=6,
@@ -317,14 +321,17 @@ class DatasetTFRecords(object):
                     image = self.distort(image)
                 images.append(image)
                 labels.append(label)
+                image_shape = image.get_shape().as_list()
+                label_shape = label.get_shape().as_list()
             # Stack images and labels back into a single tensor
             labels = tf.parallel_stack(labels)
             images = tf.parallel_stack(images)
 
             # reshape them to the expected shape:
-            labels = tf.reshape(labels, [batch_size, -1])
-            images = tf.reshape(images, [batch_size, self.params['IMAGE_HEIGHT'],
-                        self.params['IMAGE_WIDTH'], self.params['IMAGE_DEPTH']])
+            labels_newshape = [batch_size] + label_shape
+            images_newshape = [batch_size] + image_shape
+            labels = tf.reshape(labels, labels_newshape)
+            images = tf.reshape(images, images_newshape)
 
             # glimpse images: moved to GPU
             images = self.get_glimpses(images)
@@ -425,3 +432,40 @@ class DatasetTFRecords(object):
         aff_image = tf.contrib.image.transform(image, affine_transform,
                                                interpolation='BILINEAR')
         return aff_image
+
+    def inspect_tfrecords(self, mode):
+        dir = os.path.join(self.params['data_dir'], mode)
+        tf_filenames = os.listdir(dir)
+        for fname in tf_filenames:
+            if fname.split('.')[-1] == "tfrecords":
+                tf_filename = os.path.join(dir, fname)
+                break
+        print_rank('inspecting file: %s' %tf_filename)
+        record_iterator = tf.python_io.tf_record_iterator(path=tf_filename)
+        if self.features_specs is None:
+            image_key, label_key = ['image_raw', 'label']
+            label_dtype = tf.as_dtype(self.params['LABEL_DTYPE'])
+            image_shape = [self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH'], self.params['IMAGE_DEPTH']]
+            image_dtype = tf.as_dtype(self.params['IMAGE_DTYPE'])
+        else:
+            specs = self.features_specs['specs']
+            image_key, label_key = [self.features_specs['image_keys'][0], self.features_specs['label_keys'][0]]
+            image_size =  np.prod(np.array(specs[image_key]['shape']))
+            label_size = np.prod(np.array(specs[label_key]['shape']))
+            image_dtype = specs[image_key]['dtype']
+            label_dtype = specs[label_key]['dtype']
+
+        for (i,string_record) in enumerate(record_iterator):
+            example = tf.train.Example()
+            example.ParseFromString(string_record)
+            label = np.fromstring(example.features.feature[label_key].bytes_list.value[0],dtype=label_dtype)
+            image = np.fromstring(example.features.feature[image_key].bytes_list.value[0], dtype=image_dtype)
+            if i > 10:
+                break
+        if label.size != label_size or image.size != image_size:
+            print_rank('image size and label size are not as expected.')
+            print_rank('found: %s, %s' %(format(image.size) ,format(label.size)))
+            print_rank('expected: %s, %s' %(format(image_size) ,format(label_size)))
+            sys.exit()
+        else:
+            pass

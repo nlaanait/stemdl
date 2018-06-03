@@ -395,9 +395,17 @@ def train_horovod_mod(network_config, hyper_params, params):
                 'horovod',
                 # Force all variables to be stored as float32
                 custom_getter=float32_variable_storage_getter) as _:
+
             # Setup Neural Net
-            n_net = network.ResNet(scope, params, hyper_params, network_config, images, labels,
-                                    operation='train', summary=False, verbose=False)
+            if params['network_class'] == 'resnet':
+                n_net = network.ResNet(scope, params, hyper_params, network_config, images, labels,
+                                        operation='train', summary=False, verbose=False)
+            if params['network_class'] == 'cnn':
+                n_net = network.ConvNet(scope, params, hyper_params, network_config, images, labels,
+                                        operation='train', summary=False, verbose=False)
+            if params['network_class'] == 'fcdensenet':
+                n_net = network.FCDenseNet(scope, params, hyper_params, network_config, images, labels,
+                                        operation='train', summary=False, verbose=True)
 
             # Build it and propagate images through it.
             n_net.build_model()
