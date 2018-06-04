@@ -101,7 +101,7 @@ class TrainHelper(object):
         print_rank('Run & Saved GPU Trace.')
 
     def log_stats(self, loss_value, learning_rate):
-        #self.nanloss(loss_value)
+        self.nanloss(loss_value)
         if hvd.rank() == 0:
             t = time.time( )
             duration = t - self.start_time

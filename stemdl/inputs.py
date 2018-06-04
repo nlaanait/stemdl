@@ -122,8 +122,6 @@ class DatasetTFRecords(object):
                 label = labels[0]
             else:
                 label = tf.concat([tf.expand_dims(label, 0) for label in labels], 1)
-                # TODO stack labels and return as one
-                # pass
 
             # process images
             images = []

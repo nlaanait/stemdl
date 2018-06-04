@@ -258,8 +258,6 @@ class ConvNet(object):
 
     def get_loss(self):
         with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
-            if self.params['IMAGE_FP16']:
-                self.model_output = self.model_output
             if self.net_type == 'regressor':
                 self._calculate_loss_regressor()
             if self.net_type == 'classifier':
@@ -286,7 +284,13 @@ class ConvNet(object):
     def _calculate_loss_hybrid(self):
         dim = self.labels.get_shape().as_list()[-1]
         num_classes = self.params['NUM_CLASSES']
-        regress_labels, class_labels = tf.split(self.labels,[dim-num_classes,num_classes],1)
+        if self.hyper_params['langevin']:
+            class_labels = self.labels
+            if class_labels.dtype is not tf.int64:
+                class_labels = tf.cast(class_labels, tf.int64)
+            regress_labels = tf.random_normal(class_labels.get_shape().as_list(), stddev=0.01, dtype=tf.float64)
+        else:
+            regress_labels, class_labels = tf.split(self.labels,[dim-num_classes, num_classes],1)
         outputs = []
         for layer_name, labels in zip(['linear_output_class', 'linear_output_regress'],
                                             [class_labels, regress_labels]):
@@ -298,10 +302,11 @@ class ConvNet(object):
                 outputs.append(out)
         mixing = self.hyper_params['mixing']
         cost = (1-mixing)*self._calculate_loss_classifier(net_output=outputs[0], labels=class_labels) + \
-                        mixing*self._calculate_loss_regressor(net_output=outputs[1], labels=regress_labels)
+                        mixing*self._calculate_loss_regressor(net_output=outputs[1],
+                        labels=regress_labels, weight=(1-mixing))
         return cost
 
-    def _calculate_loss_regressor(self, net_output=None, labels=None):
+    def _calculate_loss_regressor(self, net_output=None, labels=None, weight=None):
         """
         Calculate the loss objective for regression
         :param params: dictionary, specifies the objective to use
@@ -311,9 +316,11 @@ class ConvNet(object):
             net_output = self.get_output()
         if labels is None:
             labels = self.labels
+        if weight is None:
+            weight = 1.0
         params = self.hyper_params['loss_function']
-        assert params['type'] == 'Huber' or params['type'] == 'MSE',\
-            "Type of regression loss function must be 'Huber' or 'MSE'"
+        assert params['type'] == 'Huber' or params['type'] == 'MSE' \
+        or params['type'] == 'LOG', "Type of regression loss function must be 'Huber' or 'MSE'"
         if params['type'] == 'Huber':
             # decay the residual cutoff exponentially
             decay_steps = int(self.params['NUM_EXAMPLES_PER_EPOCH'] / self.params['batch_size'] \
@@ -328,15 +335,16 @@ class ConvNet(object):
             if self.summary:
                 tf.summary.scalar('residual_cutoff', residual_tol)
             # calculate the cost
-            cost = tf.losses.huber_loss(labels, predictions=net_output, delta=residual_tol,
+            cost = tf.losses.huber_loss(labels, weights=weight, predictions=net_output, delta=residual_tol,
                                         reduction=tf.losses.Reduction.MEAN)
         if params['type'] == 'MSE':
-            cost = tf.losses.mean_squared_error(labels, predictions=net_output,
+            cost = tf.losses.mean_squared_error(labels, weights=weight, predictions=net_output,
                                                 reduction=tf.losses.Reduction.MEAN)
-
+        if params['type'] == 'LOG':
+            cost = tf.losses.log_loss(labels, weights=weight, predictions=net_output, reduction=tf.losses.Reduction.MEAN)
         return cost
 
-    def _calculate_loss_classifier(self, net_output=None, labels=None):
+    def _calculate_loss_classifier(self, net_output=None, labels=None, weight=None):
         """
         Calculate the loss objective for classification
         :param params: dictionary, specifies the objective to use
@@ -348,6 +356,8 @@ class ConvNet(object):
             labels = tf.cast(labels, tf.int64)
         if net_output is None:
             net_output = self.get_output()
+        if weight is None:
+            weight = 1.0
         labels = tf.argmax(labels, axis=1)
         cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
             labels=labels, logits=net_output)
