@@ -75,6 +75,10 @@ def main():
                          help="""train or eval (:validates from checkpoint)""")
     cmdline.add_argument('--cpu_threads', default=10, type=int,
                          help="""cpu threads per rank""")
+    cmdline.add_argument('--mixing', default=0.0, type=float,
+                         help="""weight of noise layer""")
+    cmdline.add_argument('--net_type', default=None, type=str,
+                         help=""" Type of network: classifier, regressor, hybrid""")
     add_bool_argument( cmdline, '--fp16', default=None,
                          help="""Train with half-precision.""")
     add_bool_argument( cmdline, '--fp32', default=None,
@@ -139,12 +143,12 @@ def main():
         tf.gfile.MakeDirs( checkpt_dir )
         tf.gfile.MakeDirs( eval_dir )
 
-    if params[ 'gpu_trace' ] :
-        if tf.gfile.Exists( params[ 'trace_dir' ] ) :
-            print( 'Timeline directory %s exists' % params[ 'trace_dir' ] )
-        else :
-            print( 'Timeline directory %s created' % params[ 'trace_dir' ] )
-            tf.gfile.MakeDirs( params[ 'trace_dir' ] )
+        if params[ 'gpu_trace' ] :
+            if tf.gfile.Exists( params[ 'trace_dir' ] ) :
+                print( 'Timeline directory %s exists' % params[ 'trace_dir' ] )
+            else :
+                print( 'Timeline directory %s created' % params[ 'trace_dir' ] )
+                tf.gfile.MakeDirs( params[ 'trace_dir' ] )
 
     params['train_dir'] = checkpt_dir
     params['eval_dir'] = eval_dir
@@ -161,6 +165,10 @@ def main():
        hyper_params[ 'num_epochs_per_decay' ] = FLAGS.epochs_per_decay
     if FLAGS.bn_decay is not None :
        hyper_params[ 'batch_norm' ][ 'decay' ] = FLAGS.bn_decay
+    if FLAGS.mixing is not None:
+       hyper_params['mixing'] = FLAGS.mixing
+    if FLAGS.net_type is not None:
+       hyper_params['network_type'] = FLAGS.net_type
 
     if hvd.rank( ) == 0 :
        if os.path.isfile( 'cmd.log' ) :
@@ -185,7 +193,7 @@ def main():
         runtime.train_horovod_mod(network_config, hyper_params, params)
     elif params['mode'] == 'eval':
         params[ 'IMAGE_FP16' ] = False
-        runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, sleep=0)
+        runtime.validate_ckpt(network_config, hyper_params, params, last_model=False, sleep=0)
 
 
 if __name__ == '__main__':

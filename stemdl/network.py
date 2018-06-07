@@ -258,12 +258,13 @@ class ConvNet(object):
 
     def get_loss(self):
         with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
-            if self.net_type == 'regressor':
-                self._calculate_loss_regressor()
-            if self.net_type == 'classifier':
-                self._calculate_loss_classifier()
-            if self.net_type == 'hybrid':
+            if self.hyper_params['langevin']:
                 self._calculate_loss_hybrid()
+            else:
+                if self.net_type == 'regressor':
+                    self._calculate_loss_regressor()
+                if self.net_type == 'classifier' :
+                    self._calculate_loss_classifier()
 
     def get_output(self):
         if self.params['IMAGE_FP16']:
@@ -303,7 +304,7 @@ class ConvNet(object):
         mixing = self.hyper_params['mixing']
         cost = (1-mixing)*self._calculate_loss_classifier(net_output=outputs[0], labels=class_labels) + \
                         mixing*self._calculate_loss_regressor(net_output=outputs[1],
-                        labels=regress_labels, weight=(1-mixing))
+                        labels=regress_labels, weight=mixing)
         return cost
 
     def _calculate_loss_regressor(self, net_output=None, labels=None, weight=None):
@@ -1126,8 +1127,8 @@ class FCDenseNet(ConvNet):
         Dense Block unit for DenseNets
         BN >> Nonlinear Activation >> Convolution >> Dropout
         """
-        out = self._batch_norm(input=input)
-        out = self._activate(input=out, params=layer_params)
+        #out = self._batch_norm(input=input)
+        out = self._activate(input=input, params=layer_params)
         out, _ = self._conv(input=out, params=layer_params)
         keep_prob = layer_params.get('dropout', None)
         if keep_prob is not None:

@@ -644,9 +644,20 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=300,
         IO_ops = [staging_op, gpucopy_op]
 
     with tf.variable_scope('horovod', reuse=tf.AUTO_REUSE) as scope:
+
+        #TODO: fix this to take different types of nets.
+        hyper_params['langevin'] = False
+        hyper_params['network_type'] = 'classifier'
         # Setup Neural Net
-        n_net = network.ResNet(scope, params, hyper_params, network_config, tf.cast(images, tf.float32),
-                               labels, operation='eval_ckpt', summary=False)
+        if params['network_class'] == 'resnet':
+            n_net = network.ResNet(scope, params, hyper_params, network_config, tf.cast(images, tf.float32), labels,
+                                    operation='eval_ckpt', summary=False, verbose=False)
+        if params['network_class'] == 'cnn':
+            n_net = network.ConvNet(scope, params, hyper_params, network_config, tf.cast(images, tf.float32), labels,
+                                    operation='eval_ckpt', summary=False, verbose=False)
+        if params['network_class'] == 'fcdensenet':
+            n_net = network.FCDenseNet(scope, params, hyper_params, network_config, tf.cast(images, tf.float32),
+                                        labels, operation='eval_ckpt', summary=False, verbose=False)
 
         # Build it and propagate images through it.
         n_net.build_model()
@@ -688,6 +699,7 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=300,
         print_rank("Restoring from previous checkpoint @ step=%d" % last_step)
 
         # Validate model
+        # TODO: add hybrid validation and check that it works correctly for previous
         if hyper_params['network_type'] == 'regressor':
             validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
             # Average validation error over batches
