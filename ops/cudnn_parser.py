@@ -82,6 +82,9 @@ def rank_entries(ord_dict_list, steps):
                 tensorcore_usage = "NO"
             print('%s, %d ,%s ' %(algo_name, ord_dict[algo_name][1], tensorcore_usage))
         print('\n')
+#TODO: hunt the graph structure and parse on that
+def trace_fwd_bwd():
+    pass
 
 def get_step_timing(logfile):
     step_1 = re.compile('step= 90')

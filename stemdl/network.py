@@ -141,8 +141,8 @@ class ConvNet(object):
                     if keep_prob is not None:
                         out = self._dropout(input=out, keep_prob= keep_prob, name=scope.name+ '_dropout')
                     if self.summary: self._activation_summary(out)
-
-                if layer_params['type'] == 'linear_output' and self.net_type is not 'hybrid' :
+                #TODO: PULL THe LINEAR OUPUT layer out oF HERE !!!!!!!
+                if layer_params['type'] == 'linear_output' and self.net_type != 'hybrid':
                     in_shape = out.get_shape().as_list()
                     if layer_params['bias'] != self.params['NUM_CLASSES']:
                         self.print_verbose("Overriding the size of the bias ({}) and weights ({}) with the 'NUM_CLASSES' parm ({})"
@@ -169,11 +169,6 @@ class ConvNet(object):
                                                                                         self.num_weights,
                                                                                         format(self.mem / 1024),
                                                                                         self.get_ops()))
-
-        # reference the output
-        # if self.params['IMAGE_FP16']:
-        #     self.model_output = tf.cast(out, tf.float32)
-        # else:
         self.model_output = out
 
     def _compound_layer(self, out, layer_params, scope):
@@ -257,20 +252,22 @@ class ConvNet(object):
 
 
     def get_loss(self):
-        with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
-            if self.hyper_params['langevin']:
-                self._calculate_loss_hybrid()
-            else:
-                if self.net_type == 'regressor':
-                    self._calculate_loss_regressor()
-                if self.net_type == 'classifier' :
-                    self._calculate_loss_classifier()
+        # with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
+        if self.net_type == 'hybrid': self._calculate_loss_hybrid()
+        if self.net_type == 'regressor': self._calculate_loss_regressor()
+        if self.net_type == 'classifier' : self._calculate_loss_classifier()
+        if self.hyper_params['langevin'] : self.add_stochastic_layer()
 
     def get_output(self):
+        layer_params={'bias':self.labels.get_shape().as_list()[-1], 'weights':self.labels.get_shape().as_list()[-1],
+            'regularize':True}
+        with tf.variable_scope('linear_output', reuse=self.reuse) as scope:
+            output = self._linear(input=self.model_output, name=scope.name, params=layer_params)
+            print(output.name)
         if self.params['IMAGE_FP16']:
-            self.model_output = tf.cast(self.model_output, tf.float32)
-            return self.model_output
-        return self.model_output
+            output = tf.cast(output, tf.float32)
+            return output
+        return output
 
     #TODO: return ops per type of layer
     def get_ops(self):
@@ -293,14 +290,15 @@ class ConvNet(object):
         else:
             regress_labels, class_labels = tf.split(self.labels,[dim-num_classes, num_classes],1)
         outputs = []
-        for layer_name, labels in zip(['linear_output_class', 'linear_output_regress'],
+        for layer_name, labels in zip(['linear_output', 'stochastic'],
                                             [class_labels, regress_labels]):
+            layer_params={'bias':labels.get_shape().as_list()[-1], 'weights':labels.get_shape().as_list()[-1],
+                'regularize':True}
             with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
-                layer_params={'bias':labels.get_shape().as_list()[-1], 'weights':labels.get_shape().as_list()[-1],
-                    'regularize':True}
                 out = tf.cast(self._linear(input=self.model_output, name=scope.name, params=layer_params), tf.float32)
-                self.print_rank('Output Layer : %s' %format(out.get_shape().as_list()))
-                outputs.append(out)
+                print(out.name)
+            self.print_rank('Output Layer : %s' %format(out.get_shape().as_list()))
+            outputs.append(out)
         mixing = self.hyper_params['mixing']
         cost = (1-mixing)*self._calculate_loss_classifier(net_output=outputs[0], labels=class_labels) + \
                         mixing*self._calculate_loss_regressor(net_output=outputs[1],
