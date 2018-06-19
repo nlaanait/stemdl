@@ -208,18 +208,44 @@ def get_optimizer(params, hyper_params, global_step):
     return opt, LEARNING_RATE
 
 
-def calc_loss(n_net, scope, hyper_params, labels_shape, summary=False):
+def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
+    labels_shape = labels.get_shape().as_list()
     layer_params={'bias':labels_shape[-1], 'weights':labels_shape[-1],'regularize':True}
-    if hyper_params['network_type'] != 'hybrid':
-        output = n_net._linear(n_net.model_ouput, name='linear', params=layer_params)
-    else:
-        pass
+    if hyper_params['network_type'] == 'hybrid':
+        dim = labels_shape[-1]
+        num_classes = params['NUM_CLASSES']
+        regress_labels, class_labels = tf.split(labels,[dim-num_classes, num_classes],1)
+        if class_labels.dtype is not tf.int64:
+            class_labels = tf.cast(class_labels, tf.int64)
+        # Build output layer
+        class_shape = class_labels.get_shape().as_list()
+        regress_shape = regress_labels.get_shape().as_list()
+        layer_params_class={'bias':class_shape[-1], 'weights':class_shape[-1],'regularize':True}
+        layer_params_regress={'bias':regress_shape[-1], 'weights':regress_shape[-1],'regularize':True}
+        output_class = fully_connected(n_net.model_output, layer_params_class, params['batch_size'],
+                                name='linear', wd=hyper_params['weight_decay'])
+        output_regress = fully_connected(n_net.model_output, layer_params_regress, params['batch_size'],
+                                name='linear', wd=hyper_params['weight_decay'])
+        # Calculate loss
+        _ = calculate_loss_classifier(output_class, labels, params, hyper_params)
+        _ = calculate_loss_regressor(output_regress, labels, params, hyper_params)
     if hyper_params['network_type'] == 'regressor':
-        pass
+        output = fully_connected(n_net.model_output, layer_params, params['batch_size'],
+                                name='linear', wd=hyper_params['weight_decay'])
+        _ = calculate_loss_regressor(output, labels, params, hyper_params)
     if hyper_params['network_type'] == 'classifier':
-        pass
+        if labels.dtype is not tf.int64:
+            labels = tf.cast(labels, tf.int64)
+        output = fully_connected(n_net.model_output, layer_params, params['batch_size'],
+                                name='linear', wd=hyper_params['weight_decay'])
+        _ = calculate_loss_classifier(output, labels, params, hyper_params)
+
     if hyper_params['langevin']:
-        pass
+        stochastic_labels = tf.random_normal(labels_shape, stddev=0.01, dtype=tf.float32)
+        output = fully_connected(n_net.model_output, layer_params, params['batch_size'],
+                            name='linear_stochastic', wd=hyper_params['weight_decay'])
+        _ = calculate_loss_regressor(output, labels, params, hyper_params, weight=hyper_params['mixing'])
+
 
     #Assemble all of the losses.
     losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
@@ -232,7 +258,87 @@ def calc_loss(n_net, scope, hyper_params, labels_shape, summary=False):
     #Generate summaries for the losses and get corresponding op
     loss_averages_op = _add_loss_summaries(total_loss, losses, summaries=summary)
 
-    return total_loss
+    return total_loss, loss_averages_op
+
+
+def fully_connected(n_net, layer_params, batch_size, wd=0, name=None, reuse=None):
+    input = tf.cast(tf.reshape(n_net,[batch_size, -1]), tf.float32)
+    dim_input = input.shape[1].value
+    weights_shape = [dim_input, layer_params['weights']]
+    def weight_decay(tensor):
+        return tf.multiply(tf.nn.l2_loss(tensor), wd)
+    with tf.variable_scope(name, reuse=reuse) as _ :
+        if layer_params['regularize']:
+            weights = tf.get_variable('weights', weights_shape,
+            initializer=tf.random_normal_initializer(0,0.01),
+            regularizer=weight_decay)
+            bias = tf.get_variable('bias', layer_params['bias'], initializer=tf.constant_initializer(1.e-3),
+            regularizer=weight_decay)
+        else:
+            weights = tf.get_variable('weights', weights_shape,
+            initializer=tf.random_normal_initializer(0,0.01))
+            bias = tf.get_variable('bias', layer_params['bias'], initializer=tf.constant_initializer(1.e-3))
+        output = tf.nn.bias_add(tf.matmul(input, weights), bias, name=name)
+
+    return output
+
+
+def calculate_loss_classifier(net_output, labels, params, hyper_params, summary=False):
+    """
+    Calculate the loss objective for classification
+    :param params: dictionary, specifies the objective to use
+    :return: cost
+    """
+    labels = tf.argmax(labels, axis=1)
+    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
+        labels=labels, logits=net_output)
+    cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy')
+    precision_1 = tf.scalar_mul(1. / params['batch_size'],
+                                tf.reduce_sum(tf.cast(tf.nn.in_top_k(net_output, labels, 1), tf.float32)))
+    precision_5 = tf.scalar_mul(1. / params['batch_size'],
+                                tf.reduce_sum(tf.cast(tf.nn.in_top_k(net_output, labels, 5), tf.float32)))
+    if summary :
+        tf.summary.scalar('precision@1_train', precision_1)
+        tf.summary.scalar('precision@5_train', precision_5)
+    tf.add_to_collection(tf.GraphKeys.LOSSES, cross_entropy_mean)
+    return cross_entropy_mean
+
+
+def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=None, summary=False, global_step=None):
+    """
+    Calculate the loss objective for regression
+    :param params: dictionary, specifies the objective to use
+    :return: cost
+    """
+    if weight is None:
+        weight = 1.0
+    if global_step is None:
+        global_step = 1
+    params = hyper_params['loss_function']
+    assert params['type'] == 'Huber' or params['type'] == 'MSE' \
+    or params['type'] == 'LOG', "Type of regression loss function must be 'Huber' or 'MSE'"
+    if params['type'] == 'Huber':
+        # decay the residual cutoff exponentially
+        decay_steps = int(params['NUM_EXAMPLES_PER_EPOCH'] / params['batch_size'] \
+                          * params['residual_num_epochs_decay'])
+        initial_residual = params['residual_initial']
+        min_residual = params['residual_minimum']
+        decay_residual = params['residual_decay_factor']
+        residual_tol = tf.train.exponential_decay(initial_residual, global_step, decay_steps,
+                                                  decay_residual, staircase=False)
+        # cap the residual cutoff to some min value.
+        residual_tol = tf.maximum(residual_tol, tf.constant(min_residual))
+        if summary:
+            tf.summary.scalar('residual_cutoff', residual_tol)
+        # calculate the cost
+        cost = tf.losses.huber_loss(labels, weights=weight, predictions=net_output, delta=residual_tol,
+                                    reduction=tf.losses.Reduction.MEAN)
+    if params['type'] == 'MSE':
+        cost = tf.losses.mean_squared_error(labels, weights=weight, predictions=net_output,
+                                            reduction=tf.losses.Reduction.MEAN)
+    if params['type'] == 'LOG':
+        cost = tf.losses.log_loss(labels, weights=weight, predictions=net_output, reduction=tf.losses.Reduction.MEAN)
+    return cost
 
 
 def print_rank(*args, **kwargs):
@@ -409,24 +515,8 @@ def train_horovod_mod(network_config, hyper_params, params):
             # Build it and propagate images through it.
             n_net.build_model()
 
-
             # calculate the total loss
-            total_loss = calc_loss(n_net, scope)
-
-            # calculate the total loss
-            n_net.get_loss()
-
-
-            #Assemble all of the losses.
-            losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
-            regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-
-
-            # Calculate the total loss for the current worker
-            total_loss = tf.add_n(losses + regularization, name='total_loss')
-
-            #Generate summaries for the losses and get corresponding op
-            loss_averages_op = _add_loss_summaries(total_loss, losses, summaries=summary)
+            total_loss, loss_averages_op = calc_loss(n_net, scope, hyper_params, params, labels, summary=summary)
 
             #get summaries, except for the one produced by string_input_producer
             if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
@@ -470,9 +560,9 @@ def train_horovod_mod(network_config, hyper_params, params):
         with tf.control_dependencies([all_ops]):
                 train_op = tf.no_op(name='train')
 
-    #########################
+    ########################
     # Setting up Summaries #
-    #########################
+    ########################
 
     # Stats and summaries
     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
@@ -585,17 +675,25 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=300):
         # Build it and propagate images through it.
         n_net.build_model()
 
-        logits = n_net.get_output()
+        # Calculate predictions
+        if hyper_params['network_type'] != 'hybrid':
+            labels_shape = labels.get_shape().as_list()
+            layer_params={'bias':labels_shape[-1], 'weights':labels_shape[-1],'regularize':False}
+            logits = fully_connected(n_net.model_output, layer_params, params['batch_size'],
+                                    name='linear',reuse=None)
+        else:
+            pass
+            #TODO: implement prediction layer for hybrid network
 
+        # Do evaluation
         if hyper_params['network_type'] == 'regressor':
             validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
-
             # Average validation error over the batches
             errors = np.array([sess.run(validation_error) for _ in range(num_batches)])
             errors = errors.reshape(-1, params['NUM_CLASSES'])
             avg_errors = errors.mean(0)
             print_rank('Validation MSE: %s' % format(avg_errors))
-        else:
+        elif hyper_params['network_type'] == 'classifier':
             labels = tf.argmax(labels, axis=1)
             cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=logits)
             in_top_1_op = tf.cast(tf.nn.in_top_k(logits, labels, 1), tf.float32)
@@ -607,6 +705,9 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=300):
             accuracy = accuracy.sum(axis=(0,-1))/(num_batches*params['batch_size'])*100
             val_loss = val_loss.sum()/(num_batches*params['batch_size'])
             print_rank('Validation Accuracy (.pct), Top-1: %2.2f , Top-5: %2.2f, Loss: %2.2f' %(accuracy[0], accuracy[1], val_loss))
+        elif hyper_params['network_type'] == 'hybrid':
+            #TODO: implement evaluation call for hybrid network
+            print('not implemented')
 
 
 def validate_ckpt(network_config, hyper_params, params,num_batches=300,
@@ -646,7 +747,12 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=300,
         gpucopy_op, (images, labels) = dset.stage([images, labels])
         IO_ops = [staging_op, gpucopy_op]
 
-        with tf.variable_scope('horovod', reuse=tf.AUTO_REUSE) as scope:
+        # with tf.variable_scope('horovod', reuse=tf.AUTO_REUSE) as scope:
+        scope='horovod'
+        with tf.variable_scope(
+                'horovod',
+                # Force all variables to be stored as float32
+                custom_getter=float32_variable_storage_getter) as _:
             # Setup Neural Net
             if params['network_class'] == 'resnet':
                 n_net = network.ResNet(scope, params, hyper_params, network_config, tf.cast(images, tf.float32), labels,
@@ -661,62 +767,72 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=300,
             # Build it and propagate images through it.
             n_net.build_model()
 
-            logits = n_net.get_output()
 
-        # Initialize variables
-        init_op = tf.global_variables_initializer()
-        sess.run(init_op)
-
-        # Sync
-        sync_op = hvd.broadcast_global_variables(0)
-        sess.run(sync_op)
-
-        # prefill pipeline first
-        print_rank('Prefilling I/O pipeline...')
-        for i in range(len(IO_ops)):
-            sess.run(IO_ops[:i + 1])
-
-        saver = tf.train.Saver()
-
-        # Find models in checkpoint directory
-        dirs = np.array(os.listdir(params['checkpt_dir']))
-        pattern = re.compile("meta")
-        steps = np.array([bool(re.search(pattern,itm)) for itm in dirs])
-        saved_steps = dirs[steps]
-        model_steps = np.array([int(itm.split('.')[1].split('-')[-1]) for itm in saved_steps])
-        model_steps = np.sort(model_steps)
-        ckpt_paths = [os.path.join(params['checkpt_dir'], "model.ckpt-%s" % step) for step in model_steps]
-
-        if last_model:
-            ckpt_paths = [ckpt_paths[-1]]
-            model_steps = [model_steps[-1]]
-
-        # Validate Models
-        for ckpt, last_step in zip(ckpt_paths, model_steps):
-            #
-            saver.restore(sess, os.path.join(params['checkpt_dir'],"model.ckpt-%s" %format(last_step)))
-            print_rank("Restoring from previous checkpoint @ step=%d" % last_step)
-
-            # Validate model
-            # TODO: add hybrid validation and check that it works correctly for previous
-            if hyper_params['network_type'] == 'regressor':
-                validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
-                # Average validation error over batches
-                errors = np.array([sess.run(validation_error) for _ in range(num_batches)])
-                errors = errors.reshape(-1, params['NUM_CLASSES'])
-                avg_errors = errors.mean(0)
-                print_rank('Validation MSE: %s' % format(avg_errors))
+            # Calculate predictions
+            if hyper_params['network_type'] != 'hybrid':
+                labels_shape = labels.get_shape().as_list()
+                layer_params={'bias':labels_shape[-1], 'weights':labels_shape[-1],'regularize':False}
+                logits = fully_connected(n_net.model_output, layer_params, params['batch_size'],
+                                        name='linear',reuse=None)
             else:
-                # Average validation accuracies over batches
-                label = tf.argmax(labels, axis=1)
-                in_top_1_op = tf.cast(tf.nn.in_top_k(logits, label, 1), tf.float32)
-                in_top_5_op = tf.cast(tf.nn.in_top_k(logits, label, 5), tf.float32)
-                eval_ops = [in_top_1_op,in_top_5_op]
-                output = np.array([sess.run([IO_ops,eval_ops])[-1] for _ in range(num_batches)])
-                accuracy = output.sum(axis=(0,-1))/(num_batches*params['batch_size'])*100
-                print_rank('Validation Accuracy (.pct), Top-1: %2.2f , Top-5: %2.2f' %(accuracy[0], accuracy[1]))
-            if sleep < 0:
-                break
-            else:
-                print_rank('sleeping for %d s ...' % sleep)
-                time.sleep(sleep)
+                pass
+
+            # Initialize variables
+            init_op = tf.global_variables_initializer()
+            sess.run(init_op)
+
+            # Sync
+            sync_op = hvd.broadcast_global_variables(0)
+            sess.run(sync_op)
+
+            # prefill pipeline first
+            print_rank('Prefilling I/O pipeline...')
+            for i in range(len(IO_ops)):
+                sess.run(IO_ops[:i + 1])
+
+            saver = tf.train.Saver()
+
+            # Find models in checkpoint directory
+            dirs = np.array(os.listdir(params['checkpt_dir']))
+            pattern = re.compile("meta")
+            steps = np.array([bool(re.search(pattern,itm)) for itm in dirs])
+            saved_steps = dirs[steps]
+            model_steps = np.array([int(itm.split('.')[1].split('-')[-1]) for itm in saved_steps])
+            model_steps = np.sort(model_steps)
+            ckpt_paths = [os.path.join(params['checkpt_dir'], "model.ckpt-%s" % step) for step in model_steps]
+
+            if last_model:
+                ckpt_paths = [ckpt_paths[-1]]
+                model_steps = [model_steps[-1]]
+
+            # Validate Models
+            for ckpt, last_step in zip(ckpt_paths, model_steps):
+                #
+                saver.restore(sess, os.path.join(params['checkpt_dir'],"model.ckpt-%s" %format(last_step)))
+                print_rank("Restoring from previous checkpoint @ step=%d" % last_step)
+
+                # Validate model
+                # TODO: add hybrid validation and check that it works correctly for previous
+                if hyper_params['network_type'] == 'regressor':
+                    validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
+                    # Average validation error over batches
+                    errors = np.array([sess.run(validation_error) for _ in range(num_batches)])
+                    errors = errors.reshape(-1, params['NUM_CLASSES'])
+                    avg_errors = errors.mean(0)
+                    print_rank('Validation MSE: %s' % format(avg_errors))
+                elif hyper_params['network_type'] == 'classifier':
+                    # Average validation accuracies over batches
+                    label = tf.argmax(labels, axis=1)
+                    in_top_1_op = tf.cast(tf.nn.in_top_k(logits, label, 1), tf.float32)
+                    in_top_5_op = tf.cast(tf.nn.in_top_k(logits, label, 5), tf.float32)
+                    eval_ops = [in_top_1_op,in_top_5_op]
+                    output = np.array([sess.run([IO_ops,eval_ops])[-1] for _ in range(num_batches)])
+                    accuracy = output.sum(axis=(0,-1))/(num_batches*params['batch_size'])*100
+                    print_rank('Validation Accuracy (.pct), Top-1: %2.2f , Top-5: %2.2f' %(accuracy[0], accuracy[1]))
+                elif hyper_params['network_type'] == 'hybrid':
+                    pass
+                if sleep < 0:
+                    break
+                else:
+                    print_rank('sleeping for %d s ...' % sleep)
+                    time.sleep(sleep)

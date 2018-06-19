@@ -130,30 +130,6 @@ class ConvNet(object):
                 if layer_params['type'] == 'pooling':
                     out = self._pool(input=out, name=scope.name, params=layer_params)
 
-                if layer_params['type'] == 'fully_connected':
-                    out = self._linear(input=out, name=scope.name+'_preactiv', params=layer_params)
-                    #TODO: need to add flag for batch_norm to fully_connected. Now it's hardwired.
-                    out = tf.expand_dims(tf.expand_dims(out, -1), -1)
-                    out = self._batch_norm(input=out, scope=scope)
-                    out = tf.reduce_mean(out, axis=[2, 3])
-                    out = self._activate(input=out, name=scope.name, params=layer_params)
-                    keep_prob = layer_params.get('dropout', None)
-                    if keep_prob is not None:
-                        out = self._dropout(input=out, keep_prob= keep_prob, name=scope.name+ '_dropout')
-                    if self.summary: self._activation_summary(out)
-                #TODO: PULL THe LINEAR OUPUT layer out oF HERE !!!!!!!
-                if layer_params['type'] == 'linear_output' and self.net_type != 'hybrid':
-                    in_shape = out.get_shape().as_list()
-                    if layer_params['bias'] != self.params['NUM_CLASSES']:
-                        self.print_verbose("Overriding the size of the bias ({}) and weights ({}) with the 'NUM_CLASSES' parm ({})"
-                              "".format(layer_params['bias'], layer_params['weights'], self.params['NUM_CLASSES']))
-                        layer_params['bias'] = self.params['NUM_CLASSES']
-                        layer_params['weights'] = self.params['NUM_CLASSES']
-                    out = self._linear(input=out, name=scope.name, params=layer_params)
-                    assert out.get_shape().as_list()[-1] == self.params['NUM_CLASSES'], 'Dimensions of the linear output layer' + \
-                                                                         'do not match the expected output set in the params'
-                    if self.summary: self._activation_summary(out)
-
                 if layer_params['type'] not in ['convolutional', 'pooling', 'fully_connected', 'linear_output']:
                     out = self._compound_layer(out, layer_params, scope)
                     # Continue any summary
@@ -780,7 +756,6 @@ class ConvNet(object):
         return None
 
     # Variable placement, initialization, regularization
-    # TODO: use local device setter to choose where variables are stored, i.e. cpu or gpu. instead of hardwired to cpu.
     def _cpu_variable_init(self, name, shape, initializer, trainable=True, regularize=True):
         """Helper to create a Variable stored on CPU memory.
 
@@ -799,8 +774,8 @@ class ConvNet(object):
             dtype = tf.float32
 
         if regularize:
-            var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype, trainable=trainable)
-                                  # regularizer=self._weight_decay)
+            var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype, trainable=trainable,
+                                  regularizer=self._weight_decay)
         else:
             var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype, trainable=trainable)
 
@@ -808,10 +783,10 @@ class ConvNet(object):
 
 
     def _weight_decay(self, tensor):
-        # return tf.multiply(tf.nn.l2_loss(tf.cast(tensor, tf.float32)), self.hyper_params['weight_decay'])
-        dtype=tf.float32
-        if self.params['IMAGE_FP16']: dtype= tf.float16
-        return tf.multiply(tf.nn.l2_loss(tensor), tf.cast(self.hyper_params['weight_decay'],dtype))
+        return tf.multiply(tf.nn.l2_loss(tf.cast(tensor, tf.float32)), self.hyper_params['weight_decay'])
+        # dtype=tf.float32
+        # if self.params['IMAGE_FP16']: dtype= tf.float16
+        # return tf.multiply(tf.nn.l2_loss(tensor), tf.cast(self.hyper_params['weight_decay'],dtype))
 
     def get_glimpses(self, batch_images):
         """
