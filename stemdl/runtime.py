@@ -129,10 +129,10 @@ def _add_loss_summaries(total_loss, losses, summaries=False):
     :param losses:
     :return: loss_averages_op
     """
-    # Compute the moving average of all individual losses and the total loss.
-    loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
-    loss_averages_op = loss_averages.apply(losses + [total_loss])
-    # loss_averages_op = loss_averages.apply([total_loss])
+    # # Compute the moving average of all individual losses and the total loss.
+    # loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
+    # loss_averages_op = loss_averages.apply(losses + [total_loss])
+    # # loss_averages_op = loss_averages.apply([total_loss])
 
     # Attach a scalar summary to all individual losses and the total loss;
     if summaries:
@@ -142,7 +142,7 @@ def _add_loss_summaries(total_loss, losses, summaries=False):
             # loss_name = re.sub('%s_[0-9]*/' % params['worker_name'], '', l.op.name)
             tf.summary.scalar(l.op.name + ' (raw)', l)
             tf.summary.scalar(l.op.name, loss_averages.average(l))
-
+    loss_averages_op = tf.no_op(name='no_op')
     return loss_averages_op
 
 
@@ -248,7 +248,7 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
 
 
     #Assemble all of the losses.
-    losses = tf.get_collection(tf.GraphKeys.LOSSES, scope)
+    losses = tf.get_collection(tf.GraphKeys.LOSSES)
     regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
 
 
@@ -335,7 +335,7 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
                                     reduction=tf.losses.Reduction.MEAN)
     if params['type'] == 'MSE':
         cost = tf.losses.mean_squared_error(labels, weights=weight, predictions=net_output,
-                                            reduction=tf.losses.Reduction.MEAN)
+                                            reduction=tf.losses.Reduction.SUM)
     if params['type'] == 'LOG':
         cost = tf.losses.log_loss(labels, weights=weight, predictions=net_output, reduction=tf.losses.Reduction.MEAN)
     return cost
