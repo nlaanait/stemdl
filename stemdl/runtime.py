@@ -222,27 +222,27 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
         regress_shape = regress_labels.get_shape().as_list()
         layer_params_class={'bias':class_shape[-1], 'weights':class_shape[-1],'regularize':True}
         layer_params_regress={'bias':regress_shape[-1], 'weights':regress_shape[-1],'regularize':True}
-        output_class = fully_connected(n_net.model_output, layer_params_class, params['batch_size'],
+        output_class = fully_connected(n_net, layer_params_class, params['batch_size'],
                                 name='linear', wd=hyper_params['weight_decay'])
-        output_regress = fully_connected(n_net.model_output, layer_params_regress, params['batch_size'],
+        output_regress = fully_connected(n_net, layer_params_regress, params['batch_size'],
                                 name='linear', wd=hyper_params['weight_decay'])
         # Calculate loss
         _ = calculate_loss_classifier(output_class, labels, params, hyper_params)
         _ = calculate_loss_regressor(output_regress, labels, params, hyper_params)
     if hyper_params['network_type'] == 'regressor':
-        output = fully_connected(n_net.model_output, layer_params, params['batch_size'],
+        output = fully_connected(n_net, layer_params, params['batch_size'],
                                 name='linear', wd=hyper_params['weight_decay'])
         _ = calculate_loss_regressor(output, labels, params, hyper_params)
     if hyper_params['network_type'] == 'classifier':
         if labels.dtype is not tf.int64:
             labels = tf.cast(labels, tf.int64)
-        output = fully_connected(n_net.model_output, layer_params, params['batch_size'],
+        output = fully_connected(n_net, layer_params, params['batch_size'],
                                 name='linear', wd=hyper_params['weight_decay'])
         _ = calculate_loss_classifier(output, labels, params, hyper_params)
 
     if hyper_params['langevin']:
         stochastic_labels = tf.random_normal(labels_shape, stddev=0.01, dtype=tf.float32)
-        output = fully_connected(n_net.model_output, layer_params, params['batch_size'],
+        output = fully_connected(n_net, layer_params, params['batch_size'],
                             name='linear_stochastic', wd=hyper_params['weight_decay'])
         _ = calculate_loss_regressor(output, labels, params, hyper_params, weight=hyper_params['mixing'])
 
@@ -262,12 +262,12 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
 
 
 def fully_connected(n_net, layer_params, batch_size, wd=0, name=None, reuse=None):
-    input = tf.cast(tf.reshape(n_net,[batch_size, -1]), tf.float32)
+    input = tf.cast(tf.reshape(n_net.model_output,[batch_size, -1]), tf.float32)
     dim_input = input.shape[1].value
     weights_shape = [dim_input, layer_params['weights']]
     def weight_decay(tensor):
         return tf.multiply(tf.nn.l2_loss(tensor), wd)
-    with tf.variable_scope(name, reuse=reuse) as _ :
+    with tf.variable_scope(name, reuse=reuse) as output_scope:
         if layer_params['regularize']:
             weights = tf.get_variable('weights', weights_shape,
             initializer=tf.random_normal_initializer(0,0.01),
@@ -279,7 +279,8 @@ def fully_connected(n_net, layer_params, batch_size, wd=0, name=None, reuse=None
             initializer=tf.random_normal_initializer(0,0.01))
             bias = tf.get_variable('bias', layer_params['bias'], initializer=tf.constant_initializer(1.e-3))
         output = tf.nn.bias_add(tf.matmul(input, weights), bias, name=name)
-
+    # Add output layer to neural net scopes for layerwise optimization 
+    n_net.scopes.append(output_scope)
     return output
 
 
