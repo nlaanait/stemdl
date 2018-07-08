@@ -680,7 +680,7 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=300):
         if hyper_params['network_type'] != 'hybrid':
             labels_shape = labels.get_shape().as_list()
             layer_params={'bias':labels_shape[-1], 'weights':labels_shape[-1],'regularize':False}
-            logits = fully_connected(n_net.model_output, layer_params, params['batch_size'],
+            logits = fully_connected(n_net, layer_params, params['batch_size'],
                                     name='linear',reuse=None)
         else:
             pass
@@ -773,7 +773,7 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=300,
             if hyper_params['network_type'] != 'hybrid':
                 labels_shape = labels.get_shape().as_list()
                 layer_params={'bias':labels_shape[-1], 'weights':labels_shape[-1],'regularize':False}
-                logits = fully_connected(n_net.model_output, layer_params, params['batch_size'],
+                logits = fully_connected(n_net, layer_params, params['batch_size'],
                                         name='linear',reuse=None)
             else:
                 pass
