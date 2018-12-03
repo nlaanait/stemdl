@@ -43,7 +43,7 @@ class ConvNet(object):
         if self.params['IMAGE_FP16'] and self.images.dtype is not tf.float16 and operation == 'train':
             self.images = tf.cast(self.images, tf.float16)
         image_shape = images.get_shape().as_list()
-        if self.params['TENSOR_FORMAT'] != 'NCHW' or image_shape[-1] != image_shape[-2]:
+        if self.params['TENSOR_FORMAT'] != 'NCHW' :
             # change from NHWC to NCHW format
             # TODO: add flag to swith between 2 ....
             self.images = tf.transpose(self.images, perm=[0, 3, 1, 2])

@@ -42,6 +42,15 @@ reconstruction_2d = {'energy': {'dtype':'float64', 'shape':[1]},
                       'potential': {'dtype': 'float16', 'shape':[1,512,512]},
                       'preprocess': False}
 
+abf_oxides = {'label':{'dtype': 'float64', 'shape':[3]},
+            # 'rotation_pattern':{'dtype': 'int64', 'shape':[27]},
+            # images
+            'image_raw':{'dtype':'float16', 'depth':1, 'IMAGE_HEIGHT': 85,
+            'IMAGE_DEPTH': 1, 'IMAGE_WIDTH': 120, 'shape': [85, 120, 1],
+            'preprocess': True, 'CROP_HEIGHT': 85, 'CROP_WIDTH': 120,
+            'RESIZE_WIDTH': 120, 'RESIZE_HEIGHT': 85},
+            'preprocess': True}
+
 def print_rank(*args, **kwargs):
     if hvd.rank() == 0:
         print(*args, **kwargs)
@@ -72,6 +81,12 @@ class DatasetTFRecords(object):
         elif self.dataset == '2d_reconstruction':
             self.features_specs = {'image_keys': ['cbed'],
                             'label_keys': ['potential'], 'specs': reconstruction_2d}
+        elif self.dataset == 'abf_oxides_regression':
+            self.features_specs = {'image_keys': ['image_raw'],
+                            'label_keys': ['label'], 'specs': abf_oxides}
+        elif self.dataset == 'abf_oxides_classification':
+            self.features_specs = {'image_keys': ['image_raw'],
+                            'label_keys': ['rotation_pattern'], 'specs': abf_oxides}
         elif self.dataset is None:
             self.features_specs = None
 
@@ -148,13 +163,15 @@ class DatasetTFRecords(object):
             # Manipulate labels
 
             # turn into 1-hot vector for classification. So that we don't modify the data.
-            if self.params['network_type'] == 'classifier' and label_dtype == tf.float64:
-                label = self.onehot(label)
-            elif self.params['network_type'] == 'regressor':
-                # scale labels for regression
-                # TODO: pull max and min values out of here and into input.json
-                label = self.label_minmaxscaling(label, [20., 60., -3., -3.],
-                                            [200., 200., 3., 3.], scale_range=[-10., 10.])
+            ## TODO: pull 'network_type' out of hyperparams and change calls
+            # if self.params['network_type'] == 'classifier' and label_dtype == tf.float64:
+            #     label = self.onehot(label)
+            # elif self.params['network_type'] == 'regressor':
+            #     # scale labels for regression
+            #     # TODO: pull max and min values out of here and into input.json
+            #     # label = self.label_minmaxscaling(label, [20., 60., -3., -3.],
+            #     #                             [200., 200., 3., 3.], scale_range=[-10., 10.])
+            #     pass
 
             #check for nan
             # max_vec = tf.ones([230],dtype=tf.int64)
@@ -174,12 +191,13 @@ class DatasetTFRecords(object):
         :return: 2D tensor
         """
         #TODO: change calls to image specs from self.params to self.features
+        image_params = self.features_specs['specs'][self.features_specs['image_keys'][0]]
         zoom_factor = np.random.normal(1.0, 0.05, size=1)
-        crop_y_size, crop_x_size = self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']
+        crop_y_size, crop_x_size = image_params['IMAGE_HEIGHT'], image_params['IMAGE_WIDTH']
         size = tf.constant(value=[int(np.round(crop_y_size / zoom_factor)),
                                   int(np.round(crop_x_size / zoom_factor))], dtype=tf.int32)
-        cen_y = np.ones((1,), dtype=np.float32) * int(self.params['IMAGE_HEIGHT'] / 2)
-        cen_x = np.ones((1,), dtype=np.float32) * int(self.params['IMAGE_WIDTH'] / 2)
+        cen_y = np.ones((1,), dtype=np.float32) * int(image_params['IMAGE_HEIGHT'] / 2)
+        cen_x = np.ones((1,), dtype=np.float32) * int(image_params['IMAGE_WIDTH'] / 2)
         offsets = tf.stack([cen_y, cen_x], axis=1)
         scaled_image = tf.expand_dims(image, axis=0)
         scaled_image = tf.image.extract_glimpse(scaled_image, size, offsets,
@@ -188,7 +206,7 @@ class DatasetTFRecords(object):
                                                 uniform_noise=False)
         scaled_image = tf.reshape(scaled_image, (scaled_image.shape[1].value, scaled_image.shape[2].value,
                                                  scaled_image.shape[3].value))
-        scaled_image = tf.image.resize_images(scaled_image, (self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']))
+        scaled_image = tf.image.resize_images(scaled_image, (image_params['IMAGE_HEIGHT'], image_params['IMAGE_WIDTH']))
         return scaled_image
 
 
@@ -221,13 +239,10 @@ class DatasetTFRecords(object):
         """
 
         # Apply random global affine transformations
-        # if geometric:
 
-        # image = self.rotate_image(image)
-
-        # image = self.glimpse_at_image(image)
-
+        image = self.rotate_image(image)
         image = self.add_noise_image(image)
+        # image = self.glimpse_at_image(image)
 
         return image
 
@@ -248,8 +263,9 @@ class DatasetTFRecords(object):
 
         # set size of glimpses
         #TODO: change calls to image specs from self.params to self.features
-        y_size, x_size = self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']
-        crop_y_size, crop_x_size = self.params['CROP_HEIGHT'], self.params['CROP_WIDTH']
+        image_params = self.features_specs['specs'][self.features_specs['image_keys'][0]]
+        y_size, x_size = image_params['IMAGE_HEIGHT'], image_params['IMAGE_WIDTH']
+        crop_y_size, crop_x_size = image_params['CROP_HEIGHT'], image_params['CROP_WIDTH']
         size = tf.constant(value=[crop_y_size, crop_x_size],
                            dtype=tf.int32)
 
@@ -339,18 +355,19 @@ class DatasetTFRecords(object):
 
             # resize
             if self.params['resize']:
-                images = tf.image.resize_bilinear(images, [self.params['RESIZE_WIDTH'],
-                                    self.params['RESIZE_HEIGHT']])
+                images = tf.image.resize_bilinear(images, [image_params['RESIZE_WIDTH'],
+                                    image_params['RESIZE_HEIGHT']])
             if self.params['tile']:
-                images = tf.ones([self.params['IMAGE_DEPTH'], self.params['IMAGE_HEIGHT'],
-                        self.params['IMAGE_WIDTH']], dtype=self.params['IMAGE_DTYPE'])
-                labels = tf.ones([256, 512,512], dtype=self.params['LABEL_DTYPE'])
+                images = tf.ones([image_params['IMAGE_DEPTH'], image_params['IMAGE_HEIGHT'],
+                        image_params['IMAGE_WIDTH']], dtype=image_params['IMAGE_DTYPE'])
+                labels = tf.ones([256, 512,512], dtype=image_params['LABEL_DTYPE'])
 
             # image_shape = images.get_shape().as_list()
             # if self.params['TENSOR_FORMAT'] == 'NCHW' or image_shape[-1] != image_shape[1]:
+            # if self.params['TENSOR_FORMAT'] == 'NHWC':
             #     # change from NHWC to NCHW format
             #     # TODO: add flag to swith between 2 ....
-            #     images = tf.transpose(images, perm=[0, 3, 1, 2])
+                # images = tf.transpose(images, perm=[0, 3, 1, 2])
 
         return images, labels
 

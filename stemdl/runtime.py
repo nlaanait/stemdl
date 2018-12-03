@@ -279,7 +279,7 @@ def fully_connected(n_net, layer_params, batch_size, wd=0, name=None, reuse=None
             initializer=tf.random_normal_initializer(0,0.01))
             bias = tf.get_variable('bias', layer_params['bias'], initializer=tf.constant_initializer(1.e-3))
         output = tf.nn.bias_add(tf.matmul(input, weights), bias, name=name)
-    # Add output layer to neural net scopes for layerwise optimization 
+    # Add output layer to neural net scopes for layerwise optimization
     n_net.scopes.append(output_scope)
     return output
 
@@ -336,7 +336,7 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
                                     reduction=tf.losses.Reduction.MEAN)
     if params['type'] == 'MSE':
         cost = tf.losses.mean_squared_error(labels, weights=weight, predictions=net_output,
-                                            reduction=tf.losses.Reduction.SUM)
+                                            reduction=tf.losses.Reduction.MEAN)
     if params['type'] == 'LOG':
         cost = tf.losses.log_loss(labels, weights=weight, predictions=net_output, reduction=tf.losses.Reduction.MEAN)
     return cost
@@ -476,7 +476,7 @@ def train_horovod_mod(network_config, hyper_params, params):
     # Setup data stream
     with tf.device(params['CPU_ID']):
         with tf.name_scope('Input') as _:
-            dset = inputs.DatasetTFRecords(params, dataset=params['dataset'])
+            dset = inputs.DatasetTFRecords(params, dataset=params['dataset'], debug=True)
             images, labels = dset.minibatch()
             # Staging images on host
             staging_op, (images, labels) = dset.stage([images, labels])
