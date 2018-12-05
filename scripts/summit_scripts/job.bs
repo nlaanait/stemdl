@@ -1,0 +1,80 @@
+#!/bin/bash -l
+#BSUB -P GEN113 
+#BSUB -J stemdl 
+#BSUB -o logs.o%J
+#BSUB -W 20 
+#BSUB -alloc_flags "smt4 nvme"
+#BSUB -nnodes 4 
+##BSUB -alloc flags "gpumps"
+##BSUB -csm y
+#BSUB -q batch
+
+#module load cuda/9.1.85
+#module load container-builder
+
+#module load spectrum-mpi
+#module load gcc/4.8.5
+
+extract_json_field(){
+  grep $1 input_flags.json | awk -v FS="(value\":|,)" '{print $3}'
+}
+
+NODES=$(cat ${LSB_DJOB_HOSTFILE} | sort | uniq | grep -v login | grep -v batch | wc -l)
+HOME="/gpfs/wolf/gen113/scratch/nl7/work"
+
+### modules ###
+#module load gcc/6.4.0
+module load spectrum-mpi
+module load cuda/9.2.148
+
+### TF ###
+export TF_CUDNN_USE_AUTOTUNE=1
+export TF_AUTOTUNE_THRESHOLD=2
+export TF_ENABLE_WINOGRAD_NONFUSED=1
+export TF_ENABLE_XLA=0
+#export OMPI_LD_PRELOAD_PREPEND=/pathto/directconv.so
+
+### CUDNN ###
+#export CUDNN_LOGDEST_DBG="cudnn_thresh2_tune1_nonfused1.log"
+
+### python ###
+BASE="/gpfs/wolf/stf011/world-shared/native-build"
+PYTHON="${BASE}/anaconda3"
+RUNDIR="${HOME}/DL/regression"
+export LD_LIBRARY_PATH=${PYTHON}/lib:${BASE}/nccl/lib:${BASE}/cudnn/lib:$LD_LIBRARY_PATH
+export OMPI_LD_PRELOAD_PREPEND=${RUNDIR}/directconv.so
+
+### stemdl ###
+#export HOROVOD_HIERARCHICAL_ALLREDUCE=1
+DATA="${HOME}/data"
+SCRIPT="${RUNDIR}/stemdl_run.py"
+NROOT="ResNet_50"
+LOG="${RUNDIR}/output_logs/${NROOT}_${NODES}_${LSB_JOBID}.log"
+HYPER="${RUNDIR}/hyper_params.json"
+INPUT="${RUNDIR}/input_flags.json"
+NETWORK="${RUNDIR}/networks/network_${NROOT}.json"
+CKPT="${RUNDIR}/checkpoints/${NROOT}_${NODES}_checkpoint"
+cpus=10
+ILR=0.001
+BN_DECAY=0.8
+EPOCH_PER_DECAY=50.0
+EPOCH_PER_SAVE=10.0
+SCALING=1.0
+FP=fp32
+MODE="train"
+MAX_STEPS=20000
+BATCH=512
+CMD="${PYTHON}/bin/python -u ${SCRIPT} --data_dir ${DATA}  --${FP}  --cpu_threads $cpus --mode $MODE --save_epochs $EPOCH_PER_SAVE --batch_size $BATCH  --log_frequency 10 --max_steps $MAX_STEPS --network_config ${NETWORK} --checkpt_dir ${CKPT} --ilr ${ILR} --bn_decay ${BN_DECAY} --scaling ${SCALING} --input_flags ${INPUT} --hyper_params ${HYPER}"
+
+### pami ibv ###
+export PAMI_ENABLE_STRIPING=0
+export PAMI_IBV_ADAPTER_AFFINITY=1
+export PAMI_ENABLE_STRIPING=0
+export PAMI_IBV_DEVICE_NAME="mlx5_0:1"
+export PAMI_IBV_DEVICE_NAME_1="mlx5_3:1"
+export NCCL_MIN_NRINGS=4
+PAMI_IBV_ENABLE_DCT=1
+
+#export CUDNN_LOGDEST_DBG="cudnn_thresh2_tune1_nonfused1.log"
+#jsrun -n${NODES} -a 6 -c 42 -g 6 -r 1 --bind=proportional-packed:7 --launch_distribution=packed stdbuf -o0 ./launch.sh "${CMD}" > $LOG
+jsrun -n${NODES} -a 6 -c 42 -g 6 -r 1 --bind=proportional-packed:7 --launch_distribution=packed ${CMD} > $LOG

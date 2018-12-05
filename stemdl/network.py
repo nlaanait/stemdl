@@ -175,13 +175,13 @@ class ConvNet(object):
                 if name == 'uniform_unit_scaling':
                     # self.print_verbose('using ' + name + ' initializer')
                     # Random walk initialization (currently in the code).
-                    return tf.uniform_unit_scaling_initializer(**params_copy)
+                    return tf.initializers.variance_scaling(distribution="uniform")
                 elif name == 'truncated_normal':
                     # self.print_verbose('using ' + name + ' initializer')
                     return tf.truncated_normal_initializer(**params_copy)
                 elif name == 'variance_scaling':
                     # self.print_verbose('using ' + name + ' initializer')
-                    return tf.contrib.layers.variance_scaling_initializer(**params_copy)
+                    return tf.initializers.variance_scaling(distribution="normal")
                 elif name == 'random_normal':
                     # self.print_verbose('using ' + name + ' initializer')
                     # Normalized Initialization ( eq. 16 in Glorot et al.).
