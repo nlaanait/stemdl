@@ -53,7 +53,8 @@ class TrainHelper(object):
         self.start_time = time.time()
         self.saver = saver
         self.writer = writer
-
+        self.elapsed_epochs = self.last_step * self.params['batch_size'] * 1.0 * hvd.size() / \
+                              self.params['NUM_EXAMPLES_PER_EPOCH']
     def before_run(self):
         self.last_step +=1
         self.start_time = time.time()
@@ -444,8 +445,9 @@ def train_horovod_mod(network_config, hyper_params, params):
                             log_device_placement=params['log_device_placement'],
                             )
     config.gpu_options.visible_device_list = str(hvd.local_rank())
+    config.gpu_options.force_gpu_compatible = True
     config.intra_op_parallelism_threads = 1
-    config.inter_op_parallelism_threads = int(cpu_count()/6)
+    config.inter_op_parallelism_threads = max(1, cpu_count()//6)
     #config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
     # JIT causes gcc errors on dgx-dl and is built without on Summit.
     sess = tf.Session(config=config)
@@ -476,7 +478,7 @@ def train_horovod_mod(network_config, hyper_params, params):
     # Setup data stream
     with tf.device(params['CPU_ID']):
         with tf.name_scope('Input') as _:
-            dset = inputs.DatasetTFRecords(params, dataset=params['dataset'], debug=True)
+            dset = inputs.DatasetTFRecords(params, dataset=params['dataset'], debug=False)
             images, labels = dset.minibatch()
             # Staging images on host
             staging_op, (images, labels) = dset.stage([images, labels])
@@ -607,8 +609,12 @@ def train_horovod_mod(network_config, hyper_params, params):
     else:
         train_elf = TrainHelper(params, saver, None, n_net.ops, last_step=last_step)
 
-    next_validation_epoch = params['epochs_per_validation']
-    next_checkpoint_epoch = params['epochs_per_saving']
+    if params['restart']:
+        next_validation_epoch = train_elf.elapsed_epochs + params['epochs_per_validation']
+        next_checkpoint_epoch = train_elf.elapsed_epochs + params['epochs_per_saving']
+    else:
+        next_validation_epoch = params['epochs_per_validation']
+        next_checkpoint_epoch = params['epochs_per_saving']
 
     train_elf.run_summary( )
     maxSteps  = params[ 'max_steps' ]
@@ -649,11 +655,11 @@ def train_horovod_mod(network_config, hyper_params, params):
         # Here we do validation:
         if train_elf.elapsed_epochs > next_validation_epoch:
             # do validation over 300 batches.
-            validate(hyper_params, params, network_config, sess, dset)
+            validate(network_config, hyper_params, params, sess, dset)
             next_validation_epoch += params['epochs_per_validation']
 
 
-def validate(network_config, hyper_params, params, sess, dset, num_batches=300):
+def validate(network_config, hyper_params, params, sess, dset, num_batches=150):
     """
     Runs validation with current weights
     :param params:
@@ -670,6 +676,7 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=300):
 
     with tf.variable_scope('horovod', reuse=True) as _:
         # Setup Neural Net
+        params['IMAGE_FP16'] = False
         n_net = network.ResNet('horovod', params, hyper_params, network_config, tf.cast(images, tf.float32),
                                labels, operation='eval', summary=False)
 
@@ -817,7 +824,7 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=300,
                 if hyper_params['network_type'] == 'regressor':
                     validation_error = tf.losses.mean_squared_error(labels, predictions=logits, reduction=tf.losses.Reduction.NONE)
                     # Average validation error over batches
-                    errors = np.array([sess.run(validation_error) for _ in range(num_batches)])
+                    errors = np.array([sess.run([IO_ops, validation_error])[-1] for _ in range(num_batches)])
                     errors = errors.reshape(-1, params['NUM_CLASSES'])
                     avg_errors = errors.mean(0)
                     print_rank('Validation MSE: %s' % format(avg_errors))

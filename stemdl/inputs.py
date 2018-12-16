@@ -42,7 +42,17 @@ reconstruction_2d = {'energy': {'dtype':'float64', 'shape':[1]},
                       'potential': {'dtype': 'float16', 'shape':[1,512,512]},
                       'preprocess': False}
 
-abf_oxides = {'label':{'dtype': 'float64', 'shape':[3]},
+abf_oxides_regression = {'label':{'dtype': 'float64', 'shape':[3]},
+            # 'rotation_pattern':{'dtype': 'int64', 'shape':[27]},
+            # images
+            'image_raw':{'dtype':'float16', 'depth':1, 'IMAGE_HEIGHT': 85,
+            'IMAGE_DEPTH': 1, 'IMAGE_WIDTH': 120, 'shape': [85, 120, 1],
+            'preprocess': True, 'CROP_HEIGHT': 85, 'CROP_WIDTH': 120,
+            'RESIZE_WIDTH': 120, 'RESIZE_HEIGHT': 85},
+            'preprocess': True}
+
+
+abf_oxides_classification = {'label':{'dtype': 'int64', 'shape':[27]},
             # 'rotation_pattern':{'dtype': 'int64', 'shape':[27]},
             # images
             'image_raw':{'dtype':'float16', 'depth':1, 'IMAGE_HEIGHT': 85,
@@ -83,10 +93,10 @@ class DatasetTFRecords(object):
                             'label_keys': ['potential'], 'specs': reconstruction_2d}
         elif self.dataset == 'abf_oxides_regression':
             self.features_specs = {'image_keys': ['image_raw'],
-                            'label_keys': ['label'], 'specs': abf_oxides}
+                            'label_keys': ['label'], 'specs': abf_oxides_regression}
         elif self.dataset == 'abf_oxides_classification':
             self.features_specs = {'image_keys': ['image_raw'],
-                            'label_keys': ['rotation_pattern'], 'specs': abf_oxides}
+                            'label_keys': ['label'], 'specs': abf_oxides_classification}
         elif self.dataset is None:
             self.features_specs = None
 
@@ -242,8 +252,6 @@ class DatasetTFRecords(object):
 
         image = self.rotate_image(image)
         image = self.add_noise_image(image)
-        # image = self.glimpse_at_image(image)
-
         return image
 
 
@@ -313,7 +321,7 @@ class DatasetTFRecords(object):
 
         record_input = data_flow_ops.RecordInput(
             file_pattern=os.path.join(self.params['data_dir'], '%s/*.tfrecords' % mode),
-            parallelism=6,
+            parallelism=16,
             buffer_size=self.params['buffer_cap'],
             batch_size=batch_size)
         records = record_input.get_yield_op()
