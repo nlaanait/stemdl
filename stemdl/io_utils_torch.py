@@ -3,6 +3,7 @@ import lmdb
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
+import os
 
 def numpy_to_lmdb(lmdb_path, data, labels, lmdb_map_size=int(1e12)):
     env = lmdb.open(lmdb_path, map_size=lmdb_map_size)
@@ -19,7 +20,7 @@ def numpy_to_lmdb(lmdb_path, data, labels, lmdb_map_size=int(1e12)):
 
 
 class ABFDataSet(Dataset):
-    """ ABF data set"""
+    """ ABF data set on lmdb."""
     def __init__(self, lmdb_path, key_base = 'sample', input_transform=None, target_transform=None,
                                         input_shape=(1,85,120), target_shape=(3,),
                                         debug=True):
@@ -48,6 +49,7 @@ class ABFDataSet(Dataset):
         return self.db.stat()['entries'] - 2
 
     def __getitem__(self, idx):
+        # outside_func(idx)
         with self.db.begin(write=False, buffers=True) as txn:
             key = bytes('%s_%i' %(self.key_base, idx), "ascii")
             bytes_buff = txn.get(key)
@@ -80,9 +82,23 @@ class ABFDataSet(Dataset):
     def __repr__(self):
         pass
 
+def set_io_affinity(mpi_rank, mpi_size):
+    """
+    Set the affinity based on available cpus, mpi (local) rank, and mpi (local)
+    size. Assumes mpirun binding is none.
+    """
+    total_procs = len(os.sched_getaffinity(0))
+    max_procs = total_procs // mpi_size
+    new_affnty = range( mpi_rank * max_procs, (mpi_rank + 1) * max_procs)
+    os.sched_setaffinity(0, new_affnty)
+    return new_affnty
+
 def benchmark_io(lmdb_path, num_procs=1, step=100, warmup=100, max_batches=1000,
                 batch_size=512, shuffle=True, num_workers=20, pin_mem=True,
                 gpu_copy=True):
+    """ Measure I/O performance of lmdb and multiple python processors during
+        training.
+    """
     abfData = ABFDataSet(lmdb_path, debug=False)
     data_loader = DataLoader(abfData, batch_size=batch_size, shuffle=True,
                     num_workers=num_workers, pin_memory=pin_mem)
