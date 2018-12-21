@@ -26,8 +26,7 @@ class ABFDataSet(Dataset):
                                         debug=True):
         self.debug = debug
         self.lmdb_path = lmdb_path
-        self.db = lmdb.open(self.lmdb_path, readahead=False,
-        readonly=True, writemap=False, lock=False)
+        self.db = lmdb.open(self.lmdb_path, readahead=False, readonly=True, writemap=False, lock=False)
         with self.db.begin(write=False) as txn:
             self.dtype = np.dtype(txn.get(b"data_dtype"))
         self.print_debug("read dtype %s from lmdb file %s" %(format(self.dtype),
@@ -82,6 +81,81 @@ class ABFDataSet(Dataset):
     def __repr__(self):
         pass
 
+
+class ABFDataSetMulti(Dataset):
+    """ ABF data set on lmdb."""
+    def __init__(self, lmdb_dir, key_base = 'sample', input_transform=None, target_transform=None,
+                                        input_shape=(1,85,120), target_shape=(3,),
+                                        debug=True):
+        self.debug = debug
+        self.lmdb_path = [os.path.join(lmdb_dir, lmdb_path) for lmdb_path in os.listdir(lmdb_dir)]
+        self.db = [lmdb.open(self.lmdb_path, readahead=False, readonly=True, writemap=False, lock=False)
+                            for lmdb in self.lmdb_path]
+
+        ## TODO: Need to specify how many records are for headers at __init__: now 2
+        self.db_records = [db.stat()['entries'] - 2 for db in self.db]
+        self.db_idx_sum = np.cumsum(self.db_records)
+
+        with self.db[0].begin(write=False) as txn:
+            self.dtype = np.dtype(txn.get(b"data_dtype"))
+        self.print_debug("read dtype %s from lmdb file %s" %(format(self.dtype),
+                                                            self.lmdb_path))
+        #TODO: add shapes to lmdb headers.
+        #TODO: add dtypes to lmbd headers.
+        self.input_shape = input_shape
+        self.target_shape = target_shape
+        self.key_base = key_base
+        self.input_transform = input_transform
+        self.target_transform = target_transform
+
+    def print_debug(self, *args, **kwargs):
+        if self.debug:
+            print(*args, **kwargs)
+
+    def __len__(self):
+        ## TODO: Need to specify how many records are for headers at __init__: now 2
+        return sum(self.db_records)
+
+
+    def __getitem__(self, idx):
+        # outside_func(idx)
+        # map record index to lmdb file index
+        db_idx = np.argmax(idx < self.db_idx_sum)
+        if db_idx > 0: 
+            idx -= np.sum(self.db_idx_sum[:db_idx])
+        # fetch records
+        with self.db[db_idx].begin(write=False, buffers=True) as txn:
+            key = bytes('%s_%i' %(self.key_base, idx), "ascii")
+            bytes_buff = txn.get(key)
+            sample = np.frombuffer(bytes_buff, dtype=self.dtype)
+        input_size = np.prod(np.array(self.input_shape))
+        target_size = np.prod(np.array(self.target_shape))
+        input = sample[:input_size].astype('float32')
+        target = sample[-target_size:].astype('float64')
+        self.print_debug('read input %d with size %d' %(idx, input.size))
+        if self.input_transform is not None:
+            input = self.transform_input(input)
+        if self.target_transform is not None:
+            target = self.transform_target(target)
+
+        input = input.reshape(self.input_shape)
+        target = target.reshape(self.target_shape)
+
+        return {'input':torch.from_numpy(input), 'target':torch.from_numpy(target)}
+
+    @staticmethod
+    def transform_target(target):
+        if target.dtype != 'float64':
+            return target.astype('float64')
+
+    @staticmethod
+    def transform_input(input):
+        if input.dtype != 'float32':
+            return input.astype('float32')
+
+    def __repr__(self):
+        pass
+
 def set_io_affinity(mpi_rank, mpi_size, debug=True):
     """
     Set the affinity based on available cpus, mpi (local) rank, and mpi (local)
@@ -97,7 +171,7 @@ def set_io_affinity(mpi_rank, mpi_size, debug=True):
         print("New Affinity %s" % os.sched_getaffinity(0))
     return new_affnty
 
-def benchmark_io(lmdb_path, step=100, warmup=100, max_batches=1000,
+def benchmark_io(lmdb_path, mpi_rank, step=100, warmup=100, max_batches=1000,
                 batch_size=512, shuffle=True, num_workers=20, pin_mem=True,
                 gpu_copy=True):
     """ Measure I/O performance of lmdb and multiple python processors during
@@ -108,23 +182,24 @@ def benchmark_io(lmdb_path, step=100, warmup=100, max_batches=1000,
                     num_workers=num_workers, pin_memory=pin_mem)
     bandwidths=[]
     t = time()
-    cuda = torch.device('cuda')
-    for batch_num, batch in enumerate(data_loader):
-        if gpu_copy:
-            batch['input'].cuda(non_blocking=True)
-        if batch_num % step == 0:
-            print('loaded batch %d' % batch_num)
-            print('input:', batch['input'].size(), 'target:', batch['target'].size())
-            t_run = time() - t
-            size = torch.prod(torch.tensor(batch['input'].size())).numpy() * \
-            batch['input'].element_size() * step
-            t = time()
-            if batch_num > warmup:
-                bandwidths.append(size/1024e6/t_run)
-                print('Bandwidth: %2.3f (GB/s)' % (size/1024e6/t_run))
-            t = time()
-        if batch_num == max_batches:
-            break
-    bandwidths = np.array(bandwidths)
-    print('Total Bandwidth: %2.2f +/- %2.2f (GB/s)' %(bandwidths.mean(), bandwidths.std()))
+    # cuda = torch.device('cuda:1')
+    with torch.cuda.device(mpi_rank):
+        for batch_num, batch in enumerate(data_loader):
+            if gpu_copy:
+                batch['input'].cuda(non_blocking=True)
+            if batch_num % step == 0:
+                print('loaded batch %d' % batch_num)
+                print('input:', batch['input'].size(), 'target:', batch['target'].size())
+                t_run = time() - t
+                size = torch.prod(torch.tensor(batch['input'].size())).numpy() * \
+                batch['input'].element_size() * step
+                t = time()
+                if batch_num > warmup:
+                    bandwidths.append(size/1024e6/t_run)
+                    print('Bandwidth: %2.3f (GB/s)' % (size/1024e6/t_run))
+                t = time()
+            if batch_num == max_batches:
+                break
+        bandwidths = np.array(bandwidths)
+        print('Total Bandwidth: %2.2f +/- %2.2f (GB/s)' %(bandwidths.mean(), bandwidths.std()))
     return bandwidths.mean(), bandwidths.std()
