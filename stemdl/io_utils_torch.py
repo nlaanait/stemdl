@@ -60,9 +60,9 @@ class ABFDataSet(Dataset):
         target = sample[-target_size:].astype('float64')
         self.print_debug('read input %d with size %d' %(idx, input.size))
         if self.input_transform is not None:
-            input = self.input_transform(input)
+            input = self.transform_input(input)
         if self.target_transform is not None:
-            target = self.target_transform(target)
+            target = self.transform_target(target)
 
         input = input.reshape(self.input_shape)
         target = target.reshape(self.target_shape)
@@ -70,30 +70,34 @@ class ABFDataSet(Dataset):
         return {'input':torch.from_numpy(input), 'target':torch.from_numpy(target)}
 
     @staticmethod
-    def target_transform(target):
+    def transform_target(target):
         if target.dtype != 'float64':
             return target.astype('float64')
 
     @staticmethod
-    def input_transform(input):
+    def transform_input(input):
         if input.dtype != 'float32':
             return input.astype('float32')
 
     def __repr__(self):
         pass
 
-def set_io_affinity(mpi_rank, mpi_size):
+def set_io_affinity(mpi_rank, mpi_size, debug=True):
     """
     Set the affinity based on available cpus, mpi (local) rank, and mpi (local)
     size. Assumes mpirun binding is none.
     """
+    if debug: 
+        print("Initial Affinity %s" % os.sched_getaffinity(0))
     total_procs = len(os.sched_getaffinity(0))
     max_procs = total_procs // mpi_size
     new_affnty = range( mpi_rank * max_procs, (mpi_rank + 1) * max_procs)
     os.sched_setaffinity(0, new_affnty)
+    if debug:
+        print("New Affinity %s" % os.sched_getaffinity(0))
     return new_affnty
 
-def benchmark_io(lmdb_path, num_procs=1, step=100, warmup=100, max_batches=1000,
+def benchmark_io(lmdb_path, step=100, warmup=100, max_batches=1000,
                 batch_size=512, shuffle=True, num_workers=20, pin_mem=True,
                 gpu_copy=True):
     """ Measure I/O performance of lmdb and multiple python processors during
@@ -107,7 +111,7 @@ def benchmark_io(lmdb_path, num_procs=1, step=100, warmup=100, max_batches=1000,
     cuda = torch.device('cuda')
     for batch_num, batch in enumerate(data_loader):
         if gpu_copy:
-            batch_num['input'].cuda()
+            batch['input'].cuda(non_blocking=True)
         if batch_num % step == 0:
             print('loaded batch %d' % batch_num)
             print('input:', batch['input'].size(), 'target:', batch['target'].size())
