@@ -234,6 +234,9 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
         output = fully_connected(n_net, layer_params, params['batch_size'],
                                 name='linear', wd=hyper_params['weight_decay'])
         _ = calculate_loss_regressor(output, labels, params, hyper_params)
+    if hyper_params['network_type'] == 'inverter':
+        _ = calculate_loss_regressor(n_net.model_output, labels, params, hyper_params)
+
     if hyper_params['network_type'] == 'classifier':
         if labels.dtype is not tf.int64:
             labels = tf.cast(labels, tf.int64)
@@ -318,7 +321,7 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
         global_step = 1
     params = hyper_params['loss_function']
     assert params['type'] == 'Huber' or params['type'] == 'MSE' \
-    or params['type'] == 'LOG', "Type of regression loss function must be 'Huber' or 'MSE'"
+    or params['type'] == 'LOG' or params['type'] == 'MSE_PAIR', "Type of regression loss function must be 'Huber' or 'MSE'"
     if params['type'] == 'Huber':
         # decay the residual cutoff exponentially
         decay_steps = int(params['NUM_EXAMPLES_PER_EPOCH'] / params['batch_size'] \
@@ -338,6 +341,8 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
     if params['type'] == 'MSE':
         cost = tf.losses.mean_squared_error(labels, weights=weight, predictions=net_output,
                                             reduction=tf.losses.Reduction.MEAN)
+    if params['type'] == 'MSE_PAIR':
+        cost = tf.losses.mean_pairwise_squared_error(labels, net_output, weights=weight)
     if params['type'] == 'LOG':
         cost = tf.losses.log_loss(labels, weights=weight, predictions=net_output, reduction=tf.losses.Reduction.MEAN)
     return cost

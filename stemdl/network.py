@@ -39,7 +39,6 @@ class ConvNet(object):
         self.hyper_params = hyper_params
         self.network = network
         self.images = images
-        self.images = self.get_glimpses(self.images)
         if self.params['IMAGE_FP16'] and self.images.dtype is not tf.float16 and operation == 'train':
             self.images = tf.cast(self.images, tf.float16)
         image_shape = images.get_shape().as_list()
