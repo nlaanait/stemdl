@@ -39,7 +39,6 @@ class ConvNet(object):
         self.hyper_params = hyper_params
         self.network = network
         self.images = images
-        self.images = self.get_glimpses(self.images)
         if self.params['IMAGE_FP16'] and self.images.dtype is not tf.float16 and operation == 'train':
             self.images = tf.cast(self.images, tf.float16)
         image_shape = images.get_shape().as_list()
@@ -64,7 +63,7 @@ class ConvNet(object):
             self.operation == 'eval'
         self.bytesize = 2
         if not self.params['IMAGE_FP16']: self.bytesize = 4
-        self.mem = np.cumprod(self.images.get_shape().as_list())[-1]*self.bytesize/1024  # (in KB)
+        self.mem = np.prod(self.images.get_shape().as_list()) * self.bytesize/1024  # (in KB)
         self.ops = 0
         if "batch_norm" in self.hyper_params:
             self.hyper_params["batch_norm"]["decay"] = self.hyper_params["batch_norm"].get("decay", 0.995)

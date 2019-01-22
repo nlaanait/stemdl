@@ -234,6 +234,9 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
         output = fully_connected(n_net, layer_params, params['batch_size'],
                                 name='linear', wd=hyper_params['weight_decay'])
         _ = calculate_loss_regressor(output, labels, params, hyper_params)
+    if hyper_params['network_type'] == 'inverter':
+        _ = calculate_loss_regressor(n_net.model_output, labels, params, hyper_params)
+
     if hyper_params['network_type'] == 'classifier':
         if labels.dtype is not tf.int64:
             labels = tf.cast(labels, tf.int64)
@@ -318,7 +321,7 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
         global_step = 1
     params = hyper_params['loss_function']
     assert params['type'] == 'Huber' or params['type'] == 'MSE' \
-    or params['type'] == 'LOG', "Type of regression loss function must be 'Huber' or 'MSE'"
+    or params['type'] == 'LOG' or params['type'] == 'MSE_PAIR', "Type of regression loss function must be 'Huber' or 'MSE'"
     if params['type'] == 'Huber':
         # decay the residual cutoff exponentially
         decay_steps = int(params['NUM_EXAMPLES_PER_EPOCH'] / params['batch_size'] \
@@ -338,6 +341,8 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
     if params['type'] == 'MSE':
         cost = tf.losses.mean_squared_error(labels, weights=weight, predictions=net_output,
                                             reduction=tf.losses.Reduction.MEAN)
+    if params['type'] == 'MSE_PAIR':
+        cost = tf.losses.mean_pairwise_squared_error(labels, net_output, weights=weight)
     if params['type'] == 'LOG':
         cost = tf.losses.log_loss(labels, weights=weight, predictions=net_output, reduction=tf.losses.Reduction.MEAN)
     return cost
@@ -442,8 +447,10 @@ def train_horovod_mod(network_config, hyper_params, params):
     #########################
     # Config file for tf.Session()
     config = tf.ConfigProto(allow_soft_placement=params['allow_soft_placement'],
-                            log_device_placement=params['log_device_placement'],
-                            )
+                           log_device_placement=params['log_device_placement'],
+                           )
+    #config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
     config.gpu_options.visible_device_list = str(hvd.local_rank())
     config.gpu_options.force_gpu_compatible = True
     config.intra_op_parallelism_threads = 1
@@ -483,6 +490,7 @@ def train_horovod_mod(network_config, hyper_params, params):
             # Staging images on host
             staging_op, (images, labels) = dset.stage([images, labels])
 
+    #with tf.device('/gpu:0'):
     with tf.device('/gpu:%d' % hvd.local_rank()):
         # Copy images from host to device
         gpucopy_op, (images, labels) = dset.stage([images, labels])
@@ -570,11 +578,11 @@ def train_horovod_mod(network_config, hyper_params, params):
     # Stats and summaries
     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
     run_metadata = tf.RunMetadata()
-    if hvd.rank() == 0:
-        summary_writer = tf.summary.FileWriter(params['checkpt_dir'], sess.graph)
+    #if hvd.rank() == 0:
+        #summary_writer = tf.summary.FileWriter(params['checkpt_dir'], sess.graph)
         # Add Summary histograms for trainable variables and their gradients
-    summary_merged = tf.summary.merge_all()
-
+    #summary_merged = tf.summary.merge_all()
+    summary_merged = None
 
      ###############################
     # Setting up training session #
@@ -585,6 +593,7 @@ def train_horovod_mod(network_config, hyper_params, params):
     sess.run(init_op)
 
     # Sync
+    print_rank('Syncing horovod ranks...')
     sync_op = hvd.broadcast_global_variables(0)
     sess.run(sync_op)
 
@@ -605,9 +614,10 @@ def train_horovod_mod(network_config, hyper_params, params):
 
     # Train
     if hvd.rank() == 0:
-        train_elf = TrainHelper(params, saver, summary_writer,  n_net.get_ops(), last_step=last_step)
+        #train_elf = TrainHelper(params, saver, summary_writer,  n_net.get_ops(), last_step=last_step)
+        train_elf = TrainHelper(params, saver, None,  n_net.get_ops(), last_step=last_step)
     else:
-        train_elf = TrainHelper(params, saver, None, n_net.ops, last_step=last_step)
+        train_elf = TrainHelper(params, saver, None, n_net.get_ops(), last_step=last_step)
 
     if params['restart']:
         next_validation_epoch = train_elf.elapsed_epochs + params['epochs_per_validation']
@@ -627,6 +637,8 @@ def train_horovod_mod(network_config, hyper_params, params):
         doLog   = train_elf.last_step % logFreq  == 0
         doSave  = train_elf.elapsed_epochs > next_checkpoint_epoch
         doTrace = train_elf.last_step == traceStep and params['gpu_trace']
+        #loss_value, lr = sess.run( [ train_op, total_loss, learning_rate ] )[ -2: ]
+        #train_elf.log_stats( loss_value, lr )
 
         if not doLog and not doSave and not doTrace :
            sess.run(train_op)

@@ -42,6 +42,16 @@ reconstruction_2d = {'energy': {'dtype':'float64', 'shape':[1]},
                       'potential': {'dtype': 'float16', 'shape':[1,512,512]},
                       'preprocess': False}
 
+reconstruction_2d = {'material': {'dtype':'str', 'shape':[1]},
+                      'space_group': {'dtype': 'int64', 'shape':[1]},
+                      'abc': {'dtype':'float64', 'shape':[3]},
+                      'angles': {'dtype':'float64', 'shape':[3]},
+                      'formula': {'dtype': 'str', 'shape':[1]},
+                       # images
+                      'cbed': {'dtype': 'float32', 'shape':[1024,512,512]},
+                      '2d_potential': {'dtype': 'float32', 'shape':[512,512]},
+                      'preprocess': True}
+
 abf_oxides_regression = {'label':{'dtype': 'float64', 'shape':[3]},
             # 'rotation_pattern':{'dtype': 'int64', 'shape':[27]},
             # images
@@ -90,7 +100,7 @@ class DatasetTFRecords(object):
                             'label_keys':['chemical_comp', 'space_group']}
         elif self.dataset == '2d_reconstruction':
             self.features_specs = {'image_keys': ['cbed'],
-                            'label_keys': ['potential'], 'specs': reconstruction_2d}
+                            'label_keys': ['2d_potential'], 'specs': reconstruction_2d}
         elif self.dataset == 'abf_oxides_regression':
             self.features_specs = {'image_keys': ['image_raw'],
                             'label_keys': ['label'], 'specs': abf_oxides_regression}
@@ -167,11 +177,13 @@ class DatasetTFRecords(object):
             # TODO: all of this should be cached
             # standardize the image to [-1.,1.]
             image = tf.sqrt(image)
-            image = tf.image.per_image_standardization(image)
+            #image = tf.image.per_image_standardization(image)
+            
             # Checking for nan, bug in simulation codes...
-            image = tf.where(tf.is_nan(image), -tf.ones_like(image), image)
+            #image = tf.where(tf.is_nan(image), -tf.ones_like(image), image)
             # Manipulate labels
-
+            label = tf.expand_dims(label,axis=0)
+            #label = tf.image.per_image_standardization(label)
             # turn into 1-hot vector for classification. So that we don't modify the data.
             ## TODO: pull 'network_type' out of hyperparams and change calls
             # if self.params['network_type'] == 'classifier' and label_dtype == tf.float64:
@@ -356,7 +368,7 @@ class DatasetTFRecords(object):
             images = tf.reshape(images, images_newshape)
 
             # glimpse images: moved to GPU
-            images = self.get_glimpses(images)
+            #images = self.get_glimpses(images)
 
             # Display the training images in the Tensorboard visualizer.
             if self.debug: tf.summary.image("images", images, max_outputs=4)
@@ -483,7 +495,7 @@ class DatasetTFRecords(object):
             example.ParseFromString(string_record)
             label = np.fromstring(example.features.feature[label_key].bytes_list.value[0],dtype=label_dtype)
             image = np.fromstring(example.features.feature[image_key].bytes_list.value[0], dtype=image_dtype)
-            if i > 10:
+            if i > 2:
                 break
         if label.size != label_size or image.size != image_size:
             print_rank('image size and label size are not as expected.')
@@ -491,4 +503,4 @@ class DatasetTFRecords(object):
             print_rank('expected: %s, %s' %(format(image_size) ,format(label_size)))
             sys.exit()
         else:
-            pass
+            print_rank('found image and label with sizes: %s, %s' %(format(image.size) ,format(label.size)))
