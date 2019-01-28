@@ -140,26 +140,27 @@ def main():
         params['IO_threads'] = FLAGS.cpu_threads
 
     if FLAGS.nvme is not None:
-        params = nvme_staging(params['data_dir'],params, mode=params['mode'])
+        params = nvme_staging(params['data_dir'], params, mode=params['mode'])
     
-    benchmark_io(params, num_batches=FLAGS.num_batches) 
+    benchmark_io(params, filetype='lmdb', num_batches=FLAGS.num_batches) 
 
 def nvme_staging(data_dir, params, mode='train'):
     user = os.environ.get('USER')
-    # need to dig up function that does file_names sharding from gb runs 
-    file_names = os.listdir(os.path.join(data_dir, mode))
-    dir_name = os.path.join(data_dir.split(os.sep)[-1], mode)
-    gpfs_paths = [os.path.join(os.path.join(data_dir, mode), file_path) for file_path in file_names]
-    #nvme_paths = [os.path.join(os.path.join('/mnt/bb/%s' % user, dir_name), file_path) for file_path in file_names] 
     nvme_dir = '/mnt/bb/%s/rank_%s' %(user,hvd.rank())
-    nvme_paths = [os.path.join(nvme_dir, file_path) for file_path in file_names] 
-    #for gpfs_path, nvme_path in zip(gpfs_paths, nvme_paths):
-    #    shutil.copytree(gpfs_path, nvme_path, follow_symlinks=True)  
-        #print('global rank %d, local rank %d, copied file: %s' %(hvd.rank(), hvd.local_rank(), nvme_path))
+    nvme_dir = '/mnt/bb/%s' %(user)
     try:
-        shutil.copytree(params['data_dir'], nvme_dir) 
+        shutil.copytree('train', os.path.join(nvme_dir, 'train'))
     except FileExistsError as e:
         print(e) 
+    try:
+        shutil.copytree(os.path.join(params['data_dir'],"batch_%s.db" % hvd.rank()), os.path.join(nvme_dir,"train/batch_%s.db" % hvd.rank()))
+    except FileExistsError as e:
+        print(e) 
+        #print('global rank %d, local rank %d, copied file: %s' %(hvd.rank(), hvd.local_rank(), nvme_path))
+    #try:
+    #    shutil.copytree(params['data_dir'], nvme_dir) 
+    #except FileExistsError as e:
+    #    print(e) 
     params['data_dir'] = nvme_dir
     return params        
 
