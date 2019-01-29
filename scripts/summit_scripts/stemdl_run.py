@@ -22,7 +22,7 @@ except:
 #from mpi4py import MPI
 #comm = MPI.COMM_WORLD
 
-sys.path.append('../')
+#sys.path.append('../')
 from stemdl import runtime
 from stemdl import io_utils
 
@@ -80,13 +80,18 @@ def main():
                          help="""train or eval (:validates from checkpoint)""")
     cmdline.add_argument('--cpu_threads', default=10, type=int,
                          help="""cpu threads per rank""")
+    cmdline.add_argument( '--filetype', default=None, type=str,
+                         help=""" lmdb or tfrecord""")
     add_bool_argument( cmdline, '--fp16', default=None,
                          help="""Train with half-precision.""")
     add_bool_argument( cmdline, '--fp32', default=None,
                          help="""Train with single-precision.""")
     add_bool_argument( cmdline, '--restart', default=None,
                          help="""Restart training from checkpoint.""")
+    add_bool_argument( cmdline, '--nvme', default=None,
+                         help="""Copy data to burst buffer.""")
 
+    
     FLAGS, unknown_args = cmdline.parse_known_args()
     if len(unknown_args) > 0:
         for bad_arg in unknown_args:
@@ -132,6 +137,8 @@ def main():
         params['mode'] = 'eval'
     if FLAGS.cpu_threads is not None:
         params['IO_threads'] = FLAGS.cpu_threads
+    if FLAGS.filetype is not None:
+        params['filetype'] = FLAGS.filetype
 
     # Add other params
     params.setdefault( 'restart', False )
@@ -140,7 +147,7 @@ def main():
     # Also need a directory within the checkpoint dir for event files coming from eval
     eval_dir = os.path.join( checkpt_dir, '_eval' )
     if hvd.rank() == 0:
-        print('ENVIRONMENT VARIABLES: %s' %format(os.environ))
+        #print('ENVIRONMENT VARIABLES: %s' %format(os.environ))
         print( 'Creating checkpoint directory %s' % checkpt_dir )
     tf.gfile.MakeDirs( checkpt_dir )
     tf.gfile.MakeDirs( eval_dir )
@@ -187,7 +194,8 @@ def main():
     
     # copy data to nvme
     #if hvd.local_rank() == 0:
-    params = nvme_staging(params['data_dir'],params, mode=params['mode'])
+    if FLAGS.nvme is not None:
+        params = nvme_staging(params['data_dir'],params, mode=params['mode'])
     #comm.Barrier()
     # train or evaluate
     if params['mode'] == 'train':
@@ -198,17 +206,21 @@ def main():
 
 def nvme_staging(data_dir, params, mode='train'):
     user = os.environ.get('USER')
-    # need to dig up function that does file_names sharding from gb runs 
-    file_names = os.listdir(os.path.join(data_dir, mode))
-    dir_name = os.path.join(data_dir.split(os.sep)[-1], mode)
-    gpfs_paths = [os.path.join(os.path.join(data_dir, mode), file_path) for file_path in file_names]
-    #nvme_paths = [os.path.join(os.path.join('/mnt/bb/%s' % user, dir_name), file_path) for file_path in file_names] 
     nvme_dir = '/mnt/bb/%s/rank_%s' %(user,hvd.rank())
-    nvme_paths = [os.path.join(nvme_dir, file_path) for file_path in file_names] 
-    #for gpfs_path, nvme_path in zip(gpfs_paths, nvme_paths):
-    #    shutil.copytree(gpfs_path, nvme_path, follow_symlinks=True)  
+    nvme_dir = '/mnt/bb/%s' %(user)
+    try:
+        shutil.copytree('train', os.path.join(nvme_dir, 'train'))
+    except FileExistsError as e:
+        print(e) 
+    try:
+        shutil.copytree(os.path.join(params['data_dir'],"batch_%s.db" % hvd.rank()), os.path.join(nvme_dir,"train/batch_%s.db" % hvd.rank()))
+    except FileExistsError as e:
+        print(e) 
         #print('global rank %d, local rank %d, copied file: %s' %(hvd.rank(), hvd.local_rank(), nvme_path))
-    shutil.copytree(params['data_dir'], nvme_dir) 
+    #try:
+    #    shutil.copytree(params['data_dir'], nvme_dir) 
+    #except FileExistsError as e:
+    #    print(e) 
     params['data_dir'] = nvme_dir
     return params        
 

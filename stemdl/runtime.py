@@ -485,7 +485,10 @@ def train_horovod_mod(network_config, hyper_params, params):
     # Setup data stream
     with tf.device(params['CPU_ID']):
         with tf.name_scope('Input') as _:
-            dset = inputs.DatasetTFRecords(params, dataset=params['dataset'], debug=False)
+            if params['filetype'] == 'tfrecord':
+                dset = inputs.DatasetTFRecords(params, dataset=params['dataset'], debug=False)
+            elif params['filetype'] == 'lmdb':
+                dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=False)
             images, labels = dset.minibatch()
             # Staging images on host
             staging_op, (images, labels) = dset.stage([images, labels])

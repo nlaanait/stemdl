@@ -638,8 +638,8 @@ class DatasetLMDB(DatasetTFRecords):
             # reshape them to the expected shape:
             labels_newshape = [batch_size] + label_shape
             images_newshape = [batch_size] + image_shape
-            labels = tf.reshape(labels, labels_newshape)
-            images = tf.reshape(images, images_newshape)
+            #labels = tf.reshape(labels, labels_newshape)
+            #images = tf.reshape(images, images_newshape)
 
             # glimpse images: moved to GPU
             #images = self.get_glimpses(images)
