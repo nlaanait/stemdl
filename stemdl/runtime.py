@@ -138,11 +138,8 @@ def _add_loss_summaries(total_loss, losses, summaries=False):
     # Attach a scalar summary to all individual losses and the total loss;
     if summaries:
         for l in losses + [total_loss]:
-            # Name each loss as '(raw)' and name the moving average version of the loss
-            # as the original loss name.
-            # loss_name = re.sub('%s_[0-9]*/' % params['worker_name'], '', l.op.name)
-            tf.summary.scalar(l.op.name + ' (raw)', l)
-            tf.summary.scalar(l.op.name, loss_averages.average(l))
+            tf.summary.scalar(l.op.name + '(raw)', l)
+            #tf.summary.scalar(l.op.name, loss_averages.average(l))
     loss_averages_op = tf.no_op(name='no_op')
     return loss_averages_op
 
@@ -236,27 +233,23 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
         _ = calculate_loss_regressor(output, labels, params, hyper_params)
     if hyper_params['network_type'] == 'inverter':
         _ = calculate_loss_regressor(n_net.model_output, labels, params, hyper_params)
-
     if hyper_params['network_type'] == 'classifier':
         if labels.dtype is not tf.int64:
             labels = tf.cast(labels, tf.int64)
         output = fully_connected(n_net, layer_params, params['batch_size'],
                                 name='linear', wd=hyper_params['weight_decay'])
         _ = calculate_loss_classifier(output, labels, params, hyper_params)
-
     if hyper_params['langevin']:
         stochastic_labels = tf.random_normal(labels_shape, stddev=0.01, dtype=tf.float32)
         output = fully_connected(n_net, layer_params, params['batch_size'],
                             name='linear_stochastic', wd=hyper_params['weight_decay'])
-        _ = calculate_loss_regressor(output, labels, params, hyper_params, weight=hyper_params['mixing'])
-
+        _ = calculate_loss_regressor(output, stochastic_labels, params, hyper_params, weight=hyper_params['mixing'])
 
     #Assemble all of the losses.
     losses = tf.get_collection(tf.GraphKeys.LOSSES)
     regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
 
-
-    # Calculate the total loss for the current worker
+    # Calculate the total loss 
     total_loss = tf.add_n(losses + regularization, name='total_loss')
 
     #Generate summaries for the losses and get corresponding op
@@ -433,7 +426,7 @@ def lsal_gradients(grads_vars, scopes, scale):
     return list(chain.from_iterable(new_grads_vars))
 
 
-def train_horovod_mod(network_config, hyper_params, params):
+def train(network_config, hyper_params, params):
     """
     Train the network for a number of steps using horovod and asynchronous I/O staging ops.
 
