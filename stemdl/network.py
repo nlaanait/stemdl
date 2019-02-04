@@ -14,6 +14,7 @@ import horovod.tensorflow as hvd
 
 
 worker_name='horovod'
+tf.logging.set_verbosity(tf.logging.ERROR)
 
 class ConvNet(object):
     """

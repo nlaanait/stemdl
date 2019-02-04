@@ -14,6 +14,8 @@ import horovod.tensorflow as hvd
 import lmdb
 import time
 
+tf.logging.set_verbosity(tf.logging.ERROR)
+
 def print_rank(*args, **kwargs):
     if hvd.rank() == 0:
         print(*args, **kwargs)
@@ -258,7 +260,7 @@ class DatasetTFRecords(object):
         if self.debug: self.inspect_tfrecords(mode)
 
         record_input = data_flow_ops.RecordInput(
-            file_pattern=os.path.join(self.params['data_dir'], '%s/*.tfrecords' % mode),
+            file_pattern=os.path.join(self.params['data_dir'], '*.tfrecords'),
             parallelism=self.params['IO_threads'],
             buffer_size=self.params['buffer_cap'],
             batch_size=batch_size)
@@ -390,7 +392,7 @@ class DatasetTFRecords(object):
         return aff_image
 
     def inspect_tfrecords(self, mode):
-        dir = os.path.join(self.params['data_dir'], mode)
+        dir = self.params['data_dir']
         tf_filenames = os.listdir(dir)
         for fname in tf_filenames:
             if fname.split('.')[-1] == "tfrecords":
@@ -426,21 +428,22 @@ class DatasetTFRecords(object):
         else:
             print_rank('found image and label with sizes: %s, %s' %(format(image.size) ,format(label.size)))
 
+
 class DatasetLMDB(DatasetTFRecords):
     def __init__(self, *args, **kwargs):
         super(DatasetLMDB, self).__init__(*args, **kwargs)
-        lmdb_dir = os.path.join(self.params['data_dir'], self.mode)
-        if self.debug: print_rank('lmdb files %s' %format(os.listdir(lmdb_dir)))
-        if self.params['nvme'] is not None:
-            lmdb_path = os.path.join(lmdb_dir, os.listdir(lmdb_dir)[int(hvd.local_rank())])
-        else: 
-            lmdb_index = np.random.randint(0, high=len(os.listdir(lmdb_dir)))
-            lmdb_path = os.path.join(lmdb_dir, os.listdir(lmdb_dir)[lmdb_index])
-        self.env = lmdb.open(lmdb_path, readahead=False, readonly=True, writemap=False, lock=False)
-        self.num_samples = self.env.stat()['entries'] - 4 ## TODO: remove hard-coded # of headers
+        lmdb_dir = self.params['data_dir']
+        lmdb_files = os.listdir(lmdb_dir)
+        if self.debug: print_rank('lmdb files %s' %format(lmdb_files))
+        #rand_index = np.random.randint(0, high=len(lmdb_files)-1)
+        #lmdb_path = os.path.join(lmdb_dir, lmdb_files[0])
+        lmdb_path = os.path.join(lmdb_dir, 'batch_%d.db' % int(hvd.rank()))
+        #if self.debug: print('rank=%d,lmdb_path_exists=%s' %(hvd.rank(), str(os.path.exists(lmdb_path))))
+        self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+        self.num_samples = (self.env.stat()['entries'] - 4)//2 ## TODO: remove hard-coded # of headers by storing #samples key, val
         self.first_record = 0
         self.records = np.arange(self.first_record, self.num_samples)
-        if self.params['dataset'] == '2d_reconstruction':
+        if self.params['dataset'] == '2d_reconstruction': ## TODO: this dict can be populated from lmdb headers
             self.data_specs={'label_shape': [1,512,512], 'image_shape': [1024, 512, 512], 
             'label_dtype':'float16', 'image_dtype': 'float16', 'label_key':'potential_', 'image_key': 'cbed_'}
 
@@ -461,7 +464,7 @@ class DatasetLMDB(DatasetTFRecords):
         image = image.reshape(self.data_specs['image_shape']).astype(np.float32)
 
         if self.debug: 
-            print_rank('read image %s %s and label %s %s from lmdb' %(format(image.shape), 
+            print_rank('rank=%d, read image %s %s and label %s %s from lmdb' %(hvd.rank(),format(image.shape), 
             format(image.dtype), format(label.shape), format(label.dtype)))
         label = tf.convert_to_tensor(label)
         image = tf.convert_to_tensor(image)
@@ -478,13 +481,20 @@ class DatasetLMDB(DatasetTFRecords):
         batch_size = self.params['batch_size']
         if mode not in ['train', 'validation', 'test']:
             mode = 'train'
-
+        
+        #print('rank=%d, num_entries=%d, all_records=%s' % (hvd.rank(), self.env.stat()['entries'], format(self.records)))
         records = np.roll(self.records, self.first_record)[:batch_size]
+        #print('rank=%d,rolled_records=%s' % (hvd.rank(), format(records)))
         images = []
         labels = []
         with tf.name_scope('pipeline'):
+            #print('rank=%d, records=%s' %(hvd.rank(),format(records)))
             for record in records:
                 image, label = self.decode_image_label(record)
+                # Checking for nan, bug in simulation codes...
+                #image = tf.where(tf.is_nan(image), tf.zeros_like(image), image)
+                #label = tf.where(tf.is_nan(label), tf.zeros_like(label), label) 
+                #print('rank=%d,record=%d' % (hvd.rank(), record))
                 if self.params[mode + '_distort']:
                     image = self.distort(image)
                 images.append(image)
