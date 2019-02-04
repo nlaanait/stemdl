@@ -24,8 +24,11 @@
 #from __future__ import print_function
 #from __future__ import unicode_literals
 
+import sys
 import collections
+from itertools import chain
 import six
+import re
 import tensorflow as tf
 from tensorflow.python.ops import control_flow_ops
 
@@ -92,20 +95,20 @@ def reduce_gradients(grads_and_vars, on_horovod, model=None):
       with tf.name_scope("all_reduce"):
         for grad, var in grads_and_vars:
           if grad is not None:
-            if isinstance(grad, tf.IndexedSlices):
-              if model._decoder.params.get('shared_embed', False):
-                from tensorflow.python.training.optimizer import _deduplicate_indexed_slices
-                summed_values, unique_indices = _deduplicate_indexed_slices(
-                    values=grad.values, indices=grad.indices)
-                gradient_no_duplicate_indices = tf.IndexedSlices(
-                    indices=unique_indices,
-                    values=summed_values,
-                    dense_shape=grad.dense_shape)
-                grad = tf.convert_to_tensor(gradient_no_duplicate_indices)
+            # if isinstance(grad, tf.IndexedSlices):
+            #   if model._decoder.params.get('shared_embed', False):
+            #     from tensorflow.python.training.optimizer import _deduplicate_indexed_slices
+            #     summed_values, unique_indices = _deduplicate_indexed_slices(
+            #         values=grad.values, indices=grad.indices)
+            #     gradient_no_duplicate_indices = tf.IndexedSlices(
+            #         indices=unique_indices,
+            #         values=summed_values,
+            #         dense_shape=grad.dense_shape)
+            #     grad = tf.convert_to_tensor(gradient_no_duplicate_indices)
             avg_grad = allreduce(grad)
             averaged_grads_and_vars.append((avg_grad, var))
           else:
-            averaged_grads_and_vars.append((None, var))
+            averaged_grads_and_vars.append((tf.constant(0), var))
       return averaged_grads_and_vars
     else:
       return grads_and_vars
@@ -121,13 +124,14 @@ def optimize_loss(loss,
                   dtype=tf.float32,
                   clip_gradients=None,
                   summaries=None,
-                  larc_params=None,
+                  hyper_params=None,
                   loss_scaling=1.0,
                   loss_scaling_params=None,
                   on_horovod=False,
                   iter_size=1,
-                  skip_update_ph=None,
-                  model=None):
+                  skip_update_cond=None,
+                  model=None,
+                  model_scopes=None):
   """Given loss and parameters for optimizer, returns a training op.
 
   Args:
@@ -152,8 +156,8 @@ def optimize_loss(loss,
     summaries: List of internal quantities to visualize on tensorboard. If not
         set only the loss and the learning rate will be reported. The
         complete list is in OPTIMIZER_SUMMARIES.
-    larc_params: If not None, LARC re-scaling will
-        be applied with corresponding parameters.
+    hyper_params: If not None, gradient re-scaling will
+        be applied with corresponding methods/parameters.
     loss_scaling: could be float or string. If float, static loss scaling
         is applied. If string, the corresponding automatic
         loss scaling algorithm is used. Must be one of 'Backoff'
@@ -173,7 +177,7 @@ def optimize_loss(loss,
                 ", ".join(OPTIMIZER_SUMMARIES), summ,
             )
         )
-  if clip_gradients is not None and larc_params is not None:
+  if clip_gradients is not None and hyper_params['LARC']:
     raise AttributeError(
         "LARC and gradient norm clipping should not be used together"
     )
@@ -215,7 +219,7 @@ def optimize_loss(loss,
     )
 
     if on_horovod:
-      if iter_size > 1:
+      if iter_size > 1 :
         grads_and_vars_accum = []
         accum_ops = []
         for grad, var in grads_and_vars:
@@ -239,7 +243,7 @@ def optimize_loss(loss,
           grads_and_vars_accum.append((grad_accum, var))
 
         accum_op = tf.group(accum_ops)
-
+        
         def update_and_clear_op():
           with tf.control_dependencies([accum_op]):
             red_grad_updates = opt.apply_gradients(
@@ -247,20 +251,21 @@ def optimize_loss(loss,
                     reduce_gradients(grads_and_vars_accum, on_horovod=True, model=model),
                     lr=lr,
                     clip_gradients=clip_gradients,
-                    larc_params=larc_params,
+                    hyper_params=hyper_params,
                     summaries=summaries,
+                    model_scopes=model_scopes
                 ),
                 global_step=global_step,
             )
 
           with tf.control_dependencies([red_grad_updates]):
             return tf.group([tf.assign(g, tf.zeros_like(g))
-                             for g, v in grads_and_vars_accum])
+                            for g, v in grads_and_vars_accum])
 
         grad_updates = tf.cond(
-            pred=skip_update_ph,
+            pred=skip_update_cond,
             true_fn=lambda: accum_op,
-            false_fn=update_and_clear_op,
+            false_fn= update_and_clear_op,
         )
       else:
         grad_updates = opt.apply_gradients(
@@ -268,8 +273,9 @@ def optimize_loss(loss,
                 reduce_gradients(grads_and_vars, on_horovod=True, model=model),
                 lr=lr,
                 clip_gradients=clip_gradients,
-                larc_params=larc_params,
+                hyper_params=hyper_params,
                 summaries=summaries,
+                model_scopes=model_scopes
             ),
             global_step=global_step,
         )
@@ -279,8 +285,9 @@ def optimize_loss(loss,
               grads_and_vars,
               lr=lr,
               clip_gradients=clip_gradients,
-              larc_params=larc_params,
+              hyper_params=hyper_params,
               summaries=summaries,
+              model_scopes=model_scopes
           ),
           global_step=global_step,
       )
@@ -292,7 +299,7 @@ def optimize_loss(loss,
 
 
 def post_process_gradients(grads_and_vars, summaries, lr,
-                           clip_gradients, larc_params):
+                           clip_gradients, hyper_params, model_scopes=None):
   """Applies post processing to gradients, i.e. clipping, LARC, summaries."""
   if "global_gradient_norm" in summaries:
     tf.summary.scalar(
@@ -334,54 +341,87 @@ def post_process_gradients(grads_and_vars, summaries, lr,
         _global_norm_with_cast(grads_and_vars),
     )
 
-  # LARC gradient re-scaling
-  if larc_params is not None:
-    check_params(
-        config=larc_params,
-        required_dict={'larc_eta': float},
-        optional_dict={
-            'larc_mode': ['clip', 'scale'],
-            'min_update': float,
-            'epsilon': float
-        },
-    )
-    larc_eta = larc_params['larc_eta']
-    larc_mode = larc_params.get('larc_mode', 'clip')
-    min_update = larc_params.get('min_update', 1e-7)
-    eps = larc_params.get('epsilon', 1e-7)
+  # re-scaling gradients using some specified method
+  # 1. get layer index dictionary for each gradient/var 
+  if model_scopes is not None:
+    layer_indices = get_grads_vars_layer_indices(grads_and_vars, model_scopes)
+    new_grads_vars = []
+    for layer in layer_indices.keys():
+      ind_list = layer_indices[layer]
+      if len(ind_list) >= 1:
+          layer_grads = [grads_and_vars[ind][0] for ind in ind_list]
+          layer_vars = [grads_and_vars[ind][1] for ind in ind_list]
+          grad_vec = tf.concat([tf.expand_dims(tf.reshape(grad, [-1]), 0) for grad in layer_grads], 1)
+          var_vec = tf.concat([tf.expand_dims(tf.reshape(var, [-1]), 0) for var in layer_vars], 1)
+          var_dtype = layer_vars[0].dtype
+          var_nom = tf.norm(tensor=tf.cast(var_vec, tf.float32))
+          grad_norm = tf.norm(tensor=tf.cast(grad_vec, tf.float32))
+          if hyper_params['LARC']:
+            check_params( config=hyper_params,
+                          required_dict={'LARC_eta': float},
+                          optional_dict={
+                              'LARC_mode': ['clip', 'scale'],
+                              'LARC_min_update': float,
+                              'LARC_epsilon': float
+                          },
+                          )
+            larc_eta = hyper_params['LARC_eta']
+            larc_mode = hyper_params.get('LARC_mode', 'clip')
+            min_update = hyper_params.get('LARC_min_update', 1e-7)
+            eps = hyper_params.get('LARC_epsilon', 1e-7)
 
-    grads_and_vars_larc = [None] * len(grads_and_vars)
-    for idx, (g, v) in enumerate(grads_and_vars):
-      var_dtype = v.dtype
-      v_norm = tf.norm(tensor=tf.cast(v, tf.float32), ord=2)
-      g_norm = tf.norm(tensor=tf.cast(g, tf.float32), ord=2)
+            if larc_mode == 'scale':
+              grad_updates = [ tf.minimum( tf.maximum( larc_eta * var_nom / (grad_norm + eps), min_update), 1) * grad 
+                                for grad in layer_grads]
+            elif larc_mode == 'clip':
+              grad_updates = [ tf.minimum( tf.maximum( larc_eta * var_nom / ( lr * (grad_norm + eps)), min_update), 1) * grad 
+                                for grad in layer_grads]
+          elif hyper_params['LSAL']:
+            check_params( config=hyper_params,
+                          required_dict={'LSAL_eta': float},
+                          optional_dict={
+                              'LSAL_min_update': float,
+                              'LSAL_epsilon': float
+                          },
+                          )
+            lsal_eta = hyper_params['LSAL_eta']
+            min_update = hyper_params.get('LSAL_min_update', 1e-7)
+            eps = hyper_params.get('LSAL_epsilon', 1e-7)  
+            grad_updates = [ tf.maximum( (1 + tf.log1p( 1/ (grad_norm + eps)), min_update)) * grad 
+                              for grad in layer_grads]
+          else:
+             grad_updates = layer_grads
+          new_grads_vars_layer = [( tf.saturate_cast(grad_update, var_dtype ), var) 
+                                      for grad_update, var in zip(grad_updates, layer_vars)]      
+          new_grads_vars.append(new_grads_vars_layer)
+    new_grads_vars = list(chain.from_iterable(new_grads_vars))
+    return new_grads_vars
+  else:
+    return grads_and_vars
 
-      if larc_mode == 'clip':
-        larc_grad_update = tf.maximum(
-            larc_eta * v_norm / (lr * (g_norm + eps)),
-            min_update,
-        )
-        if "larc_summaries" in summaries:
-          tf.summary.scalar('larc_clip_on/{}'.format(v.name),
-                            tf.cast(tf.less(larc_grad_update, 1.0), tf.int32))
-        larc_grad_update = tf.minimum(larc_grad_update, 1.0)
-      else:
-        larc_grad_update = tf.maximum(
-            larc_eta * v_norm / (g_norm + eps),
-            min_update,
-        )
-      larc_grad_update = tf.saturate_cast(larc_grad_update, var_dtype)
-      grads_and_vars_larc[idx] = (larc_grad_update * g, v)
 
-      # adding additional summary
-      if "larc_summaries" in summaries:
-        tf.summary.scalar('larc_grad_update/{}'.format(v.name),
-                          larc_grad_update)
-        tf.summary.scalar("larc_final_lr/{}".format(v.name),
-                          tf.cast(lr, var_dtype) * larc_grad_update)
-    grads_and_vars = grads_and_vars_larc
-  return grads_and_vars
+def get_grads_vars_layer_indices(grads_vars, scopes):
+    ind_dict = collections.OrderedDict()
+    for scope in scopes:
+        p = re.compile(scope.name)
+        ind_list = []
+        for (ind, grad) in enumerate(grads_vars):
+            if p.search(grad[1].name):
+                ind_list.append(ind)
+        ind_dict[scope.name] = ind_list
+    return ind_dict
 
+## TODO: add gradient update summaries effective_lr tensor 
+      # if "larc_summaries" in summaries:
+      #     tf.summary.scalar('larc_clip_on/{}'.format(v.name),
+      #                       tf.cast(tf.less(larc_grad_update, 1.0), tf.int32))
+
+      # # adding additional summary
+      # if "larc_summaries" in summaries:
+      #   tf.summary.scalar('larc_grad_update/{}'.format(v.name),
+      #                     larc_grad_update)
+      #   tf.summary.scalar("larc_final_lr/{}".format(v.name),
+      #                     tf.cast(lr, var_dtype) * larc_grad_update)
 
 def _global_norm_with_cast(grads_and_vars):
   return tf.global_norm(list(map(
@@ -409,6 +449,7 @@ def _clip_gradients_by_norm(grads_and_vars, clip_gradients):
   ]
 
   return list(zip(clipped_gradients, variables))
+
 
 def _clip_by_global_norm(t_list, clip_norm, use_norm, name=None):
   """Clips values of multiple tensors by the ratio of the sum of their norms.

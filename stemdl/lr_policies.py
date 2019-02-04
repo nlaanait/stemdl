@@ -9,6 +9,48 @@ value for the current step.
 #from __future__ import unicode_literals
 
 import tensorflow as tf
+import horovod.tensorflow as hvd
+
+def decay_warmup(params, hyper_params, global_step):
+    """
+    Setups an optimizer object and returns it.
+    :param params: dict
+    :param hyper_params: dict, with hyper-parameters
+    :return: optimizer
+    """
+    NUM_EPOCHS_PER_DECAY = hyper_params['num_epochs_per_decay']
+    NUM_EPOCHS_PER_RAMP = hyper_params['num_epochs_per_ramp']
+    NUM_EPOCHS_IN_WARM_UP = hyper_params['num_epochs_in_warm_up']
+    INITIAL_LEARNING_RATE = hyper_params['initial_learning_rate']
+    LEARNING_RATE_DECAY_FACTOR = hyper_params['learning_rate_decay_factor']
+    WARM_UP_LEARNING_RATE_MAX = hyper_params['warm_up_max_learning_rate']
+
+    # Set parameters that affect the learning rate.
+    num_batches_per_epoch = params['NUM_EXAMPLES_PER_EPOCH'] / params['batch_size'] / hvd.size( )
+    decay_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
+    ramp_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_RAMP)
+    ramp_up_steps = int(num_batches_per_epoch * NUM_EPOCHS_IN_WARM_UP)
+
+    # Decay/ramp the learning rate exponentially based on the number of steps.
+    def ramp():
+        lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step, ramp_steps, LEARNING_RATE_DECAY_FACTOR,
+                                        staircase=True)
+        lr = INITIAL_LEARNING_RATE ** 2 * tf.pow(lr, tf.constant(-1.))
+        lr = tf.minimum(lr,WARM_UP_LEARNING_RATE_MAX)
+        return lr
+
+    def decay(lr_current):
+        lr = tf.train.exponential_decay(lr_current, global_step, decay_steps, LEARNING_RATE_DECAY_FACTOR,
+                                        staircase=True)
+        return lr
+
+    if hyper_params['warm_up']:
+        LEARNING_RATE = tf.cond(global_step < ramp_up_steps, ramp, lambda: decay(ramp()))
+    else:
+        LEARNING_RATE = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step, decay_steps,
+                                        LEARNING_RATE_DECAY_FACTOR, staircase=True)
+
+    return LEARNING_RATE
 
 
 def fixed_lr(global_step, learning_rate):
