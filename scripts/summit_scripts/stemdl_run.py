@@ -2,7 +2,9 @@
 Created on 10/15/17.
 @author: Numan Laanait, Mike Matheson
 """
-
+import logging
+logging.getLogger('tensorflow').setLevel(logging.ERROR)
+#logging.getLogger('tensorflow').disabled = True
 import tensorflow as tf
 import numpy as np
 import argparse
@@ -10,6 +12,7 @@ import json
 import time
 import sys
 import os
+import subprocess, shlex
 import shutil
 try:
    import horovod.tensorflow as hvd
@@ -17,14 +20,10 @@ except:
    print( "< ERROR > Could not import horovod module" )
    raise
 
-#import mpi4py
-#mpi4py.rc.initialize = False
-#from mpi4py import MPI
-#comm = MPI.COMM_WORLD
-
-#sys.path.append('../')
 from stemdl import runtime
 from stemdl import io_utils
+
+tf.logging.set_verbosity(tf.logging.ERROR)
 
 def add_bool_argument(cmdline, shortname, longname=None, default=False, help=None):
     if longname is None:
@@ -90,7 +89,9 @@ def main():
                          help="""Restart training from checkpoint.""")
     add_bool_argument( cmdline, '--nvme', default=None,
                          help="""Copy data to burst buffer.""")
-
+    add_bool_argument( cmdline, '--debug', default=None,
+                         help="""Debug print commands.""")
+   
     
     FLAGS, unknown_args = cmdline.parse_known_args()
     if len(unknown_args) > 0:
@@ -139,6 +140,9 @@ def main():
         params['IO_threads'] = FLAGS.cpu_threads
     if FLAGS.filetype is not None:
         params['filetype'] = FLAGS.filetype
+    if FLAGS.debug is not None:
+        params['debug'] = FLAGS.debug 
+    params['nvme'] = FLAGS.nvme
 
     # Add other params
     params.setdefault( 'restart', False )
@@ -174,53 +178,43 @@ def main():
        hyper_params[ 'num_epochs_per_decay' ] = FLAGS.epochs_per_decay
     if FLAGS.bn_decay is not None :
        hyper_params[ 'batch_norm' ][ 'decay' ] = FLAGS.bn_decay
-
+    
+    # print relevant params passed to training 
     if hvd.rank( ) == 0 :
        if os.path.isfile( 'cmd.log' ) :
           cmd = open( "cmd.log", "r" )
           cmdline = cmd.readline( )
           params[ 'cmdline' ] = cmdline
 
-       print( "network_config.json" )
-       _input = json.dumps( network_config, indent=3, sort_keys=False)
-       print( "%s" % _input )
-
-       print( "input_flags.json" )
-       _input = json.dumps( params, indent=3, sort_keys=False)
-
-       print( "hyper_params.json" )
+       print( "### hyper_params.json" )
        _input = json.dumps( hyper_params, indent=3, sort_keys=False)
        print( "%s" % _input )
-    
+       
+       print("### params passed at CLI")
+       _input = json.dumps(vars(FLAGS), indent=4)
+       print("%s" % _input) 
+
     # copy data to nvme
-    #if hvd.local_rank() == 0:
-    if FLAGS.nvme is not None:
-        params = nvme_staging(params['data_dir'],params, mode=params['mode'])
-    #comm.Barrier()
+    #if FLAGS.nvme is not None:
+   #     if hvd.rank() == 0:
+   #         print('staging files on bb...')
+   #     #params['data_dir']=os.environ.get('DATA_DIR')
+   #     params = nvme_staging(params['data_dir'],params, mode=params['mode'])
     # train or evaluate
     if params['mode'] == 'train':
-        runtime.train_horovod_mod(network_config, hyper_params, params)
+        runtime.train_mod(network_config, hyper_params, params)
     elif params['mode'] == 'eval':
         params[ 'IMAGE_FP16' ] = False
         runtime.validate_ckpt(network_config, hyper_params, params, last_model=False, sleep=0)
 
 def nvme_staging(data_dir, params, mode='train'):
     user = os.environ.get('USER')
-    nvme_dir = '/mnt/bb/%s/rank_%s' %(user,hvd.rank())
     nvme_dir = '/mnt/bb/%s' %(user)
-    try:
-        shutil.copytree('train', os.path.join(nvme_dir, 'train'))
-    except FileExistsError as e:
-        print(e) 
-    try:
-        shutil.copytree(os.path.join(params['data_dir'],"batch_%s.db" % hvd.rank()), os.path.join(nvme_dir,"train/batch_%s.db" % hvd.rank()))
-    except FileExistsError as e:
-        print(e) 
-        #print('global rank %d, local rank %d, copied file: %s' %(hvd.rank(), hvd.local_rank(), nvme_path))
-    #try:
-    #    shutil.copytree(params['data_dir'], nvme_dir) 
-    #except FileExistsError as e:
-    #    print(e) 
+    if hvd.rank() == 0: print(os.listdir(nvme_dir))
+    #cp_args = "cp -r %s/batch_%d.db %s/" %(params['data_dir'], hvd.rank(), nvme_dir)
+    #if hvd.rank() == 0: print(cp_args)
+    #cp_args = shlex.split(cp_args)
+    #subprocess.run(cp_args, check=True)
     params['data_dir'] = nvme_dir
     return params        
 
