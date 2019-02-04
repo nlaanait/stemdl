@@ -79,6 +79,8 @@ def main():
                          help="""train or eval (:validates from checkpoint)""")
     cmdline.add_argument('--cpu_threads', default=10, type=int,
                          help="""cpu threads per rank""")
+    cmdline.add_argument('--accumulate_step', default=1, type=int,
+                         help="""cpu threads per rank""")
     cmdline.add_argument( '--filetype', default=None, type=str,
                          help=""" lmdb or tfrecord""")
     add_bool_argument( cmdline, '--fp16', default=None,
@@ -110,6 +112,7 @@ def main():
 
     params[ 'start_time' ] = time.time( )
     params[ 'cmdline' ] = 'unknown'
+    params['accumulate_step'] = FLAGS.accumulate_step
     if FLAGS.batch_size is not None :
         params[ 'batch_size' ] = FLAGS.batch_size
     if FLAGS.log_frequency is not None :
@@ -142,6 +145,8 @@ def main():
         params['filetype'] = FLAGS.filetype
     if FLAGS.debug is not None:
         params['debug'] = FLAGS.debug 
+    else:
+        params['debug'] = False
     params['nvme'] = FLAGS.nvme
 
     # Add other params
@@ -202,7 +207,7 @@ def main():
    #     params = nvme_staging(params['data_dir'],params, mode=params['mode'])
     # train or evaluate
     if params['mode'] == 'train':
-        runtime.train_mod(network_config, hyper_params, params)
+        runtime.train(network_config, hyper_params, params)
     elif params['mode'] == 'eval':
         params[ 'IMAGE_FP16' ] = False
         runtime.validate_ckpt(network_config, hyper_params, params, last_model=False, sleep=0)
