@@ -402,9 +402,9 @@ def train(network_config, hyper_params, params):
         iter_size = params.get('accumulate_step', 1)
         skip_update_cond = tf.less(global_step, 100)
         train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization'], 
-                                opt_dict, learning_policy_func, iter_size=iter_size, dtype="mixed", loss_scaling='Backoff', 
+                                opt_dict, learning_policy_func, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", loss_scaling='Backoff', 
                                 skip_update_cond=skip_update_cond,
-                                on_horovod=True)  
+                                on_horovod=True, model_scopes=n_net.scopes)  
 
         # Gather all training related ops into a single one.
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)

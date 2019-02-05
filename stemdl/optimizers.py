@@ -183,6 +183,8 @@ def optimize_loss(loss,
     )
 
   global_step = tf.train.get_or_create_global_step()
+  global counter
+  counter = tf.constant(0, dtype=tf.int32)
   lr = learning_rate_decay_fn(global_step)
   if "learning_rate" in summaries:
     tf.summary.scalar("learning_rate", lr)
@@ -241,9 +243,14 @@ def optimize_loss(loss,
 
           accum_ops.append(tf.assign(grad_accum, add_grads))
           grads_and_vars_accum.append((grad_accum, var))
-
-        accum_op = tf.group(accum_ops)
         
+        def accumulate():
+            global counter
+            counter = tf.add(counter, 1)
+            return tf.group(accum_ops)
+
+        accum_op = tf.group(accum_ops) 
+
         def update_and_clear_op():
           with tf.control_dependencies([accum_op]):
             red_grad_updates = opt.apply_gradients(
@@ -257,15 +264,17 @@ def optimize_loss(loss,
                 ),
                 global_step=global_step,
             )
-
+          global counter
+          counter = tf.subtract(counter, iter_size)
           with tf.control_dependencies([red_grad_updates]):
             return tf.group([tf.assign(g, tf.zeros_like(g))
                             for g, v in grads_and_vars_accum])
 
+        update_cond = tf.equal(counter, iter_size)
         grad_updates = tf.cond(
-            pred=skip_update_cond,
-            true_fn=lambda: accum_op,
-            false_fn= update_and_clear_op,
+            pred=update_cond,
+            false_fn= accumulate,
+            true_fn= update_and_clear_op,
         )
       else:
         grad_updates = opt.apply_gradients(
