@@ -481,13 +481,10 @@ def train(network_config, hyper_params, params):
         doLog   = train_elf.last_step % logFreq  == 0
         doSave  = train_elf.elapsed_epochs > next_checkpoint_epoch
         doTrace = train_elf.last_step == traceStep and params['gpu_trace']
-        #loss_value, lr, gb_step, update_cond = sess.run([train_op, total_loss, learning_rate, global_step, skip_update_cond])[1:]
         if not doLog and not doSave and not doTrace :
            sess.run(train_op)
         if doLog and not doSave :
            loss_value, lr = sess.run( [ train_op, total_loss, learning_rate ] )[ 1: ]
-           print_rank('skip_update_cond= ', sess.run(skip_update_cond))
-           print_rank('global step=', sess.run(global_step))
            train_elf.log_stats( loss_value, lr )
         elif doLog and doSave :
            summary, loss_value, lr = sess.run( [ summary_merged, total_loss, learning_rate ] )
