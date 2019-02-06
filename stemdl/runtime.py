@@ -397,10 +397,11 @@ def train(network_config, hyper_params, params):
             return lr_policies.decay_warmup(params, hyper_params, step)
             ## TODO: implement other policies in lr_policies
 
+        iter_size = params.get('accumulate_step', 1)
+        skip_update_cond = tf.cast(tf.floormod(global_step, tf.constant(iter_size, dtype=tf.int32)), tf.bool)
+
         # setup optimizer
         opt_dict = {}
-        iter_size = params.get('accumulate_step', 1)
-        skip_update_cond = tf.less(global_step, 100)
         train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization'], 
                                 opt_dict, learning_policy_func, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", loss_scaling='Backoff', 
                                 skip_update_cond=skip_update_cond,
@@ -408,7 +409,8 @@ def train(network_config, hyper_params, params):
 
         # Gather all training related ops into a single one.
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-        all_ops = tf.group(*([train_opt]+update_ops+IO_ops))
+        increment_op = tf.assign_add(global_step, 1)
+        all_ops = tf.group(*([train_opt]+update_ops+IO_ops+[increment_op]))
 
         with tf.control_dependencies([all_ops]):
                 train_op = tf.no_op(name='train')
@@ -479,14 +481,16 @@ def train(network_config, hyper_params, params):
         doLog   = train_elf.last_step % logFreq  == 0
         doSave  = train_elf.elapsed_epochs > next_checkpoint_epoch
         doTrace = train_elf.last_step == traceStep and params['gpu_trace']
-
+        #loss_value, lr, gb_step, update_cond = sess.run([train_op, total_loss, learning_rate, global_step, skip_update_cond])[1:]
         if not doLog and not doSave and not doTrace :
            sess.run(train_op)
-        elif doLog and not doSave :
-           loss_value, lr = sess.run( [ train_op, total_loss, learning_rate ] )[ -2: ]
+        if doLog and not doSave :
+           loss_value, lr = sess.run( [ train_op, total_loss, learning_rate ] )[ 1: ]
+           print_rank('skip_update_cond= ', sess.run(skip_update_cond))
+           print_rank('global step=', sess.run(global_step))
            train_elf.log_stats( loss_value, lr )
         elif doLog and doSave :
-           summary, loss_value, lr = sess.run( [ train_op, summary_merged, total_loss, learning_rate ] )[ -3: ]
+           summary, loss_value, lr = sess.run( [ summary_merged, total_loss, learning_rate ] )
            train_elf.log_stats( loss_value, lr )
            train_elf.write_summaries( summary )
            if hvd.rank( ) == 0 :
@@ -494,7 +498,7 @@ def train(network_config, hyper_params, params):
               print_rank('Saved Checkpoint.')
            next_checkpoint_epoch += params['epochs_per_saving']
         elif doSave :
-           summary = sess.run( [ train_op, summary_merged ] )[ -1 ]
+           summary = sess.run(  summary_merged  )
            train_elf.write_summaries( summary )
            if hvd.rank( ) == 0 :
               saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
@@ -503,12 +507,13 @@ def train(network_config, hyper_params, params):
         elif doTrace :
            sess.run(train_op, options=run_options, run_metadata=run_metadata)
            train_elf.save_trace(run_metadata, params[ 'trace_dir' ], params[ 'trace_step' ] )
-
+           train_elf.before_run()
         # Here we do validation:
         if train_elf.elapsed_epochs > next_validation_epoch:
             # do validation over 300 batches.
             validate(network_config, hyper_params, params, sess, dset)
             next_validation_epoch += params['epochs_per_validation']
+
 
 def validate(network_config, hyper_params, params, sess, dset, num_batches=150):
     """

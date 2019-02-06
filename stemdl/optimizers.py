@@ -183,8 +183,6 @@ def optimize_loss(loss,
     )
 
   global_step = tf.train.get_or_create_global_step()
-  global counter
-  counter = tf.constant(0, dtype=tf.int32)
   lr = learning_rate_decay_fn(global_step)
   if "learning_rate" in summaries:
     tf.summary.scalar("learning_rate", lr)
@@ -245,14 +243,12 @@ def optimize_loss(loss,
           grads_and_vars_accum.append((grad_accum, var))
         
         def accumulate():
-            global counter
-            counter = tf.add(counter, 1)
             return tf.group(accum_ops)
-
-        accum_op = tf.group(accum_ops) 
+ 
+        #accum_op = tf.group(accum_ops) 
 
         def update_and_clear_op():
-          with tf.control_dependencies([accum_op]):
+          with tf.control_dependencies([accumulate()]):
             red_grad_updates = opt.apply_gradients(
                 post_process_gradients(
                     reduce_gradients(grads_and_vars_accum, on_horovod=True, model=model),
@@ -262,19 +258,17 @@ def optimize_loss(loss,
                     summaries=summaries,
                     model_scopes=model_scopes
                 ),
-                global_step=global_step,
+                global_step=None,
             )
-          global counter
-          counter = tf.subtract(counter, iter_size)
           with tf.control_dependencies([red_grad_updates]):
-            return tf.group([tf.assign(g, tf.zeros_like(g))
+            update_ops = tf.group([tf.assign(g, tf.zeros_like(g))
                             for g, v in grads_and_vars_accum])
+          return update_ops
 
-        update_cond = tf.equal(counter, iter_size)
         grad_updates = tf.cond(
-            pred=update_cond,
-            false_fn= accumulate,
-            true_fn= update_and_clear_op,
+            pred=skip_update_cond,
+            false_fn=update_and_clear_op, 
+            true_fn=accumulate
         )
       else:
         grad_updates = opt.apply_gradients(
@@ -286,7 +280,7 @@ def optimize_loss(loss,
                 summaries=summaries,
                 model_scopes=model_scopes
             ),
-            global_step=global_step,
+            global_step=None
         )
     else:
       grad_updates = opt.apply_gradients(
@@ -298,7 +292,7 @@ def optimize_loss(loss,
               summaries=summaries,
               model_scopes=model_scopes
           ),
-          global_step=global_step,
+          global_step=None,
       )
 
     # Ensure the train_tensor computes grad_updates.
