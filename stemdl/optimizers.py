@@ -381,15 +381,16 @@ def post_process_gradients(grads_and_vars, summaries, lr,
                                 for grad in layer_grads]
           elif hyper_params['LSAL']:
             check_params( config=hyper_params,
-                          required_dict={},
+                          required_dict={'LSAL_eta': float},
                           optional_dict={
                               'LSAL_min_update': float,
                               'LSAL_epsilon': float
                           },
                           )
+            lsal_eta = hyper_params['LSAL_eta']
             min_update = hyper_params.get('LSAL_min_update', 1e-7)
             eps = hyper_params.get('LSAL_epsilon', 1e-7)  
-            grad_updates = [ tf.maximum( 1 + tf.log1p( 1/ (grad_norm + eps)), min_update) * grad 
+            grad_updates = [ tf.maximum( (1 + tf.log1p( 1/ (grad_norm + eps)), min_update)) * grad 
                               for grad in layer_grads]
           else:
              grad_updates = layer_grads
