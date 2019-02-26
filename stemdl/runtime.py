@@ -50,18 +50,15 @@ def float32_variable_storage_getter(getter, name, shape=None, dtype=None,
 
 
 class TrainHelper(object):
-    def __init__(self, params, saver, writer, net_ops, last_step=0, log_freq=1):
+    def __init__(self, params, saver, writer, net_ops, last_step=0):
         self.params = params
         self.last_step = last_step
         self.net_ops = net_ops
         self.start_time = time.time()
-        self.cumm_time = time.time()
         self.saver = saver
         self.writer = writer
         self.elapsed_epochs = self.last_step * self.params['batch_size'] * 1.0 * hvd.size() / \
                               self.params['NUM_EXAMPLES_PER_EPOCH']
-        self.log_freq = log_freq
-
     def before_run(self):
         self.last_step +=1
         self.start_time = time.time()
@@ -114,13 +111,11 @@ class TrainHelper(object):
             t = time.time( )
             duration = t - self.start_time
             examples_per_sec = self.params['batch_size'] * hvd.size() / duration
-            self.cumm_time = (time.time() - self.cumm_time)/self.log_freq
             flops = self.net_ops * examples_per_sec
             format_str = (
-            'time= %.1f, step= %d, epoch= %2.2e, loss= %.2f, lr= %.2e, step_time= %2.2f sec, ranks= %d, examples/sec= %.1f, flops = %3.2e, average_time= %2.2f')
+            'time= %.1f, step= %d, epoch= %2.2e, loss= %.2f, lr= %.2e, step_time= %2.2f sec, ranks= %d, examples/sec= %.1f, flops = %3.2e')
             print_rank(format_str % ( t - self.params[ 'start_time' ],  self.last_step, self.elapsed_epochs,
-                        loss_value, learning_rate, duration, hvd.size(), examples_per_sec, flops, self.cumm_time) )
-            self.cumm_time = time.time()
+                        loss_value, learning_rate, duration, hvd.size(), examples_per_sec, flops) )
 
     @staticmethod
     def nanloss(loss_value):
@@ -305,7 +300,7 @@ def train(network_config, hyper_params, params):
 
     # Train
     if hvd.rank() == 0:
-        train_elf = TrainHelper(params, saver, summary_writer,  n_net.get_ops(), last_step=last_step, log_freq=params['log_frequency'])
+        train_elf = TrainHelper(params, saver, summary_writer,  n_net.get_ops(), last_step=last_step)
         #train_elf = TrainHelper(params, saver, None,  n_net.get_ops(), last_step=last_step)
     else:
         train_elf = TrainHelper(params, saver, None, n_net.get_ops(), last_step=last_step)
