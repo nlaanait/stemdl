@@ -1,5 +1,5 @@
 import tensorflow as tf
-
+from .optimizers import get_regularization_loss
 
 def _add_loss_summaries(total_loss, losses, summaries=False):
     """
@@ -67,13 +67,10 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
     #Assemble all of the losses.
     losses = tf.get_collection(tf.GraphKeys.LOSSES)
     regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-
     # Calculate the total loss 
     total_loss = tf.add_n(losses + regularization, name='total_loss')
-
-    #Generate summaries for the losses and get corresponding op
+    # Generate summaries for the losses and get corresponding op
     loss_averages_op = _add_loss_summaries(total_loss, losses, summaries=summary)
-
     return total_loss, loss_averages_op
 
 
