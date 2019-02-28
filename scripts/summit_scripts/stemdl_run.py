@@ -82,6 +82,10 @@ def main():
                          help="""cpu threads per rank""")
     cmdline.add_argument( '--filetype', default=None, type=str,
                          help=""" lmdb or tfrecord""")
+    cmdline.add_argument( '--hvd_group', default=None, type=int,
+                         help="""number of horovod message groups""")
+    add_bool_argument( cmdline, '--hvd_fp16', default=None,
+                         help="""horovod message compression""")
     add_bool_argument( cmdline, '--fp16', default=None,
                          help="""Train with half-precision.""")
     add_bool_argument( cmdline, '--fp32', default=None,
@@ -139,7 +143,12 @@ def main():
         params['IO_threads'] = FLAGS.cpu_threads
     if FLAGS.filetype is not None:
         params['filetype'] = FLAGS.filetype
-
+    #group=None will follow default horovod behavior
+    params['hvd_group'] = FLAGS.hvd_group
+    if FLAGS.hvd_fp16 is not None:
+        params['hvd_fp16'] = hvd.Compression.fp16
+    else: 
+        params['hvd_fp16'] = hvd.Compression.none
     # Add other params
     params.setdefault( 'restart', False )
 
