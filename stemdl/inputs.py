@@ -121,14 +121,14 @@ class DatasetTFRecords(object):
         if self.features_specs is None or specs['preprocess']:
             # TODO: all of this should be cached
             # standardize the image to [-1.,1.]
-            image = tf.sqrt(image)
-            image = tf.image.per_image_standardization(image)
-            
+            #image = tf.sqrt(image)
+            #image = tf.image.per_image_standardization(image)
+            pass
             # Checking for nan, bug in simulation codes...
             #image = tf.where(tf.is_nan(image), -tf.ones_like(image), image)
             # Manipulate labels
-            label = tf.expand_dims(label,axis=0)
-            label = tf.sqrt(tf.sqrt(label))
+            #label = tf.expand_dims(label,axis=0)
+            #label = tf.sqrt(tf.sqrt(label))
             #label = tf.image.per_image_standardization(label)
         return image, label
 
@@ -432,13 +432,11 @@ class DatasetTFRecords(object):
 class DatasetLMDB(DatasetTFRecords):
     def __init__(self, *args, **kwargs):
         super(DatasetLMDB, self).__init__(*args, **kwargs)
+        self.mode = self.params['mode']
         lmdb_dir = self.params['data_dir']
         lmdb_files = os.listdir(lmdb_dir)
         if self.debug: print_rank('lmdb files %s' %format(lmdb_files))
-        #rand_index = np.random.randint(0, high=len(lmdb_files)-1)
-        #lmdb_path = os.path.join(lmdb_dir, lmdb_files[0])
         lmdb_path = os.path.join(lmdb_dir, 'batch_%d.db' % int(hvd.rank()))
-        #if self.debug: print('rank=%d,lmdb_path_exists=%s' %(hvd.rank(), str(os.path.exists(lmdb_path))))
         self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
         self.num_samples = (self.env.stat()['entries'] - 4)//2 ## TODO: remove hard-coded # of headers by storing #samples key, val
         self.first_record = 0
@@ -446,15 +444,16 @@ class DatasetLMDB(DatasetTFRecords):
         if self.params['dataset'] == '2d_reconstruction': ## TODO: this dict can be populated from lmdb headers
             self.data_specs={'label_shape': [1,512,512], 'image_shape': [1024, 512, 512], 
             'label_dtype':'float16', 'image_dtype': 'float16', 'label_key':'potential_', 'image_key': 'cbed_'}
-
+        self.image_keys = [bytes(self.data_specs['image_key']+str(idx), "ascii") for idx in self.records]
+        self.label_keys = [bytes(self.data_specs['label_key']+str(idx), "ascii") for idx in self.records]
+    
     def decode_image_label(self, idx):
         """
         idx: index of sample
         Returns: image, label tensors read from lmdb environment
         """
-        image_key = bytes(self.data_specs['image_key']+str(idx), "ascii")
-        label_key = bytes(self.data_specs['label_key']+str(idx), "ascii")
-        t = time.time()
+        image_key = self.image_keys[idx]
+        label_key = self.label_keys[idx]
         with self.env.begin(write=False, buffers=True) as txn:
             image_bytes = txn.get(image_key)
             label_bytes = txn.get(label_key)
@@ -479,21 +478,19 @@ class DatasetLMDB(DatasetTFRecords):
         """
         mode = self.mode
         batch_size = self.params['batch_size']
-        if mode not in ['train', 'validation', 'test']:
-            mode = 'train'
-        
+        if mode == 'train': 
+            records = np.roll(self.records, self.first_record)[:batch_size]
+        else:
+            records = self.records[self.first_record:self.first_record + batch_size]
         #print('rank=%d, num_entries=%d, all_records=%s' % (hvd.rank(), self.env.stat()['entries'], format(self.records)))
-        records = np.roll(self.records, self.first_record)[:batch_size]
         #print('rank=%d,rolled_records=%s' % (hvd.rank(), format(records)))
         images = []
         labels = []
+        #record = tf.placeholder(tf.int32, shape=(1))
         with tf.name_scope('pipeline'):
             #print('rank=%d, records=%s' %(hvd.rank(),format(records)))
             for record in records:
                 image, label = self.decode_image_label(record)
-                # Checking for nan, bug in simulation codes...
-                #image = tf.where(tf.is_nan(image), tf.zeros_like(image), image)
-                #label = tf.where(tf.is_nan(label), tf.zeros_like(label), label) 
                 #print('rank=%d,record=%d' % (hvd.rank(), record))
                 if self.params[mode + '_distort']:
                     image = self.distort(image)
@@ -502,9 +499,13 @@ class DatasetLMDB(DatasetTFRecords):
             # Stack images and labels back into a single tensor
             labels = tf.parallel_stack(labels)
             images = tf.parallel_stack(images)
-        self.first_record -= batch_size 
+        if mode == 'train':    
+            self.first_record -= batch_size 
+        else:
+            self.first_record += batch_size
+            print(self.first_record)
         # Display the training images in the Tensorboard visualizer.
-        if self.debug: tf.summary.image("images", images, max_outputs=4)
+        if self.debug: tf.summary.image("potential", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
         return images, labels
 
 
@@ -528,8 +529,8 @@ reconstruction_2d = {'material': {'dtype':'str', 'shape':[1]},
                       'angles': {'dtype':'float64', 'shape':[3]},
                       'formula': {'dtype': 'str', 'shape':[1]},
                        # images
-                      'cbed': {'dtype': 'float32', 'shape':[1024,512,512]},
-                      '2d_potential': {'dtype': 'float32', 'shape':[512,512]},
+                      'cbed': {'dtype': 'float16', 'shape':[1024,512,512]},
+                      '2d_potential': {'dtype': 'float16', 'shape':[1,512,512]},
                       'preprocess': False}
 abf_oxides_regression = {'label':{'dtype': 'float64', 'shape':[3]},
             # 'rotation_pattern':{'dtype': 'int64', 'shape':[27]},

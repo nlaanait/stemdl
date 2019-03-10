@@ -150,7 +150,6 @@ def train(network_config, hyper_params, params):
     config = tf.ConfigProto(allow_soft_placement=params['allow_soft_placement'],
                            log_device_placement=params['log_device_placement'],
                            )
-    #config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     config.gpu_options.visible_device_list = str(hvd.local_rank())
     config.gpu_options.force_gpu_compatible = True
@@ -210,9 +209,9 @@ def train(network_config, hyper_params, params):
         print_rank('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
                                                                 format(labels.get_shape())))
 
-        with tf.variable_scope('horovod') as _:
+        with tf.variable_scope('horovod', 
                 # Force all variables to be stored as float32
-                #custom_getter=float32_variable_storage_getter) as _:
+                custom_getter=float32_variable_storage_getter) as _:
 
             # Setup Neural Net
             if params['network_class'] == 'resnet':
@@ -273,7 +272,6 @@ def train(network_config, hyper_params, params):
         summary_writer = tf.summary.FileWriter(params['checkpt_dir'], sess.graph)
         # Add Summary histograms for trainable variables and their gradients
     summary_merged = tf.summary.merge_all()
-    #summary_merged = None
 
      ###############################
     # Setting up training session #
@@ -306,7 +304,6 @@ def train(network_config, hyper_params, params):
     # Train
     if hvd.rank() == 0:
         train_elf = TrainHelper(params, saver, summary_writer,  n_net.get_ops(), last_step=last_step, log_freq=params['log_frequency'])
-        #train_elf = TrainHelper(params, saver, None,  n_net.get_ops(), last_step=last_step)
     else:
         train_elf = TrainHelper(params, saver, None, n_net.get_ops(), last_step=last_step)
 
@@ -329,29 +326,29 @@ def train(network_config, hyper_params, params):
         doSave  = train_elf.elapsed_epochs > next_checkpoint_epoch
         doTrace = train_elf.last_step == traceStep and params['gpu_trace']
         if not doLog and not doSave and not doTrace :
-           sess.run(train_op)
-        if doLog and not doSave :
-           loss_value, lr = sess.run( [ train_op, total_loss, learning_rate ] )[ 1: ]
-           train_elf.log_stats( loss_value, lr )
+            sess.run(train_op)
+        elif doLog and not doSave :
+            loss_value, lr = sess.run( [ train_op, total_loss, learning_rate ] )[ -2: ]
+            train_elf.log_stats( loss_value, lr )
         elif doLog and doSave :
-           summary, loss_value, lr = sess.run( [ summary_merged, total_loss, learning_rate ] )
-           train_elf.log_stats( loss_value, lr )
-           train_elf.write_summaries( summary )
-           if hvd.rank( ) == 0 :
-              saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
-              print_rank('Saved Checkpoint.')
-           next_checkpoint_epoch += params['epochs_per_saving']
+            summary, loss_value, lr = sess.run( [ train_op, summary_merged, total_loss, learning_rate ])[-3:]
+            train_elf.log_stats( loss_value, lr )
+            train_elf.write_summaries( summary )
+            if hvd.rank( ) == 0 :
+                saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
+                print_rank('Saved Checkpoint.')
+            next_checkpoint_epoch += params['epochs_per_saving']
         elif doSave :
-           summary = sess.run(  summary_merged  )
-           train_elf.write_summaries( summary )
-           if hvd.rank( ) == 0 :
-              saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
-              print_rank('Saved Checkpoint.')
-           next_checkpoint_epoch += params['epochs_per_saving']
+            summary = sess.run([train_op,  summary_merged])[-1]
+            train_elf.write_summaries( summary )
+            if hvd.rank( ) == 0 :
+                saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
+                print_rank('Saved Checkpoint.')
+            next_checkpoint_epoch += params['epochs_per_saving']
         elif doTrace :
-           sess.run(train_op, options=run_options, run_metadata=run_metadata)
-           train_elf.save_trace(run_metadata, params[ 'trace_dir' ], params[ 'trace_step' ] )
-           train_elf.before_run()
+            sess.run(train_op, options=run_options, run_metadata=run_metadata)
+            train_elf.save_trace(run_metadata, params[ 'trace_dir' ], params[ 'trace_step' ] )
+            train_elf.before_run()
         # Here we do validation:
         if train_elf.elapsed_epochs > next_validation_epoch:
             # do validation over 300 batches.
@@ -359,7 +356,7 @@ def train(network_config, hyper_params, params):
             next_validation_epoch += params['epochs_per_validation']
 
 
-def validate(network_config, hyper_params, params, sess, dset, num_batches=150):
+def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
     """
     Runs validation with current weights
     :param params:
@@ -370,21 +367,45 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=150):
     :return:
     """
     print_rank("Running Validation over %d batches..." % num_batches)
-    # Get Test data
-    dset.set_mode(mode='test')
-    images, labels = dset.minibatch()
+    with tf.device(params['CPU_ID']):
+        # Get Test data
+        dset.set_mode(mode='test')
+        images, labels = dset.minibatch()
+        # Staging images on host
+        staging_op, (images, labels) = dset.stage([images, labels])
+
+    with tf.device('/gpu:%d' % hvd.local_rank()):
+        # Copy images from host to device
+        gpucopy_op, (images, labels) = dset.stage([images, labels])
+        IO_ops = [staging_op, gpucopy_op]
+
+    scope = 'horovod'
+    summary = False
+
+    # prefill pipeline first
+    print_rank('Prefilling I/O pipeline...')
+    for i in range(len(IO_ops)):
+        sess.run(IO_ops[:i + 1])
 
     with tf.variable_scope('horovod', reuse=True) as _:
         # Setup Neural Net
         params['IMAGE_FP16'] = False
-        n_net = network.ResNet('horovod', params, hyper_params, network_config, tf.cast(images, tf.float32),
-                               labels, operation='eval', summary=False)
+        # Setup Neural Net
+        if params['network_class'] == 'resnet':
+            n_net = network.ResNet(scope, params, hyper_params, network_config, images, labels,
+                                      operation='train', summary=False, verbose=False)
+        if params['network_class'] == 'cnn':
+            n_net = network.ConvNet(scope, params, hyper_params, network_config, images, labels,
+                                     operation='train', summary=False, verbose=False)
+        if params['network_class'] == 'fcdensenet':
+            n_net = network.FCDenseNet(scope, params, hyper_params, network_config, images, labels,
+                                     operation='train', summary=False, verbose=False)
 
         # Build it and propagate images through it.
         n_net.build_model()
 
         # Calculate predictions
-        if hyper_params['network_type'] != 'hybrid':
+        if hyper_params['network_type'] == 'regressor' or hyper_params['network_type'] == 'classifier':
             labels_shape = labels.get_shape().as_list()
             layer_params={'bias':labels_shape[-1], 'weights':labels_shape[-1],'regularize':False}
             logits = fully_connected(n_net, layer_params, params['batch_size'],
@@ -416,9 +437,15 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=150):
         elif hyper_params['network_type'] == 'hybrid':
             #TODO: implement evaluation call for hybrid network
             print('not implemented')
+        elif hyper_params['network_type'] == 'inverter':
+            errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
+            errors = tf.expand_dims(errors,axis=0)
+            error_averaging = hvd.allreduce(errors)
+            error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_batches)])
+            print_rank('Validation Reconstruction Error: %3.3e' % error.mean())
 
 
-def validate_ckpt(network_config, hyper_params, params,num_batches=300,
+def validate_ckpt(network_config, hyper_params, params,num_batches=25,
                     last_model= False, sleep=-1):
     """
     Runs evaluation with current weights
@@ -445,7 +472,10 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=300,
 
     with tf.device(params['CPU_ID']):
         with tf.name_scope('Input') as _:
-            dset = inputs.DatasetTFRecords(params, dataset=params['dataset'], mode='test')
+            if params['filetype'] == 'tfrecord':
+                dset = inputs.DatasetTFRecords(params, dataset=params['dataset'], debug=False)
+            elif params['filetype'] == 'lmdb':
+                dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=params['debug'])
             images, labels = dset.minibatch()
             # Staging images on host
             staging_op, (images, labels) = dset.stage([images, labels])
@@ -471,13 +501,11 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=300,
             if params['network_class'] == 'fcdensenet':
                 n_net = network.FCDenseNet(scope, params, hyper_params, network_config, tf.cast(images, tf.float32),
                                             labels, operation='eval_ckpt', summary=False, verbose=False)
-
             # Build it and propagate images through it.
             n_net.build_model()
 
-
             # Calculate predictions
-            if hyper_params['network_type'] != 'hybrid':
+            if hyper_params['network_type'] == 'regressor' or hyper_params['network_type'] == 'classifier':
                 labels_shape = labels.get_shape().as_list()
                 layer_params={'bias':labels_shape[-1], 'weights':labels_shape[-1],'regularize':False}
                 logits = fully_connected(n_net, layer_params, params['batch_size'],
@@ -539,6 +567,14 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=300,
                     print_rank('Validation Accuracy (.pct), Top-1: %2.2f , Top-5: %2.2f' %(accuracy[0], accuracy[1]))
                 elif hyper_params['network_type'] == 'hybrid':
                     pass
+                elif hyper_params['network_type'] == 'inverter':
+                    errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
+                    errors = tf.expand_dims(errors,axis=0)
+                    error_averaging = hvd.allreduce(errors)
+                    error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_batches)])
+                    print_rank('Validation Reconstruction Error: %3.3e' % error.mean())
+                    if params['debug']:
+                        print_rank('labels stats (min, max, std): (%2.2f, %2.2f, %2.2f)' % (labels_arr.mean(), labels_arr.sum(),labels_arr.std()))
                 if sleep < 0:
                     break
                 else:
