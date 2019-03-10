@@ -116,11 +116,10 @@ class TrainHelper(object):
             examples_per_sec = self.params['batch_size'] * hvd.size() / duration
             self.cumm_time = (time.time() - self.cumm_time)/self.log_freq
             flops = self.net_ops * examples_per_sec
-            avg_flops = self.net_ops * self.params['batch_size'] * hvd.size() / self.cumm_time
             format_str = (
-            'time= %.1f, step= %d, epoch= %2.2e, loss= %.2f, lr= %.2e, step_time= %2.2f sec, ranks= %d, examples/sec= %.1f, flops = %3.2e, average_time= %2.2f, average_flops= %3.3e')
+            'time= %.1f, step= %d, epoch= %2.2e, loss= %.2f, lr= %.2e, step_time= %2.2f sec, ranks= %d, examples/sec= %.1f, flops = %3.2e, average_time= %2.2f')
             print_rank(format_str % ( t - self.params[ 'start_time' ],  self.last_step, self.elapsed_epochs,
-                        loss_value, learning_rate, duration, hvd.size(), examples_per_sec, flops, self.cumm_time, avg_flops) )
+                        loss_value, learning_rate, duration, hvd.size(), examples_per_sec, flops, self.cumm_time) )
             self.cumm_time = time.time()
 
     @staticmethod
@@ -250,7 +249,7 @@ def train(network_config, hyper_params, params):
         # setup optimizer
         opt_dict = {}
         train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization'], 
-                                opt_dict, learning_policy_func, hyper_params=hyper_params, iter_size=iter_size, dtype='mixed', loss_scaling='Backoff', 
+                                opt_dict, learning_policy_func, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", loss_scaling='Backoff', 
                                 skip_update_cond=skip_update_cond,
                                 on_horovod=True, model_scopes=n_net.scopes)  
 
@@ -572,10 +571,17 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=25,
                     errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
                     errors = tf.expand_dims(errors,axis=0)
                     error_averaging = hvd.allreduce(errors)
-                    error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_batches)])
-                    print_rank('Validation Reconstruction Error: %3.3e' % error.mean())
                     if params['debug']:
-                        print_rank('labels stats (min, max, std): (%2.2f, %2.2f, %2.2f)' % (labels_arr.mean(), labels_arr.sum(),labels_arr.std()))
+                        error = np.array([])
+                        for _ in range(dset.num_samples):
+                            rec_err, pot = sess.run([IO_ops, errors, labels])[-2:]
+                            error = np.append(error, rec_err)
+                            pot = pot.astype(np.float32)
+                            print_rank('labels stats (min, max, std): (%2.2f, %2.2f, %2.2f)' % (pot.mean(), pot.sum(), pot.std()))
+                        print_rank('Validation Reconstruction Error: %s' % format(error))
+                    else:
+                        error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(dset.num_samples)])
+                        print_rank('Validation Reconstruction Error: %3.3e' % error.mean())
                 if sleep < 0:
                     break
                 else:
