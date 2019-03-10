@@ -11,7 +11,7 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.python.training import moving_averages
 import horovod.tensorflow as hvd
-
+from .mp_wrapper import mp_regularizer_wrapper
 
 worker_name='horovod'
 tf.logging.set_verbosity(tf.logging.ERROR)
@@ -784,9 +784,6 @@ class ConvNet(object):
 
     def _weight_decay(self, tensor):
         return tf.multiply(tf.nn.l2_loss(tf.cast(tensor, tf.float32)), self.hyper_params['weight_decay'])
-        # dtype=tf.float32
-        # if self.params['IMAGE_FP16']: dtype= tf.float16
-        # return tf.multiply(tf.nn.l2_loss(tensor), tf.cast(self.hyper_params['weight_decay'],dtype))
 
     def get_glimpses(self, batch_images):
         """

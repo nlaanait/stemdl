@@ -1,5 +1,6 @@
 import tensorflow as tf
-
+from .optimizers import get_regularization_loss
+import numpy as np
 
 def _add_loss_summaries(total_loss, losses, summaries=False):
     """
@@ -52,6 +53,15 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
         _ = calculate_loss_regressor(output, labels, params, hyper_params)
     if hyper_params['network_type'] == 'inverter':
         _ = calculate_loss_regressor(n_net.model_output, labels, params, hyper_params)
+    if hyper_params['network_type'] == 'fft_inverter':
+        n_net.model_output = tf.exp(1.j * tf.cast(n_net.model_output, tf.complex64))
+        psi_pos = tf.ones([1,16,512,512], dtype=tf.complex64)
+        n_net.model_output = tf.multiply(psi_pos, n_net.model_output)
+        n_net.model_output = tf.fft2d(n_net.model_output / np.prod(np.array(n_net.model_output.get_shape().as_list())[2:]))
+        n_net.model_output = tf.abs(n_net.model_output)
+        n_net.model_output = tf.cast(n_net.model_output, tf.float16)
+        n_net.model_output = tf.reduce_mean(n_net.model_output, axis=[1], keepdims=True)
+        _ = calculate_loss_regressor(n_net.model_output, labels, params, hyper_params)
     if hyper_params['network_type'] == 'classifier':
         if labels.dtype is not tf.int64:
             labels = tf.cast(labels, tf.int64)
@@ -67,13 +77,10 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
     #Assemble all of the losses.
     losses = tf.get_collection(tf.GraphKeys.LOSSES)
     regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-
     # Calculate the total loss 
     total_loss = tf.add_n(losses + regularization, name='total_loss')
-
-    #Generate summaries for the losses and get corresponding op
+    # Generate summaries for the losses and get corresponding op
     loss_averages_op = _add_loss_summaries(total_loss, losses, summaries=summary)
-
     return total_loss, loss_averages_op
 
 
