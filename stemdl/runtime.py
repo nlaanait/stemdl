@@ -116,10 +116,11 @@ class TrainHelper(object):
             examples_per_sec = self.params['batch_size'] * hvd.size() / duration
             self.cumm_time = (time.time() - self.cumm_time)/self.log_freq
             flops = self.net_ops * examples_per_sec
+            avg_flops = self.net_ops * self.params['batch_size'] * hvd.size() / self.cumm_time
             format_str = (
-            'time= %.1f, step= %d, epoch= %2.2e, loss= %.2f, lr= %.2e, step_time= %2.2f sec, ranks= %d, examples/sec= %.1f, flops = %3.2e, average_time= %2.2f')
+            'time= %.1f, step= %d, epoch= %2.2e, loss= %.2f, lr= %.2e, step_time= %2.2f sec, ranks= %d, examples/sec= %.1f, flops = %3.2e, average_time= %2.2f, average_flops= %3.3e')
             print_rank(format_str % ( t - self.params[ 'start_time' ],  self.last_step, self.elapsed_epochs,
-                        loss_value, learning_rate, duration, hvd.size(), examples_per_sec, flops, self.cumm_time) )
+                        loss_value, learning_rate, duration, hvd.size(), examples_per_sec, flops, self.cumm_time, avg_flops) )
             self.cumm_time = time.time()
 
     @staticmethod

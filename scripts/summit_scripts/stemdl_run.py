@@ -87,6 +87,8 @@ def main():
                          help=""" lmdb or tfrecord""")
     cmdline.add_argument( '--hvd_group', default=None, type=int,
                          help="""number of horovod message groups""")
+    add_bool_argument( cmdline, '--hvd_fp16', default=None,
+                         help="""horovod message compression""")
     add_bool_argument( cmdline, '--fp16', default=None,
                          help="""Train with half-precision.""")
     add_bool_argument( cmdline, '--fp32', default=None,
