@@ -188,6 +188,8 @@ def main():
        _input = json.dumps( hyper_params, indent=3, sort_keys=False)
        print( "%s" % _input )
 
+    print(f'\nHyperparameters: {hyper_params}\n')
+
     # train or evaluate
     if params['mode'] == 'train':
         runtime.train_horovod_mod(network_config, hyper_params, params)
