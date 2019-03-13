@@ -19,6 +19,7 @@ import tensorflow as tf
 from collections import OrderedDict
 import horovod.tensorflow as hvd
 from tensorflow.python.client import timeline
+from tensorflow.contrib.compiler import xla
 
 # stemdl
 from . import network
@@ -154,9 +155,10 @@ def train(network_config, hyper_params, params):
     config.gpu_options.allow_growth = True
     config.gpu_options.visible_device_list = str(hvd.local_rank())
     config.gpu_options.force_gpu_compatible = True
-    config.intra_op_parallelism_threads = 1
+    config.intra_op_parallelism_threads = 6 
     config.inter_op_parallelism_threads = max(1, cpu_count()//6)
-    #config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
+    config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
+    jit_scope = tf.contrib.compiler.jit.experimental_jit_scope
     # JIT causes gcc errors on dgx-dl and is built without on Summit.
     sess = tf.Session(config=config)
 
@@ -224,6 +226,19 @@ def train(network_config, hyper_params, params):
             if params['network_class'] == 'fcdensenet':
                 n_net = network.FCDenseNet(scope, params, hyper_params, network_config, images, labels,
                                         operation='train', summary=False, verbose=True)
+            
+                
+            ###### XLA compilation #########    
+            #if params['network_class'] == 'fcdensenet':
+            #    def wrap_n_net(*args):
+            #        images, labels = args
+            #        n_net = network.FCDenseNet(scope, params, hyper_params, network_config, images, labels,
+            #                            operation='train', summary=False, verbose=True)
+            #        n_net.build_model()
+            #        return n_net.model_output
+            #
+            #    n_net.model_output = xla.compile(wrap_n_net, inputs=[images, labels])
+            ##############################
 
             # Build it and propagate images through it.
             n_net.build_model()
@@ -250,7 +265,7 @@ def train(network_config, hyper_params, params):
         # setup optimizer
         opt_dict = {}
         train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization'], 
-                                opt_dict, learning_policy_func, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", loss_scaling='Backoff', 
+                                opt_dict, learning_policy_func, run_params=params, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", loss_scaling='Backoff', 
                                 skip_update_cond=skip_update_cond,
                                 on_horovod=True, model_scopes=n_net.scopes)  
 

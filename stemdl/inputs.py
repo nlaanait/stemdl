@@ -436,7 +436,7 @@ class DatasetLMDB(DatasetTFRecords):
         lmdb_dir = self.params['data_dir']
         lmdb_files = os.listdir(lmdb_dir)
         if self.debug: print_rank('lmdb files %s' %format(lmdb_files))
-        lmdb_path = os.path.join(lmdb_dir, 'batch_%d.db' %  int(0))#int(hvd.rank()))
+        lmdb_path = os.path.join(lmdb_dir, 'batch_%s_%d.db' %  (self.mode, int(hvd.rank())))
         self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
         self.num_samples = (self.env.stat()['entries'] - 4)//2 ## TODO: remove hard-coded # of headers by storing #samples key, val
         self.first_record = 0
@@ -492,7 +492,7 @@ class DatasetLMDB(DatasetTFRecords):
             if self.mode == 'train':
                 max_num_records = self.params['num_epochs'] * self.params['NUM_EXAMPLES_PER_EPOCH']
                 ds = ds.take(max_num_records)
-                ds = ds.prefetch(42)
+                ds = ds.prefetch(10)
                 ds = ds.batch(self.params['batch_size'], drop_remainder=True)
                 ds = ds.map(self.wrapped_decode, num_parallel_calls=tf.data.experimental.AUTOTUNE)
                 iterator = ds.make_one_shot_iterator()
@@ -502,7 +502,7 @@ class DatasetLMDB(DatasetTFRecords):
                     #labels.append(tf.reshape(label, self.data_specs['label_shape']))
             elif self.mode == 'eval':
                 ds = ds.batch(self.params['batch_size'])
-                ds = ds.map(self.wrapped_decode, num_parallel_calls=42)
+                ds = ds.map(self.wrapped_decode, num_parallel_calls=6)
                 iterator = ds.make_one_shot_iterator()
                 images, labels = iterator.get_next() 
 

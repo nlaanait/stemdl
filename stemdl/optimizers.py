@@ -86,26 +86,42 @@ def get_regularization_loss(scope=None, name="total_regularization_loss"):
     return tf.constant(0.0)
 
 
-def reduce_gradients(grads_and_vars, on_horovod, model=None):
+def reduce_gradients(grads_and_vars, on_horovod, model=None, run_params=None):
   if on_horovod:
     from horovod.tensorflow import allreduce, size
-
+    from horovod.tensorflow.mpi_ops import register_group
+    if run_params['hvd_group'] is None :
+        layer_indices = get_grads_vars_layer_indices(grads_and_vars, model)
+        averaged_grads_and_vars = []
+        num_groups = len(layer_indices)
+        for idx, layer in enumerate(layer_indices.keys()):
+            ind_list = layer_indices[layer]
+            if len(ind_list) >= 1:
+                layer_grads = [grads_and_vars[ind][0] for ind in ind_list]
+                layer_vars = [grads_and_vars[ind][1] for ind in ind_list]
+                g_id = register_group(len(layer_grads), "%s:%s:%d" % (layer_grads[0].name, layer_grads[-1].name, idx))  
+            if size() > 1:
+                avg_grads = [allreduce(grad, compression=run_params['hvd_fp16'], group_id = g_id)
+                            if grad is not None else tf.constant(0) for grad in layer_grads ]
+                averaged_grads_and_vars.append([(avg_grad, var) for avg_grad, var in zip(avg_grads, layer_vars)])
+        print('per layer grouping')        
+        return list(chain.from_iterable(averaged_grads_and_vars))
+    else:
+        num_groups = run_params['hvd_group']
+        num_grads_per_group = (len(grads_and_vars) + num_groups - 1) // num_groups
+        group_ids = [register_group(num_grads_per_group, "%s:%s:%d" % (grads_and_vars[0][0].name, grads_and_vars[-1][0].name, i))
+                for i in range(len(grads_and_vars) // num_grads_per_group)]
+    
+        if len(grads_and_vars) % num_grads_per_group != 0:
+            group_ids.append(register_group(len(grads) % num_grads_per_group, 
+                                        "%s:%s:%d" % (grads_and_vars[0][0].name, grads_and_vars[-1][0].name,
+                                        len(grads) // num_grads_per_group + 1)))
     if size() > 1:
       averaged_grads_and_vars = []
       with tf.name_scope("all_reduce"):
-        for grad, var in grads_and_vars:
+        for idx, (grad, var) in enumerate(grads_and_vars):
           if grad is not None:
-            # if isinstance(grad, tf.IndexedSlices):
-            #   if model._decoder.params.get('shared_embed', False):
-            #     from tensorflow.python.training.optimizer import _deduplicate_indexed_slices
-            #     summed_values, unique_indices = _deduplicate_indexed_slices(
-            #         values=grad.values, indices=grad.indices)
-            #     gradient_no_duplicate_indices = tf.IndexedSlices(
-            #         indices=unique_indices,
-            #         values=summed_values,
-            #         dense_shape=grad.dense_shape)
-            #     grad = tf.convert_to_tensor(gradient_no_duplicate_indices)
-            avg_grad = allreduce(grad)
+            avg_grad = allreduce(grad, compression=run_params['hvd_fp16'], group_id=group_ids[idx//num_grads_per_group])
             averaged_grads_and_vars.append((avg_grad, var))
           else:
             averaged_grads_and_vars.append((tf.constant(0), var))
@@ -120,6 +136,7 @@ def optimize_loss(loss,
                   optimizer,
                   optimizer_params,
                   learning_rate_decay_fn,
+                  run_params=None,
                   var_list=None,
                   dtype=tf.float32,
                   clip_gradients=None,
@@ -251,7 +268,7 @@ def optimize_loss(loss,
           with tf.control_dependencies([accumulate()]):
             red_grad_updates = opt.apply_gradients(
                 post_process_gradients(
-                    reduce_gradients(grads_and_vars_accum, on_horovod=True, model=model),
+                    reduce_gradients(grads_and_vars_accum, on_horovod=True, model=model_scopes, run_params=run_params),
                     lr=lr,
                     clip_gradients=clip_gradients,
                     hyper_params=hyper_params,
@@ -273,7 +290,7 @@ def optimize_loss(loss,
       else:
         grad_updates = opt.apply_gradients(
             post_process_gradients(
-                reduce_gradients(grads_and_vars, on_horovod=True, model=model),
+                reduce_gradients(grads_and_vars, on_horovod=True, model=model_scopes, run_params=run_params),
                 lr=lr,
                 clip_gradients=clip_gradients,
                 hyper_params=hyper_params,
