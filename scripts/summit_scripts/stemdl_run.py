@@ -2,7 +2,9 @@
 Created on 10/15/17.
 @author: Numan Laanait, Mike Matheson
 """
-
+import logging
+logging.getLogger('tensorflow').setLevel(logging.ERROR)
+#logging.getLogger('tensorflow').disabled = True
 import tensorflow as tf
 import numpy as np
 import argparse
@@ -10,6 +12,7 @@ import json
 import time
 import sys
 import os
+import subprocess, shlex
 import shutil
 try:
    import horovod.tensorflow as hvd
@@ -17,14 +20,10 @@ except:
    print( "< ERROR > Could not import horovod module" )
    raise
 
-#import mpi4py
-#mpi4py.rc.initialize = False
-#from mpi4py import MPI
-#comm = MPI.COMM_WORLD
-
-#sys.path.append('../')
 from stemdl import runtime
 from stemdl import io_utils
+
+tf.logging.set_verbosity(tf.logging.ERROR)
 
 def add_bool_argument(cmdline, shortname, longname=None, default=False, help=None):
     if longname is None:
@@ -76,16 +75,18 @@ def main():
                          help="""Batch norm decay (hyper parameter).""")
     cmdline.add_argument('--save_epochs', default=0.5, type=float,
                          help="""Number of epochs to save checkpoint. """)
+    cmdline.add_argument('--validate_epochs', default=1.0, type=float,
+                         help="""Number of epochs to validate """)
     cmdline.add_argument('--mode', default='train', type=str,
                          help="""train or eval (:validates from checkpoint)""")
     cmdline.add_argument('--cpu_threads', default=10, type=int,
+                         help="""cpu threads per rank""")
+    cmdline.add_argument('--accumulate_step', default=1, type=int,
                          help="""cpu threads per rank""")
     cmdline.add_argument( '--filetype', default=None, type=str,
                          help=""" lmdb or tfrecord""")
     cmdline.add_argument( '--hvd_group', default=None, type=int,
                          help="""number of horovod message groups""")
-    add_bool_argument( cmdline, '--hvd_fp16', default=None,
-                         help="""horovod message compression""")
     add_bool_argument( cmdline, '--fp16', default=None,
                          help="""Train with half-precision.""")
     add_bool_argument( cmdline, '--fp32', default=None,
@@ -94,7 +95,11 @@ def main():
                          help="""Restart training from checkpoint.""")
     add_bool_argument( cmdline, '--nvme', default=None,
                          help="""Copy data to burst buffer.""")
-
+    add_bool_argument( cmdline, '--debug', default=None,
+                         help="""Debug print commands.""")
+    add_bool_argument( cmdline, '--hvd_fp16', default=None,
+                         help="""horovod message compression""")
+   
     
     FLAGS, unknown_args = cmdline.parse_known_args()
     if len(unknown_args) > 0:
@@ -113,6 +118,7 @@ def main():
 
     params[ 'start_time' ] = time.time( )
     params[ 'cmdline' ] = 'unknown'
+    params['accumulate_step'] = FLAGS.accumulate_step
     if FLAGS.batch_size is not None :
         params[ 'batch_size' ] = FLAGS.batch_size
     if FLAGS.log_frequency is not None :
@@ -135,6 +141,8 @@ def main():
         params[ 'restart' ] = True
     if FLAGS.save_epochs is not None:
         params['epochs_per_saving'] = FLAGS.save_epochs
+    if FLAGS.validate_epochs is not None:
+        params['epochs_per_validation'] = FLAGS.validate_epochs
     if FLAGS.mode == 'train':
         params['mode'] = 'train'
     if FLAGS.mode == 'eval':
@@ -143,12 +151,20 @@ def main():
         params['IO_threads'] = FLAGS.cpu_threads
     if FLAGS.filetype is not None:
         params['filetype'] = FLAGS.filetype
-    #group=None will follow default horovod behavior
+    if FLAGS.debug is not None:
+        params['debug'] = FLAGS.debug
+    else: 
+        params['debug'] = False
+
+    #group=None will follow default horovod behavior 
+    #FLAGS.hvd_group= 'layer'
     params['hvd_group'] = FLAGS.hvd_group
     if FLAGS.hvd_fp16 is not None:
         params['hvd_fp16'] = hvd.Compression.fp16
     else: 
         params['hvd_fp16'] = hvd.Compression.none
+    params['nvme'] = FLAGS.nvme
+
     # Add other params
     params.setdefault( 'restart', False )
 
@@ -183,55 +199,45 @@ def main():
        hyper_params[ 'num_epochs_per_decay' ] = FLAGS.epochs_per_decay
     if FLAGS.bn_decay is not None :
        hyper_params[ 'batch_norm' ][ 'decay' ] = FLAGS.bn_decay
-
+    
+    # print relevant params passed to training 
     if hvd.rank( ) == 0 :
        if os.path.isfile( 'cmd.log' ) :
           cmd = open( "cmd.log", "r" )
           cmdline = cmd.readline( )
           params[ 'cmdline' ] = cmdline
 
-       print( "network_config.json" )
-       _input = json.dumps( network_config, indent=3, sort_keys=False)
-       print( "%s" % _input )
-
-       print( "input_flags.json" )
-       _input = json.dumps( params, indent=3, sort_keys=False)
-
-       print( "hyper_params.json" )
+       print( "### hyper_params.json" )
        _input = json.dumps( hyper_params, indent=3, sort_keys=False)
        print( "%s" % _input )
-    
-    # copy data to nvme
-    #if hvd.local_rank() == 0:
-    if FLAGS.nvme is not None:
-        params = nvme_staging(params['data_dir'],params, mode=params['mode'])
-    #comm.Barrier()
+       
+       print("### params passed at CLI")
+       _input = json.dumps(vars(FLAGS), indent=4)
+       print("%s" % _input) 
+
     # train or evaluate
     if params['mode'] == 'train':
-        runtime.train_horovod_mod(network_config, hyper_params, params)
+        runtime.train(network_config, hyper_params, params)
     elif params['mode'] == 'eval':
         params[ 'IMAGE_FP16' ] = False
-        runtime.validate_ckpt(network_config, hyper_params, params, last_model=False, sleep=0)
-
-def nvme_staging(data_dir, params, mode='train'):
+        runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, sleep=-1, num_batches=20)
+        
+    # copy checkpoints from nvme
+    if FLAGS.nvme is not None:
+        if hvd.rank() == 0:
+            print('copying files from bb...')
+            nvme_staging(params['data_dir'],params)
+    
+def nvme_staging(data_dir, params):
     user = os.environ.get('USER')
-    nvme_dir = '/mnt/bb/%s/rank_%s' %(user,hvd.rank())
-    nvme_dir = '/mnt/bb/%s' %(user)
-    try:
-        shutil.copytree('train', os.path.join(nvme_dir, 'train'))
-    except FileExistsError as e:
-        print(e) 
-    try:
-        shutil.copytree(os.path.join(params['data_dir'],"batch_%s.db" % hvd.rank()), os.path.join(nvme_dir,"train/batch_%s.db" % hvd.rank()))
-    except FileExistsError as e:
-        print(e) 
-        #print('global rank %d, local rank %d, copied file: %s' %(hvd.rank(), hvd.local_rank(), nvme_path))
-    #try:
-    #    shutil.copytree(params['data_dir'], nvme_dir) 
-    #except FileExistsError as e:
-    #    print(e) 
-    params['data_dir'] = nvme_dir
-    return params        
+    gpfs_ckpt_dir = os.environ.get('CKPT_DIR')
+    #nvme_dir = '/mnt/bb/%s' %(user)
+    #if hvd.rank() == 0: print(os.listdir(nvme_dir))
+    cp_args = "cp -r %s %s" %(params['checkpt_dir'], gpfs_ckpt_dir)
+    #if hvd.rank() == 0: print(cp_args)
+    cp_args = shlex.split(cp_args)
+    subprocess.run(cp_args, check=True)
+    return         
 
 if __name__ == '__main__':
     main()

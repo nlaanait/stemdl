@@ -8,11 +8,13 @@ import tensorflow as tf
 import numpy as np
 import sys
 import os
-from itertools import chain
+from itertools import chain, cycle
 from tensorflow.python.ops import data_flow_ops
 import horovod.tensorflow as hvd
 import lmdb
 import time
+
+tf.logging.set_verbosity(tf.logging.ERROR)
 
 def print_rank(*args, **kwargs):
     if hvd.rank() == 0:
@@ -119,14 +121,14 @@ class DatasetTFRecords(object):
         if self.features_specs is None or specs['preprocess']:
             # TODO: all of this should be cached
             # standardize the image to [-1.,1.]
-            image = tf.sqrt(image)
-            image = tf.image.per_image_standardization(image)
-            
+            #image = tf.sqrt(image)
+            #image = tf.image.per_image_standardization(image)
+            pass
             # Checking for nan, bug in simulation codes...
             #image = tf.where(tf.is_nan(image), -tf.ones_like(image), image)
             # Manipulate labels
-            label = tf.expand_dims(label,axis=0)
-            label = tf.sqrt(tf.sqrt(label))
+            #label = tf.expand_dims(label,axis=0)
+            #label = tf.sqrt(tf.sqrt(label))
             #label = tf.image.per_image_standardization(label)
         return image, label
 
@@ -258,7 +260,7 @@ class DatasetTFRecords(object):
         if self.debug: self.inspect_tfrecords(mode)
 
         record_input = data_flow_ops.RecordInput(
-            file_pattern=os.path.join(self.params['data_dir'], '%s/*.tfrecords' % mode),
+            file_pattern=os.path.join(self.params['data_dir'], '*.tfrecords'),
             parallelism=self.params['IO_threads'],
             buffer_size=self.params['buffer_cap'],
             batch_size=batch_size)
@@ -390,7 +392,7 @@ class DatasetTFRecords(object):
         return aff_image
 
     def inspect_tfrecords(self, mode):
-        dir = os.path.join(self.params['data_dir'], mode)
+        dir = self.params['data_dir']
         tf_filenames = os.listdir(dir)
         for fname in tf_filenames:
             if fname.split('.')[-1] == "tfrecords":
@@ -426,75 +428,94 @@ class DatasetTFRecords(object):
         else:
             print_rank('found image and label with sizes: %s, %s' %(format(image.size) ,format(label.size)))
 
+
 class DatasetLMDB(DatasetTFRecords):
     def __init__(self, *args, **kwargs):
         super(DatasetLMDB, self).__init__(*args, **kwargs)
-        lmdb_dir = os.path.join(self.params['data_dir'], self.mode)
-        if self.debug: print_rank('lmdb files %s' %format(os.listdir(lmdb_dir)))
-        if self.params['nvme'] is not None:
-            lmdb_path = os.path.join(lmdb_dir, os.listdir(lmdb_dir)[int(hvd.local_rank())])
-        else: 
-            lmdb_index = np.random.randint(0, high=len(os.listdir(lmdb_dir)))
-            lmdb_path = os.path.join(lmdb_dir, os.listdir(lmdb_dir)[lmdb_index])
-        self.env = lmdb.open(lmdb_path, readahead=False, readonly=True, writemap=False, lock=False)
-        self.num_samples = self.env.stat()['entries'] - 4 ## TODO: remove hard-coded # of headers
+        self.mode = self.params['mode']
+        lmdb_dir = self.params['data_dir']
+        lmdb_files = os.listdir(lmdb_dir)
+        if self.debug: print_rank('lmdb files %s' %format(lmdb_files))
+        lmdb_path = os.path.join(lmdb_dir, 'batch_%s_%d.db' %  (self.mode, int(hvd.rank())))
+        self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+        self.num_samples = (self.env.stat()['entries'] - 4)//2 ## TODO: remove hard-coded # of headers by storing #samples key, val
         self.first_record = 0
         self.records = np.arange(self.first_record, self.num_samples)
-        if self.params['dataset'] == '2d_reconstruction':
+        if self.params['dataset'] == '2d_reconstruction': ## TODO: this dict can be populated from lmdb headers
             self.data_specs={'label_shape': [1,512,512], 'image_shape': [1024, 512, 512], 
             'label_dtype':'float16', 'image_dtype': 'float16', 'label_key':'potential_', 'image_key': 'cbed_'}
-
+        self.image_keys = [bytes(self.data_specs['image_key']+str(idx), "ascii") for idx in self.records]
+        self.label_keys = [bytes(self.data_specs['label_key']+str(idx), "ascii") for idx in self.records]
+    
     def decode_image_label(self, idx):
         """
         idx: index of sample
         Returns: image, label tensors read from lmdb environment
         """
-        image_key = bytes(self.data_specs['image_key']+str(idx), "ascii")
-        label_key = bytes(self.data_specs['label_key']+str(idx), "ascii")
+        idx = idx[0]        
         t = time.time()
+        image_key = self.image_keys[idx]
+        label_key = self.label_keys[idx]
         with self.env.begin(write=False, buffers=True) as txn:
             image_bytes = txn.get(image_key)
             label_bytes = txn.get(label_key)
         label = np.frombuffer(label_bytes, dtype=self.data_specs['label_dtype'])
-        label = label.reshape(self.data_specs['label_shape']).astype(np.float32)
+        #label = label.reshape(self.data_specs['label_shape'])
         image = np.frombuffer(image_bytes, dtype=self.data_specs['image_dtype'])
-        image = image.reshape(self.data_specs['image_shape']).astype(np.float32)
+        #image = image.reshape(self.data_specs['image_shape'])
 
         if self.debug: 
-            print_rank('read image %s %s and label %s %s from lmdb' %(format(image.shape), 
+            print_rank('rank=%d, read image %s %s and label %s %s from lmdb' %(hvd.rank(),format(image.shape), 
             format(image.dtype), format(label.shape), format(label.dtype)))
-        label = tf.convert_to_tensor(label)
-        image = tf.convert_to_tensor(image)
         if self.debug:
-            print_rank('converted image to tensor %s %s' %( format(image.dtype), format(image.get_shape().as_list())))
             print_rank('time to read and convert to tensor: %2.2f' % (time.time()-t))
         return image, label
+
+            
+    def generator(self):
+        for record in cycle(self.records):
+            yield (record)
+
+    def wrapped_decode(self, idx):
+        return tf.py_func(self.decode_image_label, [idx], [tf.float16, tf.float16])
 
     def minibatch(self):
         """
         Returns minibatch of images and labels from TF records file.
         """
-        mode = self.mode
-        batch_size = self.params['batch_size']
-        if mode not in ['train', 'validation', 'test']:
-            mode = 'train'
-
-        records = np.roll(self.records, self.first_record)[:batch_size]
-        images = []
-        labels = []
         with tf.name_scope('pipeline'):
-            for record in records:
-                image, label = self.decode_image_label(record)
-                if self.params[mode + '_distort']:
-                    image = self.distort(image)
-                images.append(image)
-                labels.append(label)
-            # Stack images and labels back into a single tensor
-            labels = tf.parallel_stack(labels)
-            images = tf.parallel_stack(images)
-        self.first_record -= batch_size 
+            ds = tf.data.Dataset.from_generator(
+                self.generator, 
+                (tf.int64),
+                (tf.TensorShape([]))
+                )
+            if self.mode == 'train':
+                max_num_records = self.params['num_epochs'] * self.params['NUM_EXAMPLES_PER_EPOCH']
+                ds = ds.take(max_num_records)
+                ds = ds.prefetch(10)
+                ds = ds.batch(self.params['batch_size'], drop_remainder=True)
+                ds = ds.map(self.wrapped_decode, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+                iterator = ds.make_one_shot_iterator()
+                #for _ in range(self.params['batch_size']):
+                images, labels = iterator.get_next()
+                    #images.append(tf.reshape(image, self.data_specs['image_shape']))
+                    #labels.append(tf.reshape(label, self.data_specs['label_shape']))
+            elif self.mode == 'eval':
+                ds = ds.batch(self.params['batch_size'])
+                ds = ds.map(self.wrapped_decode, num_parallel_calls=6)
+                iterator = ds.make_one_shot_iterator()
+                images, labels = iterator.get_next() 
+
+            #images = tf.parallel_stack(images)
+            #labels = tf.parallel_stack(labels)
+            # reshape them to the expected shape:
+            labels_newshape = [self.params['batch_size']] + self.data_specs['label_shape']
+            images_newshape = [self.params['batch_size']] + self.data_specs['image_shape']
+            labels = tf.reshape(labels, labels_newshape)
+            images = tf.reshape(images, images_newshape)
+         
         # Display the training images in the Tensorboard visualizer.
-        if self.debug: tf.summary.image("images", images, max_outputs=4)
+        if self.debug: tf.summary.image("potential", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
         return images, labels
 
 
@@ -518,8 +539,8 @@ reconstruction_2d = {'material': {'dtype':'str', 'shape':[1]},
                       'angles': {'dtype':'float64', 'shape':[3]},
                       'formula': {'dtype': 'str', 'shape':[1]},
                        # images
-                      'cbed': {'dtype': 'float32', 'shape':[1024,512,512]},
-                      '2d_potential': {'dtype': 'float32', 'shape':[512,512]},
+                      'cbed': {'dtype': 'float16', 'shape':[1024,512,512]},
+                      '2d_potential': {'dtype': 'float16', 'shape':[1,512,512]},
                       'preprocess': False}
 abf_oxides_regression = {'label':{'dtype': 'float64', 'shape':[3]},
             # 'rotation_pattern':{'dtype': 'int64', 'shape':[27]},
