@@ -87,8 +87,6 @@ def main():
                          help=""" lmdb or tfrecord""")
     cmdline.add_argument( '--hvd_group', default=None, type=int,
                          help="""number of horovod message groups""")
-    add_bool_argument( cmdline, '--hvd_fp16', default=None,
-                         help="""horovod message compression""")
     add_bool_argument( cmdline, '--fp16', default=None,
                          help="""Train with half-precision.""")
     add_bool_argument( cmdline, '--fp32', default=None,
@@ -159,6 +157,7 @@ def main():
         params['debug'] = False
 
     #group=None will follow default horovod behavior 
+    #FLAGS.hvd_group= 'layer'
     params['hvd_group'] = FLAGS.hvd_group
     if FLAGS.hvd_fp16 is not None:
         params['hvd_fp16'] = hvd.Compression.fp16
@@ -221,7 +220,7 @@ def main():
         runtime.train(network_config, hyper_params, params)
     elif params['mode'] == 'eval':
         params[ 'IMAGE_FP16' ] = False
-        runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, sleep=-1)
+        runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, sleep=-1, num_batches=20)
         
     # copy checkpoints from nvme
     if FLAGS.nvme is not None:
