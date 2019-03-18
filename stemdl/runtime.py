@@ -136,7 +136,7 @@ def print_rank(*args, **kwargs):
         print(*args, **kwargs)
 
 
-def train(network_config, hyper_params, params):
+def train(network_config, hyper_params, params, hyper_optimization=False):
     """
     Train the network for a number of steps using horovod and asynchronous I/O staging ops.
 
@@ -370,6 +370,11 @@ def train(network_config, hyper_params, params):
             # do validation over 300 batches.
             validate(network_config, hyper_params, params, sess, dset)
             next_validation_epoch += params['epochs_per_validation']
+
+    if hyper_optimization:
+        # Are we guaranteed that doLog will be 1 here?
+        assert doLog, "Logging must be turned on for Hyperspace!"
+        return loss_value
 
 
 def validate(network_config, hyper_params, params, sess, dset, num_batches=10):

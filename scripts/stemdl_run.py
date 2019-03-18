@@ -20,6 +20,8 @@ except:
 sys.path.append('../')
 from stemdl import runtime
 from stemdl import io_utils
+from hyperspace import hyperdrive
+
 
 def add_bool_argument(cmdline, shortname, longname=None, default=False, help=None):
     if longname is None:
@@ -34,6 +36,19 @@ def add_bool_argument(cmdline, shortname, longname=None, default=False, help=Non
         feature_parser.add_argument(           '--'+name, dest=name, action='store_true', help=help, default=default)
     feature_parser.add_argument('--no'+name, dest=name, action='store_false')
     return cmdline
+
+
+def objective(hparams):
+    """Objective function for hyperprameter optimization."""
+    initial_learning_rate, weight_decay, LARC_eta = hparams
+
+    hyper_params['initial_learning_rate'] = initial_learning_rate
+    hyper_params['weight_decay'] = weight_decay
+    hyper_params['LARC_eta'] = LARC_eta
+
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+    return loss
+
 
 
 def main():
@@ -79,6 +94,10 @@ def main():
                          help="""weight of noise layer""")
     cmdline.add_argument('--net_type', default=None, type=str,
                          help=""" Type of network: classifier, regressor, hybrid""")
+    cmdline.add_argument('--hyperspace_results_path', 
+                         default='/gpfs/alpine/lrn001/proj-shared/yngtodd/hyperspace_results', 
+                         type=str,
+                         help="""Path to save Hyperspace results""")
     add_bool_argument( cmdline, '--fp16', default=None,
                          help="""Train with half-precision.""")
     add_bool_argument( cmdline, '--fp32', default=None,
@@ -95,9 +114,11 @@ def main():
 
     # Load input flags
     if FLAGS.input_flags is not None :
+       global params
        params = io_utils.get_dict_from_json( FLAGS.input_flags )
        params[ 'input_flags' ] = FLAGS.input_flags
     else :
+       global params
        params = io_utils.get_dict_from_json('input_flags.json')
        params[ 'input_flags' ] = 'input_flags.json'
 
@@ -154,6 +175,7 @@ def main():
     params['eval_dir'] = eval_dir
 
     # load network config file and hyper_parameters
+    global network_config, hyper_params
     network_config = io_utils.load_json_network_config(params['network_config'])
     hyper_params = io_utils.load_json_hyper_params(params['hyper_params'])
 
@@ -193,6 +215,25 @@ def main():
     # train or evaluate
     if params['mode'] == 'train':
         runtime.train_horovod_mod(network_config, hyper_params, params)
+    elif params['mode'] == 'hyper_optimization':
+        # Run Hyperspace
+        space = [
+            (1e-4, 0.1), # initial_learning_rate
+            (0.0, 0.9),  # weight_decay
+            (1e-4, 0.1)  # LARC_eta
+        ]
+
+        hyperdrive(
+            objective=objective,
+            hyperparameters=space,
+            results_path=args.hyperspace_results_path,
+            checkpoints_path=args.hyperspace_results_path,
+            model="GP",
+            n_iterations=50,
+            verbose=True,
+            random_state=0
+        )
+
     elif params['mode'] == 'eval':
         params[ 'IMAGE_FP16' ] = False
         runtime.validate_ckpt(network_config, hyper_params, params, last_model=False, sleep=0)
