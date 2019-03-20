@@ -8,7 +8,8 @@ from skopt.callbacks import CheckpointSaver
 from hyperspace import create_hyperspace
 
 
-def run_hyperspace(objective_function, search_bounds, hyper_params, params, args):
+def run_hyperspace(objective_function, search_bounds, 
+                   network_config, hyper_params, params, args):
     """Launch Hyperspace on Summit.
 
     Parameters
@@ -40,13 +41,18 @@ def run_hyperspace(objective_function, search_bounds, hyper_params, params, args
         y0 = None
 
     gp_minimize(
-        lambda x: objective_function(x, hyper_params, params), # the function to minimize
-        space,                                                 # the bounds on each dimension of x
-        x0=x0,                                                 # already examined values for x
-        y0=y0,                                                 # observed values for x0
-        acq_func="LCB",                                        # the acquisition function (optional)
-        n_calls=20,                                            # the number of evaluations of f including at x0
-        n_random_starts=0,                                     # the number of random initialization points
+        lambda x: objective_function(
+            x, 
+            network_config, 
+            hyper_params, 
+            params
+        ),                              # the function to minimize
+        space,                          # the bounds on each dimension of x
+        x0=x0,                          # already examined values for x
+        y0=y0,                          # observed values for x0
+        acq_func="LCB",                 # the acquisition function (optional)
+        n_calls=20,                     # the number of evaluations of f including at x0
+        n_random_starts=0,              # the number of random initialization points
         callback=[checkpoint_saver],
         random_state=777
     )

@@ -374,7 +374,8 @@ def train(network_config, hyper_params, params, hyper_optimization=False):
     if hyper_optimization:
         # Are we guaranteed that doLog will be 1 here?
         assert doLog, "Logging must be turned on for Hyperspace!"
-        return loss_value
+        if train_elf.last_step == maxSteps-2:
+            return loss_value
 
 
 def validate(network_config, hyper_params, params, sess, dset, num_batches=10):

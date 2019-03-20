@@ -74,8 +74,8 @@ def main():
                          help="""Batch norm decay (hyper parameter).""")
     cmdline.add_argument('--save_epochs', default=0.5, type=float,
                          help="""Number of epochs to save checkpoint. """)
-    cmdline.add_argument('--mode', default='train', type=str,
-                         help="""train or eval (:validates from checkpoint)""")
+    cmdline.add_argument('--mode', default='hyperspace', type=str,
+                         help="""train, hyperspace, or eval (:validates from checkpoint)""")
     cmdline.add_argument('--cpu_threads', default=10, type=int,
                          help="""cpu threads per rank""")
     cmdline.add_argument('--mixing', default=0.0, type=float,
@@ -135,6 +135,8 @@ def main():
         params['epochs_per_saving'] = FLAGS.save_epochs
     if FLAGS.mode == 'train':
         params['mode'] = 'train'
+    if FLAGS.mode == 'hyperspace':
+        params['mode'] = 'hyperspace'
     if FLAGS.mode == 'eval':
         params['mode'] = 'eval'
     if FLAGS.cpu_threads is not None:
@@ -201,11 +203,14 @@ def main():
     # train or evaluate
     if params['mode'] == 'train':
         runtime.train_horovod_mod(network_config, hyper_params, params)
-    elif params['mode'] == 'hyper_optimization':
+    elif params['mode'] == 'hyperspace':
+        # quick hack: get back into train mode
+        params['mode'] = 'train'
         space = small_objective.get_space()
         hyperspace_launcher.run_hyperspace(
             small_objective.objective, 
             space,
+            network_config,
             hyper_params,
             params,
             FLAGS

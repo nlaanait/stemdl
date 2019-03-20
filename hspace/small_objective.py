@@ -11,7 +11,7 @@ def get_space():
     return space
 
 
-def objective(hparams, hyper_params, params):
+def objective(hparams, network_config, hyper_params, params):
     """Objective function for hyperprameter optimization.
     
     Parameters
@@ -23,7 +23,7 @@ def objective(hparams, hyper_params, params):
     hyper_params : dict
         All Hyperparameters for stemdl
 
-    params : 
+    params : dict
         Stemdl params
     """
     initial_learning_rate, weight_decay, LARC_eta = hparams
