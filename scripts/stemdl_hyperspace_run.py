@@ -20,7 +20,8 @@ except:
 sys.path.append('../')
 from stemdl import runtime
 from stemdl import io_utils
-#from hyperspace import hyperdrive
+from hspace import small_objective
+from hspace import hyperspace_launcher
 
 
 def add_bool_argument(cmdline, shortname, longname=None, default=False, help=None):
@@ -91,6 +92,7 @@ def main():
                          default='/gpfs/alpine/lrn001/proj-shared/yngtodd/hyperspace_results', 
                          type=str,
                          help="""Path to save Hyperspace results""")
+    cmdline.add_argument('--jobid', type=int, '*Hyperspace* index of job launch script to identify run.')
 
     FLAGS, unknown_args = cmdline.parse_known_args()
     if len(unknown_args) > 0:
@@ -203,24 +205,8 @@ def main():
     if params['mode'] == 'train':
         runtime.train_horovod_mod(network_config, hyper_params, params)
     elif params['mode'] == 'hyper_optimization':
-        # Run Hyperspace
-        space = [
-            (1e-4, 0.1), # initial_learning_rate
-            (0.0, 0.9),  # weight_decay
-            (1e-4, 0.1)  # LARC_eta
-        ]
-
-        hyperdrive(
-            objective=objective,
-            hyperparameters=space,
-            results_path=args.hyperspace_results_path,
-            checkpoints_path=args.hyperspace_results_path,
-            model="GP",
-            n_iterations=50,
-            verbose=True,
-            random_state=0
-        )
-
+        space = small_objective.get_space()
+        hyperspace_launcher.run_hyperspace(small_objective.objective, space, FLAGS)
     elif params['mode'] == 'eval':
         params[ 'IMAGE_FP16' ] = False
         runtime.validate_ckpt(network_config, hyper_params, params, last_model=False, sleep=0)
