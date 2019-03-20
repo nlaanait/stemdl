@@ -1,6 +1,6 @@
 """
-Created on 10/15/17.
-@author: Numan Laanait, Mike Matheson
+Created on 3/21/19.
+@author: Numan Laanait, Mike Matheson, Todd Young
 """
 
 import tensorflow as tf
@@ -103,11 +103,9 @@ def main():
 
     # Load input flags
     if FLAGS.input_flags is not None :
-       global params
        params = io_utils.get_dict_from_json( FLAGS.input_flags )
        params[ 'input_flags' ] = FLAGS.input_flags
     else :
-       global params
        params = io_utils.get_dict_from_json('input_flags.json')
        params[ 'input_flags' ] = 'input_flags.json'
 
@@ -164,7 +162,6 @@ def main():
     params['eval_dir'] = eval_dir
 
     # load network config file and hyper_parameters
-    global network_config, hyper_params
     network_config = io_utils.load_json_network_config(params['network_config'])
     hyper_params = io_utils.load_json_hyper_params(params['hyper_params'])
 
@@ -206,7 +203,13 @@ def main():
         runtime.train_horovod_mod(network_config, hyper_params, params)
     elif params['mode'] == 'hyper_optimization':
         space = small_objective.get_space()
-        hyperspace_launcher.run_hyperspace(small_objective.objective, space, FLAGS)
+        hyperspace_launcher.run_hyperspace(
+            small_objective.objective, 
+            space,
+            hyper_params,
+            params,
+            FLAGS
+        )
     elif params['mode'] == 'eval':
         params[ 'IMAGE_FP16' ] = False
         runtime.validate_ckpt(network_config, hyper_params, params, last_model=False, sleep=0)
