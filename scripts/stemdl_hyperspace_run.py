@@ -92,7 +92,7 @@ def main():
                          default='/gpfs/alpine/lrn001/proj-shared/yngtodd/hyperspace_results', 
                          type=str,
                          help="""Path to save Hyperspace results""")
-    cmdline.add_argument('--jobid', type=int, '*Hyperspace* index of job launch script to identify run.')
+    cmdline.add_argument('--jobid', type=int, help='*Hyperspace* index of job launch script to identify run.')
 
     FLAGS, unknown_args = cmdline.parse_known_args()
     if len(unknown_args) > 0:
