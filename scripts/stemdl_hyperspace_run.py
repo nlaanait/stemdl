@@ -93,8 +93,9 @@ def main():
                          help="""Train with single-precision.""")
     add_bool_argument( cmdline, '--restart', default=None,
                          help="""Restart training from checkpoint.""")
-    #FLAGS = cmdline.parse_args()
+
     FLAGS, unknown_args = cmdline.parse_known_args()
+
     if len(unknown_args) > 0:
         for bad_arg in unknown_args:
             if hvd.rank( ) == 0 :
