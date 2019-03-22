@@ -82,24 +82,24 @@ def main():
                          help="""weight of noise layer""")
     cmdline.add_argument('--net_type', default=None, type=str,
                          help=""" Type of network: classifier, regressor, hybrid""")
+    cmdline.add_argument('--hyperspace_results_path',
+                         default='/gpfs/alpine/lrn001/proj-shared/yngtodd/hyperspace_results',
+                         type=str,
+                         help="""Path to save Hyperspace results""")
+    cmdline.add_argument('--jobid', type=int, help='*Hyperspace* index of job launch script to identify run.')
     add_bool_argument( cmdline, '--fp16', default=None,
                          help="""Train with half-precision.""")
     add_bool_argument( cmdline, '--fp32', default=None,
                          help="""Train with single-precision.""")
     add_bool_argument( cmdline, '--restart', default=None,
                          help="""Restart training from checkpoint.""")
-    cmdline.add_argument('--hyperspace_results_path', 
-                         default='/gpfs/alpine/lrn001/proj-shared/yngtodd/hyperspace_results', 
-                         type=str,
-                         help="""Path to save Hyperspace results""")
-    cmdline.add_argument('--jobid', type=int, '*Hyperspace* index of job launch script to identify run.')
-
+    #FLAGS = cmdline.parse_args()
     FLAGS, unknown_args = cmdline.parse_known_args()
     if len(unknown_args) > 0:
         for bad_arg in unknown_args:
             if hvd.rank( ) == 0 :
                print('<ERROR> Unknown command line arg: %s' % bad_arg)
-        raise ValueError('Invalid command line arg(s)')
+        #raise ValueError('Invalid command line arg(s)')
 
     # Load input flags
     if FLAGS.input_flags is not None :
