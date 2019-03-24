@@ -148,14 +148,19 @@ def train(network_config, hyper_params, params, hyper_optimization=False):
     #########################
     # Start Session         #
     #########################
+    # Check if there is a lingering session before running Hyperspace
+    if sess._closed == False:
+        sess.close()
+        tf.reset_default_graph()
     # Config file for tf.Session()
+
     config = tf.ConfigProto(allow_soft_placement=params['allow_soft_placement'],
                            log_device_placement=params['log_device_placement'],
                            )
     config.gpu_options.allow_growth = True
     config.gpu_options.visible_device_list = str(hvd.local_rank())
     config.gpu_options.force_gpu_compatible = True
-    config.intra_op_parallelism_threads = 6 
+    config.intra_op_parallelism_threads = 6
     config.inter_op_parallelism_threads = max(1, cpu_count()//6)
     config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
     jit_scope = tf.contrib.compiler.jit.experimental_jit_scope
@@ -212,7 +217,7 @@ def train(network_config, hyper_params, params, hyper_optimization=False):
         print_rank('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
                                                                 format(labels.get_shape())))
 
-        with tf.variable_scope('horovod', 
+        with tf.variable_scope('horovod',
                 # Force all variables to be stored as float32
                 custom_getter=float32_variable_storage_getter) as _:
 
@@ -226,9 +231,9 @@ def train(network_config, hyper_params, params, hyper_optimization=False):
             if params['network_class'] == 'fcdensenet':
                 n_net = network.FCDenseNet(scope, params, hyper_params, network_config, images, labels,
                                         operation='train', summary=False, verbose=True)
-            
-                
-            ###### XLA compilation #########    
+
+
+            ###### XLA compilation #########
             #if params['network_class'] == 'fcdensenet':
             #    def wrap_n_net(*args):
             #        images, labels = args
@@ -264,10 +269,10 @@ def train(network_config, hyper_params, params, hyper_optimization=False):
 
         # setup optimizer
         opt_dict = {}
-        train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization'], 
-                                opt_dict, learning_policy_func, run_params=params, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", loss_scaling='Backoff', 
+        train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization'],
+                                opt_dict, learning_policy_func, run_params=params, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", loss_scaling='Backoff',
                                 skip_update_cond=skip_update_cond,
-                                on_horovod=True, model_scopes=n_net.scopes)  
+                                on_horovod=True, model_scopes=n_net.scopes)
 
         # Gather all training related ops into a single one.
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -301,7 +306,7 @@ def train(network_config, hyper_params, params, hyper_optimization=False):
     print_rank('Syncing horovod ranks...')
     sync_op = hvd.broadcast_global_variables(0)
     sess.run(sync_op)
-    
+
     # prefill pipeline first
     print_rank('Prefilling I/O pipeline...')
     for i in range(len(IO_ops)):

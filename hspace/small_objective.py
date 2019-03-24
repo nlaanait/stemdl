@@ -1,4 +1,5 @@
 import sys
+import tensorflow as tf
 sys.path.append('../')
 from stemdl import runtime
 
@@ -14,7 +15,7 @@ def get_space():
 
 def objective(hparams, network_config, hyper_params, params):
     """Objective function for hyperprameter optimization.
-    
+
     Parameters
     ----------
     hparams : list
