@@ -26,10 +26,11 @@
         "initializer": {
                 "type": "He"
         },
-        "LARC": false,
+        "LARC": true,
         "LARC_eta": 0.002,
         "LARC_epsilon": 6.25e-6,
         "LARC_mode": "scale",
+        "loss_scaling": "Backoff",
         "LSAL":false,
         "langevin":false
 }
