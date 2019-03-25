@@ -44,7 +44,7 @@ def main():
     np.random.seed( 4321 )
 
     # initiate horovod
-    hvd.init()
+    hvd.init([0])
 
     cmdline = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # Basic options

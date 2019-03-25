@@ -128,7 +128,7 @@ class TrainHelper(object):
     def nanloss(loss_value):
         if np.isnan(loss_value):
             print_rank('loss is nan... Exiting!')
-            sys.exit(0)
+            #sys.exit(0)
 
 
 def print_rank(*args, **kwargs):
@@ -136,7 +136,7 @@ def print_rank(*args, **kwargs):
         print(*args, **kwargs)
 
 
-def train(network_config, hyper_params, params, hyper_optimization=False):
+def train(network_config, hyper_params, params, hyper_optimization=True):
     """
     Train the network for a number of steps using horovod and asynchronous I/O staging ops.
 
@@ -370,12 +370,17 @@ def train(network_config, hyper_params, params, hyper_optimization=False):
             # do validation over 300 batches.
             validate(network_config, hyper_params, params, sess, dset)
             next_validation_epoch += params['epochs_per_validation']
-
+    
+    print(f'last_step: {train_elf.last_step}, maxSteps: {maxSteps}')
     if hyper_optimization:
         # Are we guaranteed that doLog will be 1 here?
         assert doLog, "Logging must be turned on for Hyperspace!"
-        if train_elf.last_step == maxSteps-2:
-            return loss_value
+        if train_elf.last_step == maxSteps:
+            print(f'Loss value: {type(loss_value)}, {loss_value}')
+            if np.isnan(loss_value):
+                return 999
+            else:
+                return loss_value
 
 
 def validate(network_config, hyper_params, params, sess, dset, num_batches=10):

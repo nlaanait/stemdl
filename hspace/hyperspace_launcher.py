@@ -1,4 +1,5 @@
 import os
+import dill
 
 from skopt import load
 from skopt import callbacks

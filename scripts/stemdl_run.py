@@ -2,6 +2,8 @@
 Created on 10/15/17.
 @author: Numan Laanait, Mike Matheson
 """
+import sys
+import dill
 import logging
 logging.getLogger('tensorflow').setLevel(logging.ERROR)
 #logging.getLogger('tensorflow').disabled = True
@@ -20,6 +22,7 @@ except:
    print( "< ERROR > Could not import horovod module" )
    raise
 
+sys.path.append('../')
 from stemdl import runtime
 from stemdl import io_utils
 from hspace import small_objective
@@ -231,6 +234,7 @@ def main():
     elif params['mode'] == 'hyperspace':
         # quick hack: get back into train mode
         params['mode'] = 'train'
+        #if hvd.rank( ) == 0 :
         space = small_objective.get_space()
         hyperspace_launcher.run_hyperspace(
             small_objective.objective, 
