@@ -2,7 +2,7 @@
 #BSUB -P LRN001 
 #BSUB -J stemdl
 #BSUB -o logs.o%J
-#BSUB -W 00:20
+#BSUB -W 02:00
 #BSUB -nnodes 2
 #BSUB -alloc_flags "smt4 nvme" 
 ##BSUB -alloc_flags "smt4 nvme maximizegpfs" 
