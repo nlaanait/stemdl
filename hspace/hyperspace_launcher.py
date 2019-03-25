@@ -1,12 +1,13 @@
 import os
+import json
 import dill
 
 from skopt import load
 from skopt import callbacks
 from skopt import gp_minimize
-from skopt.callbacks import CheckpointSaver
 
 from hyperspace import create_hyperspace
+from hyperspace.rover.checkpoints import JsonCheckpointSaver
 
 
 def run_hyperspace(objective_function, search_bounds, 
@@ -28,13 +29,14 @@ def run_hyperspace(objective_function, search_bounds,
     hspace = create_hyperspace(search_bounds)
     space = hspace[args.jobid]
 
-    checkpoint_file = os.path.join(args.hyperspace_results_path, f'hyperspace{args.jobid}')
-    checkpoint_saver = CheckpointSaver(checkpoint_file, compress=9)
+    checkpoint_file = os.path.join(args.hyperspace_results_path, f'bayes{args.jobid}')
+    checkpoint_saver = JsonCheckpointSaver(args.hyperspace_results_path, f'bayes{args.jobid}')
 
     try:
-        res = load(checkpoint_file)
-        x0 = res.x_iters
-        y0 = res.func_vals
+        with open(checkpoint_file) as json_file:  
+            res = json.load(json_file)
+        x0 = res['x_iters']
+        y0 = res['func_vals']
     except FileNotFoundError:
         print(f'No previous save point for space hyperspace{args.jobid}')
         # Need to randomly sample the bounds to prime the optimization.
@@ -48,7 +50,7 @@ def run_hyperspace(objective_function, search_bounds,
             hyper_params, 
             params
         ),                              # the function to minimize
-        space,                          # the bounds on each dimension of x
+        search_bounds,                          # the bounds on each dimension of x
         x0=x0,                          # already examined values for x
         y0=y0,                          # observed values for x0
         acq_func="LCB",                 # the acquisition function (optional)

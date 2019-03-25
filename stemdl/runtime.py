@@ -148,11 +148,6 @@ def train(network_config, hyper_params, params, hyper_optimization=True):
     #########################
     # Start Session         #
     #########################
-    # Check if there is a lingering session before running Hyperspace
-    if sess._closed == False:
-        sess.close()
-        tf.reset_default_graph()
-
     # Config file for tf.Session()
     config = tf.ConfigProto(allow_soft_placement=params['allow_soft_placement'],
                            log_device_placement=params['log_device_placement'],
@@ -381,9 +376,13 @@ def train(network_config, hyper_params, params, hyper_optimization=True):
         # Are we guaranteed that doLog will be 1 here?
         assert doLog, "Logging must be turned on for Hyperspace!"
         if train_elf.last_step == maxSteps:
+            # Check if there is a lingering session before running Hyperspace
+            if sess._closed == False:
+                sess.close()
+                tf.reset_default_graph()
             print(f'Loss value: {type(loss_value)}, {loss_value}')
             if np.isnan(loss_value):
-                return 999
+                return 666666666
             else:
                 return loss_value
 
