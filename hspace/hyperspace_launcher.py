@@ -50,7 +50,7 @@ def run_hyperspace(objective_function, search_bounds,
             hyper_params, 
             params
         ),                              # the function to minimize
-        search_bounds,                          # the bounds on each dimension of x
+        search_bounds,                  # the bounds on each dimension of x
         x0=x0,                          # already examined values for x
         y0=y0,                          # observed values for x0
         acq_func="LCB",                 # the acquisition function (optional)
