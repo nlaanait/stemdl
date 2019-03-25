@@ -86,8 +86,8 @@ CMD="python -u ${SCRIPT} --hyperspace_results_path $HYPERSPACE_PATH --jobid $JOB
 ### mpi/cudnn tracing ###
 #export OMPI_LD_PRELOAD_POSTPEND=${OLCF_SPECTRUM_MPI_ROOT}/lib/libmpitrace.so
 #export MPI_ASC_OUTPUT="Y"
-export CUDNN_LOGINFO_DBG=0
-export CUDNN_LOGDEST_DBG="output_logs/cudnn_${NODES}_${LSB_JOBID}.log"
+#export CUDNN_LOGINFO_DBG=0
+#export CUDNN_LOGDEST_DBG="output_logs/cudnn_${NODES}_${LSB_JOBID}.log"
 ################
 
 ### pami ibv ###
