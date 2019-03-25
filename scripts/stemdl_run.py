@@ -28,6 +28,11 @@ from stemdl import io_utils
 from hspace import small_objective
 from hspace import hyperspace_launcher
 
+from mpi4py import MPI
+comm = MPI.COMM_WORLD
+comm_size = comm.Get_size()
+comm_rank = comm.Get_rank()
+
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 def add_bool_argument(cmdline, shortname, longname=None, default=False, help=None):
@@ -50,7 +55,7 @@ def main():
     np.random.seed( 4321 )
 
     # initiate horovod
-    hvd.init()
+    hvd.init(range(1,comm_size))
 
     cmdline = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # Basic options
@@ -214,7 +219,7 @@ def main():
        hyper_params[ 'batch_norm' ][ 'decay' ] = FLAGS.bn_decay
     
     # print relevant params passed to training 
-    if hvd.rank( ) == 0 :
+    if comm_rank == 0 :
        if os.path.isfile( 'cmd.log' ) :
           cmd = open( "cmd.log", "r" )
           cmdline = cmd.readline( )
