@@ -1,19 +1,15 @@
 import sys
-<<<<<<< HEAD
 import dill
 
-=======
-import tensorflow as tf
->>>>>>> 5a6462a40d4ff65aa96f999493507acd3cbffaeb
 sys.path.append('../')
 from stemdl import runtime
 
 
 def get_space():
     space = [
-        (1e-3, 0.1), # initial_learning_rate
+        (1e-4, 0.1), # initial_learning_rate
         (0.0, 0.9),  # weight_decay
-        (1e-3, 0.1)  # LARC_eta
+        (1e-4, 0.1)  # LARC_eta
     ]
     return space
 
