@@ -59,7 +59,7 @@ jswait 1
 #export HOROVOD_MPI_THREADS_DISABLE=1
 FILETYPE="lmdb"
 LOG="printout_${NODES}.log"
-SCRIPT="stemdl_hyperspace_run.py"
+SCRIPT="stemdl_run.py"
 NROOT="FCDenseNet_custom" 
 #NROOT="FCDenseNet_growth_64" 
 HYPER="hyper_params.json"
@@ -78,8 +78,9 @@ MODE="hyperspace"
 MAX_STEPS=500
 BATCH=1
 LOG_FREQ=10
+JOBID=0
 HYPERSPACE_PATH="/gpfs/alpine/lrn001/proj-shared/yngtodd/experiments/small_objective_march21"
-CMD="python -u ${SCRIPT} --hyperspace_results_path $HYPERSPACE_PATH --hvd_group 1 --hvd_fp16 --debug --nvme --filetype ${FILETYPE} --data_dir ${DATA}  --${FP}  --cpu_threads $cpus --mode $MODE --save_epochs $EPOCH_PER_SAVE --batch_size $BATCH  --log_frequency ${LOG_FREQ} --max_steps $MAX_STEPS --network_config ${NETWORK} --checkpt_dir ${CKPT} --ilr ${ILR} --bn_decay ${BN_DECAY} --scaling ${SCALING} --input_flags ${INPUT} --hyper_params ${HYPER}"
+CMD="python -u ${SCRIPT} --hyperspace_results_path $HYPERSPACE_PATH --jobid $JOBID --hvd_group 1 --hvd_fp16 --debug --nvme --filetype ${FILETYPE} --data_dir ${DATA}  --${FP}  --cpu_threads $cpus --mode $MODE --save_epochs $EPOCH_PER_SAVE --batch_size $BATCH  --log_frequency ${LOG_FREQ} --max_steps $MAX_STEPS --network_config ${NETWORK} --checkpt_dir ${CKPT} --ilr ${ILR} --bn_decay ${BN_DECAY} --scaling ${SCALING} --input_flags ${INPUT} --hyper_params ${HYPER}"
 #################
 
 ### mpi/cudnn tracing ###
@@ -130,12 +131,4 @@ source activate hyperspace
 
 NSPACES=8
 
-PIDS=''
-for i in $(seq 0 $(($NSPACES-1)))
-do
-  #jsrun -n${NODES} -a 6 -c 42 -g 6 -r 1 --bind=proportional-packed:7 --launch_distribution=packed stdbuf -o0 ./launch.sh "${CMD}" --jobid $i > $LOG &
-  jsrun -n${NODES} -a 6 -c 42 -g 6 -r 1 --bind=proportional-packed:7 --launch_distribution=packed stdbuf -o0 ./launch.sh python -u ${SCRIPT} --hyperspace_results_path $HYPERSPACE_PATH --hvd_group 1 --hvd_fp16 --debug --nvme --filetype ${FILETYPE} --data_dir ${DATA}  --${FP}  --cpu_threads $cpus --mode $MODE --save_epochs $EPOCH_PER_SAVE --batch_size $BATCH  --log_frequency ${LOG_FREQ} --max_steps $MAX_STEPS --network_config ${NETWORK} --checkpt_dir ${CKPT} --ilr ${ILR} --bn_decay ${BN_DECAY} --scaling ${SCALING} --input_flags ${INPUT} --hyper_params ${HYPER}
-  PIDS="${PIDS} $!"
-done
-
-wait $PIDS
+jsrun -n${NODES} -a 6 -c 42 -g 6 -r 1 --bind=proportional-packed:7 --launch_distribution=packed stdbuf -o0 ./launch.sh "${CMD}"
