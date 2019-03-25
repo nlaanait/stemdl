@@ -1,0 +1,134 @@
+#!/bin/bash -l
+#BSUB -P LRN001 
+#BSUB -J stemdl
+#BSUB -o logs.o%J
+#BSUB -W 00:20
+#BSUB -nnodes 2
+#BSUB -alloc_flags "smt4 nvme" 
+##BSUB -alloc_flags "smt4 nvme maximizegpfs" 
+#BSUB -q batch
+##BSUB -N
+##BSUB -csm y
+##BSUB -alloc_flags "smt4 gpumps maximizegpfs nvme"
+
+extract_json_field(){
+  grep $1 input_flags.json | awk -v FS="(value\":|,)" '{print $3}'
+}
+
+NODES=$(cat ${LSB_DJOB_HOSTFILE} | sort | uniq | grep -v login | grep -v batch | wc -l)
+#BUILDS=${PROJWORK}/lrn001/nl/builds_test
+BUILDS=${PROJWORK}/lrn001/jqyin/native-build/latest
+
+### modules ###
+module load cuda/9.2.148
+#module load spectrum-mpi
+#module unload spectrum-mpi/10.2.0.11-20190201
+#module load spectrum-mpi/10.2.0.10-20181214
+module unload darshan-runtime
+module unload xalt 
+### TF ###
+export TF_CUDNN_USE_AUTOTUNE=0 #1
+export TF_AUTOTUNE_THRESHOLD=2 #2
+export TF_ENABLE_WINOGRAD_NONFUSED=1
+export TF_ENABLE_XLA=1
+#export TF_GPU_THREAD_COUNT=2
+export TF_USE_CUDNN_BATCHNORM_SPATIAL_PERSISTENT=1
+#export TF_GPU_THREAD_MODE="gpu-private"
+####################
+
+
+### python ###
+export LD_LIBRARY_PATH=$BUILDS/nccl/lib:$BUILDS/cudnn/lib:$LD_LIBRARY_PATH
+export PATH=$BUILDS/anaconda3/bin:$PATH
+export PYTHONIOENCODING="utf8"
+#############
+
+### nvme staging ###
+DATA="${PROJWORK}/lrn001/nl/sims/data/lmdb_files"
+LOG="printout_nvme.log"
+NVME_PURGE=0
+CMD="python -u nvme_stage.py $DATA $NVME_PURGE"
+jsrun -n${NODES} -a 6 -c 42 -r 1 $CMD > $LOG 
+DATA="/mnt/bb/${USER}"
+jswait 1
+####################
+
+### stemdl ###
+#export HOROVOD_HIERARCHICAL_ALLREDUCE=1
+#export HOROVOD_GPU_ALLGATHER="MPI"
+#export HOROVOD_MPI_THREADS_DISABLE=1
+FILETYPE="lmdb"
+LOG="printout_${NODES}.log"
+SCRIPT="stemdl_run.py"
+NROOT="FCDenseNet_custom" 
+#NROOT="FCDenseNet_growth_64" 
+HYPER="hyper_params.json"
+INPUT="input_flags.json"
+NETWORK="network_${NROOT}.json"
+CKPT="checkpoints/${NROOT}_${NODES}_${LSB_JOBID}_checkpoint"
+#CKPT="/mnt/bb/${USER}/${NROOT}_${NODES}_${LSB_JOBID}_checkpoint"
+cpus=1
+ILR=1.e-4
+BN_DECAY=0.8
+EPOCH_PER_DECAY=50.0
+EPOCH_PER_SAVE=2000.0 #checkpointing
+SCALING=1.0
+FP=fp16
+MODE="hyperspace"
+MAX_STEPS=500
+BATCH=1
+LOG_FREQ=10
+JOBID=0
+HYPERSPACE_PATH="/gpfs/alpine/lrn001/proj-shared/yngtodd/experiments/small_objective_march21"
+CMD="python -u ${SCRIPT} --hyperspace_results_path $HYPERSPACE_PATH --jobid $JOBID --hvd_group 1 --hvd_fp16 --debug --nvme --filetype ${FILETYPE} --data_dir ${DATA}  --${FP}  --cpu_threads $cpus --mode $MODE --save_epochs $EPOCH_PER_SAVE --batch_size $BATCH  --log_frequency ${LOG_FREQ} --max_steps $MAX_STEPS --network_config ${NETWORK} --checkpt_dir ${CKPT} --ilr ${ILR} --bn_decay ${BN_DECAY} --scaling ${SCALING} --input_flags ${INPUT} --hyper_params ${HYPER}"
+#################
+
+### mpi/cudnn tracing ###
+#export OMPI_LD_PRELOAD_POSTPEND=${OLCF_SPECTRUM_MPI_ROOT}/lib/libmpitrace.so
+#export MPI_ASC_OUTPUT="Y"
+export CUDNN_LOGINFO_DBG=0
+export CUDNN_LOGDEST_DBG="output_logs/cudnn_${NODES}_${LSB_JOBID}.log"
+################
+
+### pami ibv ###
+#export PAMI_ENABLE_STRIPING=0
+#export PAMI_IBV_ADAPTER_AFFINITY=1
+#export PAMI_ENABLE_STRIPING=0
+#export PAMI_IBV_DEVICE_NAME="mlx5_0:1"
+#export PAMI_IBV_DEVICE_NAME_1="mlx5_3:1"
+#export NCCL_MIN_NRINGS=4
+#export PAMI_IBV_ENABLE_DCT=0
+#export PAMI_IBV_ENABLE_000_AR=1
+###############
+
+
+#export NCCL_DEBUG=INFO
+#export NCCL_DEBUG_SUBSYS=COLL
+#export NCCL_DEBUG_FILE="nccldebug.${LSB_JOBID}"
+#export HOROVOD_FUSION_THRESHOLD=67108864 # in bytes
+#export HOROVOD_FUSION_THRESHOLD=8388608 # in bytes
+export HOROVOD_CYCLE_TIME=2 # in ms 
+#export HOROVOD_AUTOTUNE=1
+#export HOROVOD_AUTOTUNE_LOG="autotune.${LSB_JOBID}"
+#export HOROVOD_LOG_LEVEL=INFO
+#export HOROVOD_FUSION_THRESHOLD=35000000 # in bytes
+#export HOROVOD_CYCLE_TIME=96 # in ms 
+#export HOROVOD_FUSION_THRESHOLD=17000000 # in bytes
+#export HOROVOD_CYCLE_TIME=98 # in ms 
+export HOROVOD_HIERARCHICAL_ALLGATHER=0
+export HOROVOD_HIERARCHICAL_ALLREDUCE=0
+#export HOROVOD_TIMELINE="timeline.${LSB_JOBID}"
+export HOROVOD_GROUPED_ALLREDUCES=1
+
+#jsrun -n$((NODES*6)) -a 1 -c 7 -g 1 -r 6 --smpiargs "-tcp" ${CMD} > $LOG
+#jsrun -n$((NODES*6)) -a 1 -c 7 -g 1 -r 6 --bind=proportional-packed:7 --launch_distribution=packed stdbuf -o0 ${CMD} > $LOG
+#jsrun -n${NODES} -a 6 -c 42 -g 6 -r 1 --bind=proportional-packed:7 --launch_distribution=packed stdbuf -o0 ./launch.sh "${CMD}" > $LOG
+#jsrun -n${NODES} -a 6 -c 42  -g 6 -r 1 --bind=proportional-packed:7 --launch_distribution=packed ${CMD} > $LOG
+#cp $LOG output_logs/${LSB_JOBID}_printout.log
+#mv logs.o${LSB_JOBID} output_logs/
+
+source activate hyperspace
+
+NSPACES=8
+
+jsrun -n${NODES} -a 6 -c 42 -g 6 -r 1 --bind=proportional-packed:7 --launch_distribution=packed stdbuf -o0 ./launch.sh "${CMD}"

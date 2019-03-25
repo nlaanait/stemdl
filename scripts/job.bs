@@ -133,7 +133,8 @@ NSPACES=8
 PIDS=''
 for i in $(seq 0 $(($NSPACES-1)))
 do
-  jsrun -n${NODES} -a 6 -c 42 -g 6 -r 1 --bind=proportional-packed:7 --launch_distribution=packed stdbuf -o0 ./launch.sh "${CMD}" --jobid $i > $LOG &
+  #jsrun -n${NODES} -a 6 -c 42 -g 6 -r 1 --bind=proportional-packed:7 --launch_distribution=packed stdbuf -o0 ./launch.sh "${CMD}" --jobid $i > $LOG &
+  jsrun -n${NODES} -a 6 -c 42 -g 6 -r 1 --bind=proportional-packed:7 --launch_distribution=packed stdbuf -o0 ./launch.sh python -u ${SCRIPT} --hyperspace_results_path $HYPERSPACE_PATH --hvd_group 1 --hvd_fp16 --debug --nvme --filetype ${FILETYPE} --data_dir ${DATA}  --${FP}  --cpu_threads $cpus --mode $MODE --save_epochs $EPOCH_PER_SAVE --batch_size $BATCH  --log_frequency ${LOG_FREQ} --max_steps $MAX_STEPS --network_config ${NETWORK} --checkpt_dir ${CKPT} --ilr ${ILR} --bn_decay ${BN_DECAY} --scaling ${SCALING} --input_flags ${INPUT} --hyper_params ${HYPER}
   PIDS="${PIDS} $!"
 done
 

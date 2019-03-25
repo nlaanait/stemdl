@@ -1,13 +1,15 @@
 import sys
+import dill
+
 sys.path.append('../')
 from stemdl import runtime
 
 
 def get_space():
     space = [
-        (1e-4, 0.1), # initial_learning_rate
+        (1e-3, 0.1), # initial_learning_rate
         (0.0, 0.9),  # weight_decay
-        (1e-4, 0.1)  # LARC_eta
+        (1e-3, 0.1)  # LARC_eta
     ]
     return space
 
@@ -34,4 +36,6 @@ def objective(hparams, network_config, hyper_params, params):
     hyper_params['LARC_eta'] = LARC_eta
 
     loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+    print(f'loss is of type {type(loss)}')
+    print(f'Loss from objective function: {loss}')
     return loss
