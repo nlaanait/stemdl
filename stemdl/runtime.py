@@ -152,8 +152,8 @@ def train(network_config, hyper_params, params, hyper_optimization=False):
     if sess._closed == False:
         sess.close()
         tf.reset_default_graph()
-    # Config file for tf.Session()
 
+    # Config file for tf.Session()
     config = tf.ConfigProto(allow_soft_placement=params['allow_soft_placement'],
                            log_device_placement=params['log_device_placement'],
                            )
