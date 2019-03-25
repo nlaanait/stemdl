@@ -1,6 +1,10 @@
 import sys
+<<<<<<< HEAD
 import dill
 
+=======
+import tensorflow as tf
+>>>>>>> 5a6462a40d4ff65aa96f999493507acd3cbffaeb
 sys.path.append('../')
 from stemdl import runtime
 
@@ -16,7 +20,7 @@ def get_space():
 
 def objective(hparams, network_config, hyper_params, params):
     """Objective function for hyperprameter optimization.
-    
+
     Parameters
     ----------
     hparams : list
