@@ -265,7 +265,7 @@ def train(network_config, hyper_params, params, hyper_optimization=True):
         # setup optimizer
         opt_dict = {}
         train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization'],
-                                opt_dict, learning_policy_func, run_params=params, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", loss_scaling='Backoff',
+                                opt_dict, learning_policy_func, run_params=params, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", loss_scaling=hyper_params['loss_scaling'],
                                 skip_update_cond=skip_update_cond,
                                 on_horovod=True, model_scopes=n_net.scopes)
 

@@ -25,7 +25,7 @@ except:
 sys.path.append('../')
 from stemdl import runtime
 from stemdl import io_utils
-from hspace import small_objective
+from hspace import medium_objective
 from hspace import hyperspace_launcher
 
 from mpi4py import MPI
@@ -240,9 +240,9 @@ def main():
         # quick hack: get back into train mode
         params['mode'] = 'train'
         #if hvd.rank( ) == 0 :
-        space = small_objective.get_space()
+        space = medium_objective.get_space()
         hyperspace_launcher.run_hyperspace(
-            small_objective.objective, 
+            medium_objective.objective, 
             space,
             network_config,
             hyper_params,
