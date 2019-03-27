@@ -56,7 +56,7 @@ def count_occurences(filepath, line_bounds, ord_dict_list, portion=0.5):
                         if itm[0].search(line):
                             ord_dict[key][1] += 1
 
-
+                            
 def rank_entries(ord_dict_list, steps):
     FWD_ALGO_TENSORCORE=["CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM",
     "CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED"
@@ -82,13 +82,10 @@ def rank_entries(ord_dict_list, steps):
                 tensorcore_usage = "NO"
             print('%s, %d ,%s ' %(algo_name, ord_dict[algo_name][1], tensorcore_usage))
         print('\n')
-#TODO: hunt the graph structure and parse on that
-def trace_fwd_bwd():
-    pass
 
-def get_step_timing(logfile):
-    step_1 = re.compile('step= 90')
-    step_2 = re.compile('step= 100')
+def get_step_timing(logfile, step_start=90, step_end=100):
+    step_1 = re.compile('step= %d' %step_start)
+    step_2 = re.compile('step= %d' %step_end)
     times, steps = [], []
     with open(logfile, mode='r') as f:
         for line in f:
@@ -103,19 +100,25 @@ def get_step_timing(logfile):
 def get_lines_bounds(times, logfile):
     pattern = re.compile('Time:')
     lines = []
+    #print(times)
     with open(logfile, mode='r') as f:
         for i,line in enumerate(f):
             if pattern.search(line):
                 stream=line
                 stream=line.split(' ')[-3]
                 time_list = re.findall('\d+',stream)
-                total_time = int(time_list[0])*3600*24 + int(time_list[1])*3600 + int(time_list[2])*60 + int(time_list[3])
-                if total_time > times[0] or total_time < total_time: lines.append(i)
+                if len(time_list) == 4:
+                #print(time_list)
+                    total_time = int(time_list[0])*3600*24 + int(time_list[1])*3600 + int(time_list[2])*60 + int(time_list[3])
+                    #print(total_time)
+                    if total_time > times[0] and total_time < times[1]: lines.append(i)
     return lines[0], lines[-1]
 
 def main(argv):
-    cudnn_logfile=argv[-2]
-    train_logfile=argv[-1]
+    if len(argv) == 1:
+        print('Usage: python cudnn_parser.py cudnn_logfile train_logfile step_start step_end.')
+    else:
+        cudnn_logfile, train_logfile, step_start, step_end = argv[1:]
     # Dictionaries
     FWD_ALGO = todict(FWD_ALGO_list)
     BWD_DATA_ALGO = todict(BWD_ALGO_DATA_list)
@@ -123,9 +126,10 @@ def main(argv):
     MATH_OPS = todict(MATH_OPS_list)
     ord_dict_list = [FWD_ALGO, BWD_DATA_ALGO, BWD_FILTER_ALGO, MATH_OPS]
     # parsing
-    times, steps = get_step_timing(train_logfile)
+    times, steps = get_step_timing(train_logfile,step_start=int(step_start), step_end=int(step_end))
+    #print(times, steps)
     line_lb, line_ub = get_lines_bounds(times, cudnn_logfile)
-    count_occurences(cudnn_logfile, [line_lb, line_ub], ord_dict_list, portion=0.75)
+    count_occurences(cudnn_logfile, [line_lb, line_ub], ord_dict_list)
     rank_entries(ord_dict_list, steps)
 
 if __name__ == "__main__":
