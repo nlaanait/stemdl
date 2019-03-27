@@ -403,7 +403,7 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
     print_rank("Running Validation over %d batches..." % num_batches)
     with tf.device(params['CPU_ID']):
         # Get Test data
-        dset.set_mode(mode='test')
+        dset.set_mode(mode='eval')
         images, labels = dset.minibatch()
         # Staging images on host
         staging_op, (images, labels) = dset.stage([images, labels])
