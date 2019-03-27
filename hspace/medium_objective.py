@@ -42,6 +42,7 @@ def objective(hparams, network_config, hyper_params, params):
     train_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
 
     # Sanity check
-    #params['IMAGE_FP16'] = False
-    #valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+    params['mode'] = 'eval'
+    params['IMAGE_FP16'] = False
+    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
     return train_loss 
