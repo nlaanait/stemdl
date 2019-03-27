@@ -366,11 +366,11 @@ def train(network_config, hyper_params, params, hyper_optimization=True):
             train_elf.save_trace(run_metadata, params[ 'trace_dir' ], params[ 'trace_step' ] )
             train_elf.before_run()
         # Here we do validation:
-        if train_elf.elapsed_epochs > next_validation_epoch:
+        #if train_elf.elapsed_epochs > next_validation_epoch:
             # do validation over 300 batches.
-            print('\n###############################')
-            print('###   Entering Validation    ###')
-            print('################################\n')
+            #print('\n###############################')
+            #print('###   Entering Validation    ###')
+            #print('################################\n')
             #validate(network_config, hyper_params, params, sess, dset)
             #next_validation_epoch += params['epochs_per_validation']
     
