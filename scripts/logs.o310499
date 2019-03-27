@@ -1,0 +1,545 @@
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+2019-03-27 14:30:43.427700: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:43.427700: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:43.427700: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:43.427772: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:43.427772: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:43.427772: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:43.429653: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:43.429653: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:43.429653: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:43.430060: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:43.430060: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:43.430060: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:48.740144: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:48.740239: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:06:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-27 14:30:48.740267: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 2
+2019-03-27 14:30:48.740309: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:48.749138: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:48.749215: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-27 14:30:48.749238: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 1
+2019-03-27 14:30:48.749285: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:48.761830: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:48.761906: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-27 14:30:48.761929: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-27 14:30:48.761976: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:48.765716: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:48.765823: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-27 14:30:48.765853: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-27 14:30:48.765901: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:48.766239: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:48.766315: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:48.766313: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-27 14:30:48.766331: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-27 14:30:48.766369: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:48.766374: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:03:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-27 14:30:48.766391: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 3
+2019-03-27 14:30:48.766428: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:48.779756: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:48.779885: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:06:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-27 14:30:48.779923: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 2
+2019-03-27 14:30:48.779972: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:48.789088: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:48.789182: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-27 14:30:48.789206: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-27 14:30:48.789244: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:48.790694: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:48.790780: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-27 14:30:48.790806: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 1
+2019-03-27 14:30:48.790851: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:48.801404: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:48.801484: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-27 14:30:48.801509: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-27 14:30:48.801555: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:48.802233: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:48.802233: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-27 14:30:48.802313: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-27 14:30:48.802337: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-27 14:30:48.802313: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:03:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-27 14:30:48.802337: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 3
+2019-03-27 14:30:48.802384: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:48.802384: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:49.186498: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:30:49.186544: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      2 
+2019-03-27 14:30:49.186555: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 2:   N 
+2019-03-27 14:30:49.187103: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-16GB, pci bus id: 0004:06:00.0, compute capability: 7.0)
+2019-03-27 14:30:49.288060: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:30:49.288089: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      1 
+2019-03-27 14:30:49.288099: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 1:   N 
+2019-03-27 14:30:49.288735: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14823 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-16GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+2019-03-27 14:30:49.302433: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:30:49.302476: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      2 
+2019-03-27 14:30:49.302487: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 2:   N 
+2019-03-27 14:30:49.303125: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-16GB, pci bus id: 0004:06:00.0, compute capability: 7.0)
+2019-03-27 14:30:49.332315: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:30:49.332361: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      1 
+2019-03-27 14:30:49.332374: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 1:   N 
+2019-03-27 14:30:49.333073: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-16GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+2019-03-27 14:30:49.336884: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:30:49.336925: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-27 14:30:49.336936: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-27 14:30:49.337464: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-27 14:30:49.344256: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:30:49.344290: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-27 14:30:49.344303: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-27 14:30:49.344949: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+2019-03-27 14:30:49.354169: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:30:49.354199: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      3 
+2019-03-27 14:30:49.354212: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 3:   N 
+2019-03-27 14:30:49.354853: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-16GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+2019-03-27 14:30:49.365540: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:30:49.365569: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-27 14:30:49.365580: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+2019-03-27 14:30:49.366177: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14825 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+2019-03-27 14:30:49.399824: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:30:49.399884: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-27 14:30:49.399899: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-27 14:30:49.400550: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14823 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-27 14:30:49.450010: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:30:49.450067: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-27 14:30:49.450081: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+2019-03-27 14:30:49.450962: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+2019-03-27 14:30:49.472587: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:30:49.472652: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      3 
+2019-03-27 14:30:49.472666: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 3:   N 
+2019-03-27 14:30:49.473008: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:30:49.473042: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-27 14:30:49.473056: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-27 14:30:49.473338: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14825 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-16GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+2019-03-27 14:30:49.473732: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+2019-03-27 14:30:53.374145: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:54.301119: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:54.314042: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:54.317053: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:54.325983: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:54.328644: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:54.583482: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:54.930853: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:55.204789: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:55.323481: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:30:55.451846: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:31:05.901129: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-27 14:31:09.568270: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-27 14:31:09.767415: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-27 14:31:09.865461: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-27 14:31:09.872944: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-27 14:31:10.011356: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-27 14:31:10.094107: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-27 14:31:10.117625: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-27 14:31:10.450035: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-27 14:31:10.462138: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-27 14:31:10.487577: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-27 14:31:10.493126: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-27 14:31:10.510148: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-27 14:31:32.236404: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-27 14:31:32.236459: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:31:32.236404: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-27 14:31:32.236460: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:31:32.236471: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-27 14:31:32.236483: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-27 14:31:32.236477: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-27 14:31:32.236490: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-27 14:31:32.236839: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14823 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-27 14:31:32.236968: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 60, in run_hyperspace
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 60, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 51, in <lambda>
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 51, in <lambda>
+    params
+  File "../hspace/medium_objective.py", line 46, in objective
+    params
+  File "../hspace/medium_objective.py", line 46, in objective
+    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 516, in validate_ckpt
+    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 516, in validate_ckpt
+    dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=params['debug'])
+  File "../stemdl/inputs.py", line 440, in __init__
+    dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=params['debug'])
+  File "../stemdl/inputs.py", line 440, in __init__
+2019-03-27 14:31:32.250651: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 3
+2019-03-27 14:31:32.250701: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:31:32.250714: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      3 
+2019-03-27 14:31:32.250725: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 3:   N 
+2019-03-27 14:31:32.250724: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-27 14:31:32.250814: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:31:32.250826: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-27 14:31:32.250838: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-27 14:31:32.250948: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 1
+2019-03-27 14:31:32.251048: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:31:32.251062: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      1 
+2019-03-27 14:31:32.251077: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14825 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-16GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+2019-03-27 14:31:32.251076: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 1:   N 
+2019-03-27 14:31:32.251284: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-27 14:31:32.251569: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-16GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 60, in run_hyperspace
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    main()
+  File "stemdl_run.py", line 252, in main
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 60, in run_hyperspace
+    main()
+  File "stemdl_run.py", line 252, in main
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 51, in <lambda>
+    params
+  File "../hspace/medium_objective.py", line 46, in objective
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 60, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 516, in validate_ckpt
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+    dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=params['debug'])
+  File "../stemdl/inputs.py", line 440, in __init__
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 51, in <lambda>
+    params
+  File "../hspace/medium_objective.py", line 46, in objective
+    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 516, in validate_ckpt
+2019-03-27 14:31:32.254278: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 1
+2019-03-27 14:31:32.254278: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 2
+2019-03-27 14:31:32.254349: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:31:32.254369: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      2 
+2019-03-27 14:31:32.254387: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 2:   N 
+2019-03-27 14:31:32.254348: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:31:32.254360: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      1 
+2019-03-27 14:31:32.254372: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 1:   N 
+2019-03-27 14:31:32.254564: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 2
+2019-03-27 14:31:32.254611: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+    dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=params['debug'])
+  File "../stemdl/inputs.py", line 440, in __init__
+2019-03-27 14:31:32.254623: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      2 
+2019-03-27 14:31:32.254634: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 2:   N 
+2019-03-27 14:31:32.254804: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14823 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-16GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+2019-03-27 14:31:32.254912: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-16GB, pci bus id: 0004:06:00.0, compute capability: 7.0)
+2019-03-27 14:31:32.255000: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-16GB, pci bus id: 0004:06:00.0, compute capability: 7.0)
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+    main()
+  File "stemdl_run.py", line 252, in main
+2019-03-27 14:31:32.255966: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-27 14:31:32.256010: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+    main()
+  File "stemdl_run.py", line 252, in main
+    main()
+  File "stemdl_run.py", line 252, in main
+2019-03-27 14:31:32.256022: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-27 14:31:32.256033: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 60, in run_hyperspace
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 60, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 60, in run_hyperspace
+2019-03-27 14:31:32.256370: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+2019-03-27 14:31:32.256274: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-27 14:31:32.256327: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+2019-03-27 14:31:32.256343: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-27 14:31:32.256356: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 51, in <lambda>
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+2019-03-27 14:31:32.256715: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14825 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+    params
+  File "../hspace/medium_objective.py", line 46, in objective
+    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 516, in validate_ckpt
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=params['debug'])
+  File "../stemdl/inputs.py", line 440, in __init__
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 60, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 60, in run_hyperspace
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 51, in <lambda>
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 51, in <lambda>
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 51, in <lambda>
+    params
+  File "../hspace/medium_objective.py", line 46, in objective
+    params
+  File "../hspace/medium_objective.py", line 46, in objective
+    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 516, in validate_ckpt
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 51, in <lambda>
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+    params
+  File "../hspace/medium_objective.py", line 46, in objective
+    params
+  File "../hspace/medium_objective.py", line 46, in objective
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 51, in <lambda>
+    dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=params['debug'])
+  File "../stemdl/inputs.py", line 440, in __init__
+    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 516, in validate_ckpt
+    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 516, in validate_ckpt
+    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 516, in validate_ckpt
+    params
+  File "../hspace/medium_objective.py", line 46, in objective
+    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 516, in validate_ckpt
+    dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=params['debug'])
+  File "../stemdl/inputs.py", line 440, in __init__
+    dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=params['debug'])
+  File "../stemdl/inputs.py", line 440, in __init__
+    dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=params['debug'])
+  File "../stemdl/inputs.py", line 440, in __init__
+    dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=params['debug'])
+  File "../stemdl/inputs.py", line 440, in __init__
+2019-03-27 14:31:32.270540: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 3
+2019-03-27 14:31:32.270605: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:31:32.270617: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      3 
+2019-03-27 14:31:32.270629: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 3:   N 
+2019-03-27 14:31:32.270665: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-27 14:31:32.270708: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-27 14:31:32.270720: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-27 14:31:32.270733: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-27 14:31:32.271042: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-16GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+2019-03-27 14:31:32.271182: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 60, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 60, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 51, in <lambda>
+    params
+  File "../hspace/medium_objective.py", line 46, in objective
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 51, in <lambda>
+    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 516, in validate_ckpt
+    params
+  File "../hspace/medium_objective.py", line 46, in objective
+    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 516, in validate_ckpt
+    dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=params['debug'])
+  File "../stemdl/inputs.py", line 440, in __init__
+    dset = inputs.DatasetLMDB(params, dataset=params['dataset'], debug=params['debug'])
+  File "../stemdl/inputs.py", line 440, in __init__
+    self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+lmdb.Error: /mnt/bb/yngtodd/batch_eval_4.db: No such file or directory
+    self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+lmdb.Error: /mnt/bb/yngtodd/batch_eval_2.db: No such file or directory
+    self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+lmdb.Error: /mnt/bb/yngtodd/batch_eval_10.db: No such file or directory
+    self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+lmdb.Error: /mnt/bb/yngtodd/batch_eval_0.db: No such file or directory
+    self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+lmdb.Error: /mnt/bb/yngtodd/batch_eval_11.db: No such file or directory
+    self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+lmdb.Error: /mnt/bb/yngtodd/batch_eval_3.db: No such file or directory
+    self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+lmdb.Error: /mnt/bb/yngtodd/batch_eval_9.db: No such file or directory
+    self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+lmdb.Error: /mnt/bb/yngtodd/batch_eval_5.db: No such file or directory
+    self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+lmdb.Error: /mnt/bb/yngtodd/batch_eval_6.db: No such file or directory
+    self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+lmdb.Error: /mnt/bb/yngtodd/batch_eval_1.db: No such file or directory
+    self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+lmdb.Error: /mnt/bb/yngtodd/batch_eval_7.db: No such file or directory
+    self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+lmdb.Error: /mnt/bb/yngtodd/batch_eval_8.db: No such file or directory
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@batch4>
+Subject: Job 310499: <stemdl> in cluster <summit> Exited
+
+Job <stemdl> was submitted from host <login1> by user <yngtodd> in cluster <summit> at Wed Mar 27 14:29:16 2019
+Job was executed on host(s) <1*batch4>, in queue <batch>, as user <yngtodd> in cluster <summit> at Wed Mar 27 14:29:25 2019
+                            <42*f27n07>
+                            <42*f27n08>
+</ccs/home/yngtodd> was used as the home directory.
+</gpfs/alpine/lrn001/proj-shared/yngtodd/src/stemdl/scripts> was used as the working directory.
+Started at Wed Mar 27 14:29:25 2019
+Terminated at Wed Mar 27 14:31:35 2019
+Results reported at Wed Mar 27 14:31:35 2019
+
+The output (if any) is above this job summary.
+

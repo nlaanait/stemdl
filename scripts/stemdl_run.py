@@ -238,6 +238,8 @@ def main():
         runtime.train(network_config, hyper_params, params)
     elif params['mode'] == 'hyperspace':
         # quick hack: get back into train mode
+        # Debug params
+        params['epoch_per_validation'] = 5
         params['mode'] = 'train'
         #if hvd.rank( ) == 0 :
         space = medium_objective.get_space()
