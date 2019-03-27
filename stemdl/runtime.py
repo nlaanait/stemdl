@@ -424,6 +424,8 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
     with tf.variable_scope('horovod', reuse=True) as _:
         # Setup Neural Net
         params['IMAGE_FP16'] = False
+        if images.dtype is not tf.float32:
+            images = tf.cast(images, tf.float32)
         # Setup Neural Net
         if params['network_class'] == 'resnet':
             n_net = network.ResNet(scope, params, hyper_params, network_config, images, labels,
@@ -475,6 +477,8 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
             errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
             errors = tf.expand_dims(errors,axis=0)
             error_averaging = hvd.allreduce(errors)
+            ## TODO(todd) uncomment #481 and comment #482 after validate() running uccessfully.
+            # error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(dset.num_samples)]) 
             error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_batches)])
             print_rank('Validation Reconstruction Error: %3.3e' % error.mean())
 
