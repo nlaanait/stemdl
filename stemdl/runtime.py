@@ -366,31 +366,38 @@ def train(network_config, hyper_params, params, hyper_optimization=True):
             train_elf.save_trace(run_metadata, params[ 'trace_dir' ], params[ 'trace_step' ] )
             train_elf.before_run()
         # Here we do validation:
-        if train_elf.elapsed_epochs > next_validation_epoch:
+        if train_elf.elapsed_epochs > next_validation_epoch and hyper_optimization == False:
             # do validation over 300 batches.
-            print('\n###############################')
-            print('###   Entering Validation    ###')
-            print('################################\n')
             validate(network_config, hyper_params, params, sess, dset)
             next_validation_epoch += params['epochs_per_validation']
     
-    print(f'last_step: {train_elf.last_step}, maxSteps: {maxSteps}')
+    #print(f'last_step: {train_elf.last_step}, maxSteps: {maxSteps}')
     if hyper_optimization:
         # Are we guaranteed that doLog will be 1 here?
         assert doLog, "Logging must be turned on for Hyperspace!"
         if train_elf.last_step == maxSteps:
+            ### TMP: no longer return from the training function.
+            ###      Instead, call validate, and return the loss from there.
             # Check if there is a lingering session before running Hyperspace
+            #if sess._closed == False:
+            #    sess.close()
+            #    tf.reset_default_graph()
+            #print(f'Loss value: {loss_value}')
+            #if np.isnan(loss_value):
+            #    return 666666666
+            #else:
+            #    return loss_value
+            loss = validate(network_config, hyper_params, params, 
+                            sess, dset, num_batches=10, hyper_optimization=True)
+
             if sess._closed == False:
                 sess.close()
                 tf.reset_default_graph()
-            print(f'Loss value: {type(loss_value)}, {loss_value}')
-            if np.isnan(loss_value):
-                return 666666666
-            else:
-                return loss_value
+
+            return loss 
 
 
-def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
+def validate(network_config, hyper_params, params, sess, dset, num_batches=10, hyper_optimization=False):
     """
     Runs validation with current weights
     :param params:
@@ -478,9 +485,11 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
             errors = tf.expand_dims(errors,axis=0)
             error_averaging = hvd.allreduce(errors)
             ## TODO(todd) uncomment #481 and comment #482 after validate() running uccessfully.
-            # error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(dset.num_samples)]) 
-            error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_batches)])
+            error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(dset.num_samples)]) 
+            #error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_batches)])
             print_rank('Validation Reconstruction Error: %3.3e' % error.mean())
+            if hyper_optimization:
+                return error.mean()
 
 
 def validate_ckpt(network_config, hyper_params, params,num_batches=25,
