@@ -87,6 +87,8 @@ def main():
                          help=""" lmdb or tfrecord""")
     cmdline.add_argument( '--hvd_group', default=None, type=int,
                          help="""number of horovod message groups""")
+    cmdline.add_argument( '--grad_ckpt', default=None, type=str,
+                         help="""gradient-checkpointing:collection,memory,speed""")
     add_bool_argument( cmdline, '--fp16', default=None,
                          help="""Train with half-precision.""")
     add_bool_argument( cmdline, '--fp32', default=None,
@@ -164,6 +166,7 @@ def main():
     else: 
         params['hvd_fp16'] = hvd.Compression.none
     params['nvme'] = FLAGS.nvme
+    params['grad_ckpt'] = FLAGS.grad_ckpt 
 
     # Add other params
     params.setdefault( 'restart', False )

@@ -199,6 +199,13 @@ def optimize_loss(loss,
         "LARC and gradient norm clipping should not be used together"
     )
 
+  if run_params['grad_ckpt'] is not None: 
+    import memory_saving_gradients
+    from tensorflow.python.ops import gradients
+    def gradients_memory(ys, xs, grad_ys=None, **kwargs):
+      return memory_saving_gradients.gradients(ys, xs, grad_ys, checkpoints=run_params['grad_ckpt'], **kwargs)
+    gradients.__dict__["gradients"] = gradients_memory 
+
   global_step = tf.train.get_or_create_global_step()
   lr = learning_rate_decay_fn(global_step)
   if "learning_rate" in summaries:
