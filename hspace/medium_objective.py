@@ -39,9 +39,12 @@ def objective(hparams, network_config, hyper_params, params):
     hyper_params['loss_scaling'] = hparams[4]
     hyper_params['LARC_epsilon'] = hparams[5]
 
-    train_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+    # When hyper_optimization == True, train will call validate()
+    # loss here is then `error.mean()` over the *validation* set.
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
     # Sanity check
-    params['mode'] = 'eval'
-    params['IMAGE_FP16'] = False
-    valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
-    return valid_loss 
+    # Next time the objective function is called, we should be back in training mode.
+    params['mode'] = 'train'
+    params['IMAGE_FP16'] = True 
+    #valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
+    return loss 
