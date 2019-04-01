@@ -1,0 +1,504 @@
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+
+Creating checkpoint directory checkpoints/FCDenseNet_custom_2_305475_checkpoint
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+
+
+### hyper_params.json
+{
+   "mixing": 0.5,
+   "scaling": 1.0,
+   "learning_rate_decay_factor": 0.5,
+   "warm_up_max_learning_rate": 0.001,
+   "initial_learning_rate": 0.0001,
+   "warm_up": false,
+   "num_epochs_per_ramp": 0.25,
+   "network_type": "inverter",
+   "weight_decay": 0.0,
+   "num_epochs_in_warm_up": 5,
+   "optimization": "SGD",
+   "loss_function": {
+      "residual_num_epochs_decay": 10,
+      "residual_initial": 10.0,
+      "residual_decay_factor": 0.75,
+      "residual_minimum": 1.0,
+      "type": "MSE_PAIR"
+   },
+   "num_epochs_per_decay": 10,
+   "moving_average_decay": 0.9999,
+   "momentum": 0.9,
+   "batch_norm": {
+      "epsilon": 1e-05,
+      "decay": 0.8
+   },
+   "initializer": {
+      "type": "He"
+   },
+   "LARC": false,
+   "LARC_eta": 0.002,
+   "LARC_epsilon": 6.25e-06,
+   "LARC_mode": "scale",
+   "LSAL": false,
+   "langevin": false
+}
+### params passed at CLI
+{
+    "batch_size": 1,
+    "log_frequency": 10,
+    "max_steps": 500,
+    "network_config": "network_FCDenseNet_custom.json",
+    "data_dir": "/mnt/bb/yngtodd",
+    "checkpt_dir": "checkpoints/FCDenseNet_custom_2_305475_checkpoint",
+    "input_flags": "input_flags.json",
+    "hyper_params": "hyper_params.json",
+    "ilr": 0.0001,
+    "epochs_per_decay": null,
+    "scaling": 1.0,
+    "bn_decay": 0.8,
+    "save_epochs": 2000.0,
+    "validate_epochs": 1.0,
+    "mode": "hyperspace",
+    "cpu_threads": 1,
+    "accumulate_step": 1,
+    "filetype": "lmdb",
+    "hvd_group": 1,
+    "hyperspace_results_path": "/gpfs/alpine/lrn001/proj-shared/yngtodd/experiments/small_objective_march21",
+    "jobid": 0,
+    "fp16": true,
+    "fp32": null,
+    "restart": null,
+    "nvme": true,
+    "debug": true,
+    "hvd_fp16": true
+}
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+2019-03-22 11:50:12.836593: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:12.836671: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:12.836673: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:12.836766: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:12.836766: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:12.836766: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:12.840275: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:12.840275: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:12.840275: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:12.840821: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:12.840821: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:12.840821: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:18.312232: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:18.312347: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-22 11:50:18.312373: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-22 11:50:18.312412: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:18.312624: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:18.312710: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:06:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-22 11:50:18.312738: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 2
+2019-03-22 11:50:18.312788: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:18.319799: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:18.319909: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-22 11:50:18.319942: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-22 11:50:18.319994: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:18.322507: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:18.322598: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-22 11:50:18.322627: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-22 11:50:18.322672: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:18.324489: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:18.324577: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-22 11:50:18.324603: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 1
+2019-03-22 11:50:18.324651: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:18.324725: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:18.324798: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:03:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-22 11:50:18.324823: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 3
+2019-03-22 11:50:18.324869: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:18.624488: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:18.624630: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-22 11:50:18.624669: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-22 11:50:18.624721: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:18.641167: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:18.641230: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:03:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-22 11:50:18.641248: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 3
+2019-03-22 11:50:18.641285: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:18.647054: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:18.647138: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-22 11:50:18.647161: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-22 11:50:18.647203: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:18.648461: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:18.648550: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-22 11:50:18.648576: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 1
+2019-03-22 11:50:18.648627: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:18.649717: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:18.649803: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:06:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-22 11:50:18.649828: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 2
+2019-03-22 11:50:18.649880: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:18.652363: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 11:50:18.652454: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-22 11:50:18.652480: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-22 11:50:18.652527: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:18.995040: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-22 11:50:18.995108: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      1 
+2019-03-22 11:50:18.995124: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 1:   N 
+2019-03-22 11:50:18.995949: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-16GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+2019-03-22 11:50:18.999902: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-22 11:50:18.999936: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      2 
+2019-03-22 11:50:18.999948: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 2:   N 
+2019-03-22 11:50:19.000580: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-16GB, pci bus id: 0004:06:00.0, compute capability: 7.0)
+2019-03-22 11:50:19.011052: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-22 11:50:19.011086: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-22 11:50:19.011099: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+2019-03-22 11:50:19.011762: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14823 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+2019-03-22 11:50:19.018024: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-22 11:50:19.018092: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      3 
+2019-03-22 11:50:19.018107: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 3:   N 
+2019-03-22 11:50:19.018813: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14823 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-16GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+2019-03-22 11:50:19.027635: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-22 11:50:19.027676: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-22 11:50:19.027691: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-22 11:50:19.028366: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14825 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-22 11:50:19.029047: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-22 11:50:19.029080: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-22 11:50:19.029094: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-22 11:50:19.029722: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14825 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+2019-03-22 11:50:19.314640: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-22 11:50:19.314686: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      3 
+2019-03-22 11:50:19.314697: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 3:   N 
+2019-03-22 11:50:19.315381: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-16GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+2019-03-22 11:50:19.372096: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-22 11:50:19.372150: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-22 11:50:19.372164: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-22 11:50:19.372847: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+2019-03-22 11:50:19.407951: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-22 11:50:19.408023: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-22 11:50:19.408040: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+2019-03-22 11:50:19.408776: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+lmdb files ['batch_train_2.db', 'batch_train_5.db', 'batch_train_4.db', 'batch_train_3.db', 'batch_train_0.db', 'batch_train_1.db']
+2019-03-22 11:50:19.440309: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-22 11:50:19.440355: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      2 
+2019-03-22 11:50:19.440370: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 2:   N 
+2019-03-22 11:50:19.441028: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-16GB, pci bus id: 0004:06:00.0, compute capability: 7.0)
+2019-03-22 11:50:19.441507: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-22 11:50:19.441555: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-22 11:50:19.441568: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-22 11:50:19.442231: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-22 11:50:19.445677: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-22 11:50:19.445713: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      1 
+2019-03-22 11:50:19.445728: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 1:   N 
+2019-03-22 11:50:19.446482: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-16GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+Starting up queue of images+labels: (1, 1024, 512, 512),  (1, 1, 512, 512) 
+Building Neural Net ...
+input: ---, dim: [1, 1024, 512, 512] memory: 512.0 MB
+horovod/CONV_INIT --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 1180160,  memory: 64.0 MB
+>>> Adding Dense Block Down: DB_0
+    input: [1, 128, 512, 512]
+horovod/DB_0/conv_0 --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 1327616,  memory: 64.0 MB
+horovod/DB_0/conv_1 --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 1622528,  memory: 64.0 MB
+    output: [1, 384, 512, 512]
+>>> Adding Transition Down: TD_0
+    input: [1, 384, 512, 512]
+horovod/TD_0 --- output: [1, 384, 256, 256], kernel: [2, 2], stride: [2, 2], memory: 48.0 MB
+    output: [1, 384, 256, 256]
+>>> Adding Dense Block Down: DB_1
+    input: [1, 384, 256, 256]
+horovod/DB_1/conv_0 --- output: [1, 128, 256, 256], kernel: [3, 3], stride: [1, 1], # of weights: 2213120,  memory: 16.0 MB
+horovod/DB_1/conv_1 --- output: [1, 128, 256, 256], kernel: [3, 3], stride: [1, 1], # of weights: 2802944,  memory: 16.0 MB
+    output: [1, 640, 256, 256]
+>>> Adding Transition Down: TD_1
+    input: [1, 640, 256, 256]
+horovod/TD_1 --- output: [1, 640, 128, 128], kernel: [2, 2], stride: [2, 2], memory: 20.0 MB
+    output: [1, 640, 128, 128]
+>>> Adding Dense Block Down: DB_2
+    input: [1, 640, 128, 128]
+horovod/DB_2/conv_0 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 3951104,  memory: 4.0 MB
+horovod/DB_2/conv_1 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 4835840,  memory: 4.0 MB
+horovod/DB_2/conv_2 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 5868032,  memory: 4.0 MB
+    output: [1, 1024, 128, 128]
+>>> Adding Transition Down: TD_2
+    input: [1, 1024, 128, 128]
+horovod/TD_2 --- output: [1, 1024, 64, 64], kernel: [2, 2], stride: [2, 2], memory: 8.0 MB
+    output: [1, 1024, 64, 64]
+>>> Adding Dense Block Bottleneck: DB_3
+    input: [1, 1024, 64, 64]
+horovod/DB_3/conv_0 --- output: [1, 128, 64, 64], kernel: [3, 3], stride: [1, 1], # of weights: 8098304,  memory: 1.0 MB
+horovod/DB_3/conv_1 --- output: [1, 128, 64, 64], kernel: [3, 3], stride: [1, 1], # of weights: 9425408,  memory: 1.0 MB
+horovod/DB_3/conv_2 --- output: [1, 128, 64, 64], kernel: [3, 3], stride: [1, 1], # of weights: 10899968,  memory: 1.0 MB
+horovod/DB_3/conv_3 --- output: [1, 128, 64, 64], kernel: [3, 3], stride: [1, 1], # of weights: 12521984,  memory: 1.0 MB
+    output: [1, 1536, 64, 64]
+>>> Adding Transition Up: TU_0
+    input: [1, 1536, 64, 64]
+    output: [1, 1536, 128, 128]
+>>> Adding Dense Block Up: DB_4
+    input: [1, 1536, 128, 128]
+horovod/DB_4/conv_0 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 14553600,  memory: 4.0 MB
+horovod/DB_4/conv_1 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 16470528,  memory: 4.0 MB
+horovod/DB_4/conv_2 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 18534912,  memory: 4.0 MB
+    output: [1, 1920, 128, 128]
+>>> Adding Transition Up: TU_1
+    input: [1, 1920, 128, 128]
+    output: [1, 1024, 256, 256]
+>>> Adding Dense Block Up: DB_5
+    input: [1, 1024, 256, 256]
+horovod/DB_5/conv_0 --- output: [1, 128, 256, 256], kernel: [3, 3], stride: [1, 1], # of weights: 19862016,  memory: 16.0 MB
+horovod/DB_5/conv_1 --- output: [1, 128, 256, 256], kernel: [3, 3], stride: [1, 1], # of weights: 21189120,  memory: 16.0 MB
+    output: [1, 1280, 256, 256]
+>>> Adding Transition Up: TU_2
+    input: [1, 1280, 256, 256]
+    output: [1, 640, 512, 512]
+>>> Adding Dense Block Up: DB_6
+    input: [1, 640, 512, 512]
+horovod/DB_6/conv_0 --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 21991936,  memory: 64.0 MB
+horovod/DB_6/conv_1 --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 22876672,  memory: 64.0 MB
+    output: [1, 896, 512, 512]
+>>> Adding Conv Layer: CONV_FIN
+    input: [1, 896, 512, 512]
+    output: [1, 1, 512, 512]
+horovod/CONV_FIN --- output: [1, 1, 512, 512], kernel: [1, 1], stride: [1, 1], # of weights: 22877568,  memory: 0.5 MB
+Total # of blocks: 15,  weights: 2.3e+07, memory: 1496.5009765625 MB, ops: 8.00e+12 
+
+2019-03-22 11:50:23.245539: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:24.433414: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:24.435772: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:24.436791: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:24.442009: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:24.448213: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:24.463001: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:24.813983: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:24.882460: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:24.885121: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:24.924106: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 11:50:35.084564: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+Syncing horovod ranks...
+Prefilling I/O pipeline...
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.04
+time to read and convert to tensor: 0.13
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.21
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.28
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.18
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.02
+TensorFlow          ... 2.0.0-alpha0
+job name            ... stemdl
+job number          ... 305475
+job output          ... logs.o305475
+number of ranks     ... 12
+network_config      ... network_FCDenseNet_custom.json
+batch_size          ... 1
+                    ... 12 total
+data type           ... fp16
+data_dir            ... /mnt/bb/yngtodd
+input_flags         ... input_flags.json
+hyper_params        ... hyper_params.json
+checkpt_dir         ... checkpoints/FCDenseNet_custom_2_305475_checkpoint
+
+command line        ... unknown
+
+2019-03-22 11:50:38.464483: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-22 11:50:38.483809: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-22 11:50:38.530812: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-22 11:50:38.597121: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-22 11:50:38.640755: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.02
+2019-03-22 11:50:38.740014: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-22 11:50:38.751261: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-22 11:50:38.751261: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-22 11:50:39.096194: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-22 11:50:39.143747: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-22 11:50:39.143746: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-22 11:50:39.161000: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.02
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+time= 33.8, step= 10, epoch= 1.79e-03, loss= 4494.95, lr= 4.20e-02, step_time= 2.36 sec, ranks= 12, examples/sec= 5.1, flops = 4.06e+13, average_time= 0.99, average_flops= 9.707e+13
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+time= 37.1, step= 20, epoch= 3.58e-03, loss= 5696.41, lr= 4.20e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.0, flops = 2.80e+14, average_time= 0.34, average_flops= 2.843e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@batch4>
+Subject: Job 305475: <stemdl> in cluster <summit> Done
+
+Job <stemdl> was submitted from host <login3> by user <yngtodd> in cluster <summit> at Fri Mar 22 11:48:56 2019
+Job was executed on host(s) <1*batch4>, in queue <batch>, as user <yngtodd> in cluster <summit> at Fri Mar 22 11:48:58 2019
+                            <42*a02n16>
+                            <42*a02n17>
+</ccs/home/yngtodd> was used as the home directory.
+</gpfs/alpine/lrn001/proj-shared/yngtodd/src/stemdl/scripts> was used as the working directory.
+Started at Fri Mar 22 11:48:58 2019
+Terminated at Fri Mar 22 11:50:57 2019
+Results reported at Fri Mar 22 11:50:57 2019
+
+The output (if any) is above this job summary.
+

@@ -1,0 +1,2227 @@
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+
+Creating checkpoint directory checkpoints/FCDenseNet_custom_2_306594_checkpoint
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+
+
+### hyper_params.json
+{
+   "mixing": 0.5,
+   "scaling": 1.0,
+   "learning_rate_decay_factor": 0.5,
+   "warm_up_max_learning_rate": 0.001,
+   "initial_learning_rate": 0.0001,
+   "warm_up": false,
+   "num_epochs_per_ramp": 0.25,
+   "network_type": "inverter",
+   "weight_decay": 0.0,
+   "num_epochs_in_warm_up": 5,
+   "optimization": "SGD",
+   "loss_function": {
+      "residual_num_epochs_decay": 10,
+      "residual_initial": 10.0,
+      "residual_decay_factor": 0.75,
+      "residual_minimum": 1.0,
+      "type": "MSE_PAIR"
+   },
+   "num_epochs_per_decay": 10,
+   "moving_average_decay": 0.9999,
+   "momentum": 0.9,
+   "batch_norm": {
+      "epsilon": 1e-05,
+      "decay": 0.8
+   },
+   "initializer": {
+      "type": "He"
+   },
+   "LARC": false,
+   "LARC_eta": 0.002,
+   "LARC_epsilon": 6.25e-06,
+   "LARC_mode": "scale",
+   "LSAL": false,
+   "langevin": false
+}
+### params passed at CLI
+{
+    "batch_size": 1,
+    "log_frequency": 10,
+    "max_steps": 500,
+    "network_config": "network_FCDenseNet_custom.json",
+    "data_dir": "/mnt/bb/yngtodd",
+    "checkpt_dir": "checkpoints/FCDenseNet_custom_2_306594_checkpoint",
+    "input_flags": "input_flags.json",
+    "hyper_params": "hyper_params.json",
+    "ilr": 0.0001,
+    "epochs_per_decay": null,
+    "scaling": 1.0,
+    "bn_decay": 0.8,
+    "save_epochs": 2000.0,
+    "validate_epochs": 1.0,
+    "mode": "hyperspace",
+    "cpu_threads": 1,
+    "accumulate_step": 1,
+    "filetype": "lmdb",
+    "hvd_group": 1,
+    "hyperspace_results_path": "/gpfs/alpine/lrn001/proj-shared/yngtodd/experiments/small_objective_march21",
+    "jobid": 0,
+    "fp16": true,
+    "fp32": null,
+    "restart": null,
+    "nvme": true,
+    "debug": true,
+    "hvd_fp16": true
+}
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+No previous save point for space hyperspace0
+2019-03-23 21:59:13.844364: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:13.844364: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:13.844364: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:13.844655: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:13.844655: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:13.844655: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:13.845590: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:13.845590: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:13.845590: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:13.846011: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:13.846011: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:13.846011: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:19.152645: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:19.152741: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-23 21:59:19.152768: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-23 21:59:19.152812: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:19.161815: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:19.161882: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:06:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-23 21:59:19.161907: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 2
+2019-03-23 21:59:19.161949: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:19.174892: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:19.174997: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-23 21:59:19.175030: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-23 21:59:19.175077: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:19.177133: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:19.177235: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-23 21:59:19.177267: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 1
+2019-03-23 21:59:19.177319: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:19.179753: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:19.179835: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-23 21:59:19.179860: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-23 21:59:19.179906: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:19.180496: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:19.180605: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.35GiB
+2019-03-23 21:59:19.180631: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 1
+2019-03-23 21:59:19.180765: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:19.180671: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:19.180845: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:03:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-23 21:59:19.180871: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 3
+2019-03-23 21:59:19.180917: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:19.188525: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:19.188584: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-23 21:59:19.188603: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-23 21:59:19.188639: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:19.204469: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:19.204564: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:06:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-23 21:59:19.204594: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 2
+2019-03-23 21:59:19.204645: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:19.206083: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:19.206191: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-23 21:59:19.206222: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-23 21:59:19.206270: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:19.207739: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:19.207752: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-23 21:59:19.207820: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-23 21:59:19.207845: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-23 21:59:19.207891: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:19.207832: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:03:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-23 21:59:19.207856: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 3
+2019-03-23 21:59:19.207902: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:19.604344: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 21:59:19.604391: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-23 21:59:19.604403: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+2019-03-23 21:59:19.604948: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14827 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+lmdb files ['batch_train_5.db', 'batch_train_0.db', 'batch_train_4.db', 'batch_train_3.db', 'batch_train_2.db', 'batch_train_1.db']
+2019-03-23 21:59:19.686090: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 21:59:19.686157: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      1 
+2019-03-23 21:59:19.686173: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 1:   N 
+2019-03-23 21:59:19.686804: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-16GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+2019-03-23 21:59:19.729501: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 21:59:19.729558: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-23 21:59:19.729572: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+Starting up queue of images+labels: (1, 1024, 512, 512),  (1, 1, 512, 512) 
+2019-03-23 21:59:19.730139: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14825 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+Building Neural Net ...
+input: ---, dim: [1, 1024, 512, 512] memory: 512.0 MB
+2019-03-23 21:59:19.758036: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 21:59:19.758084: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      2 
+2019-03-23 21:59:19.758098: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 2:   N 
+2019-03-23 21:59:19.758725: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14827 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-16GB, pci bus id: 0004:06:00.0, compute capability: 7.0)
+horovod/CONV_INIT --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 1180160,  memory: 64.0 MB
+>>> Adding Dense Block Down: DB_0
+    input: [1, 128, 512, 512]
+horovod/DB_0/conv_0 --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 1327616,  memory: 64.0 MB
+2019-03-23 21:59:19.804757: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 21:59:19.804800: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-23 21:59:19.804816: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-23 21:59:19.805830: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14827 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-23 21:59:19.819083: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 21:59:19.819144: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-23 21:59:19.819159: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-23 21:59:19.819862: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-23 21:59:19.832644: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 21:59:19.832686: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      3 
+2019-03-23 21:59:19.832699: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 3:   N 
+2019-03-23 21:59:19.833465: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-16GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+horovod/DB_0/conv_1 --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 1622528,  memory: 64.0 MB
+    output: [1, 384, 512, 512]
+>>> Adding Transition Down: TD_0
+    input: [1, 384, 512, 512]
+2019-03-23 21:59:19.850935: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 21:59:19.850984: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      1 
+2019-03-23 21:59:19.850999: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 1:   N 
+2019-03-23 21:59:19.851678: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14827 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-16GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+2019-03-23 21:59:19.863469: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 21:59:19.863509: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-23 21:59:19.863522: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-23 21:59:19.864135: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14827 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+2019-03-23 21:59:19.874537: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 21:59:19.874585: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      2 
+2019-03-23 21:59:19.874601: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 2:   N 
+2019-03-23 21:59:19.875280: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-16GB, pci bus id: 0004:06:00.0, compute capability: 7.0)
+horovod/TD_0 --- output: [1, 384, 256, 256], kernel: [2, 2], stride: [2, 2], memory: 48.0 MB
+    output: [1, 384, 256, 256]
+>>> Adding Dense Block Down: DB_1
+    input: [1, 384, 256, 256]
+2019-03-23 21:59:19.908812: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 21:59:19.908866: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-23 21:59:19.908879: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-23 21:59:19.909558: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+2019-03-23 21:59:19.910799: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 21:59:19.910829: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      3 
+2019-03-23 21:59:19.910842: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 3:   N 
+2019-03-23 21:59:19.911481: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-16GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+horovod/DB_1/conv_0 --- output: [1, 128, 256, 256], kernel: [3, 3], stride: [1, 1], # of weights: 2213120,  memory: 16.0 MB
+horovod/DB_1/conv_1 --- output: [1, 128, 256, 256], kernel: [3, 3], stride: [1, 1], # of weights: 2802944,  memory: 16.0 MB
+    output: [1, 640, 256, 256]
+>>> Adding Transition Down: TD_1
+    input: [1, 640, 256, 256]
+horovod/TD_1 --- output: [1, 640, 128, 128], kernel: [2, 2], stride: [2, 2], memory: 20.0 MB
+    output: [1, 640, 128, 128]
+>>> Adding Dense Block Down: DB_2
+    input: [1, 640, 128, 128]
+horovod/DB_2/conv_0 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 3951104,  memory: 4.0 MB
+horovod/DB_2/conv_1 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 4835840,  memory: 4.0 MB
+horovod/DB_2/conv_2 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 5868032,  memory: 4.0 MB
+    output: [1, 1024, 128, 128]
+>>> Adding Transition Down: TD_2
+    input: [1, 1024, 128, 128]
+horovod/TD_2 --- output: [1, 1024, 64, 64], kernel: [2, 2], stride: [2, 2], memory: 8.0 MB
+    output: [1, 1024, 64, 64]
+>>> Adding Dense Block Bottleneck: DB_3
+    input: [1, 1024, 64, 64]
+horovod/DB_3/conv_0 --- output: [1, 128, 64, 64], kernel: [3, 3], stride: [1, 1], # of weights: 8098304,  memory: 1.0 MB
+horovod/DB_3/conv_1 --- output: [1, 128, 64, 64], kernel: [3, 3], stride: [1, 1], # of weights: 9425408,  memory: 1.0 MB
+horovod/DB_3/conv_2 --- output: [1, 128, 64, 64], kernel: [3, 3], stride: [1, 1], # of weights: 10899968,  memory: 1.0 MB
+horovod/DB_3/conv_3 --- output: [1, 128, 64, 64], kernel: [3, 3], stride: [1, 1], # of weights: 12521984,  memory: 1.0 MB
+    output: [1, 1536, 64, 64]
+>>> Adding Transition Up: TU_0
+    input: [1, 1536, 64, 64]
+    output: [1, 1536, 128, 128]
+>>> Adding Dense Block Up: DB_4
+    input: [1, 1536, 128, 128]
+horovod/DB_4/conv_0 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 14553600,  memory: 4.0 MB
+horovod/DB_4/conv_1 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 16470528,  memory: 4.0 MB
+horovod/DB_4/conv_2 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 18534912,  memory: 4.0 MB
+    output: [1, 1920, 128, 128]
+>>> Adding Transition Up: TU_1
+    input: [1, 1920, 128, 128]
+    output: [1, 1024, 256, 256]
+>>> Adding Dense Block Up: DB_5
+    input: [1, 1024, 256, 256]
+horovod/DB_5/conv_0 --- output: [1, 128, 256, 256], kernel: [3, 3], stride: [1, 1], # of weights: 19862016,  memory: 16.0 MB
+horovod/DB_5/conv_1 --- output: [1, 128, 256, 256], kernel: [3, 3], stride: [1, 1], # of weights: 21189120,  memory: 16.0 MB
+    output: [1, 1280, 256, 256]
+>>> Adding Transition Up: TU_2
+    input: [1, 1280, 256, 256]
+    output: [1, 640, 512, 512]
+>>> Adding Dense Block Up: DB_6
+    input: [1, 640, 512, 512]
+horovod/DB_6/conv_0 --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 21991936,  memory: 64.0 MB
+horovod/DB_6/conv_1 --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 22876672,  memory: 64.0 MB
+    output: [1, 896, 512, 512]
+>>> Adding Conv Layer: CONV_FIN
+    input: [1, 896, 512, 512]
+    output: [1, 1, 512, 512]
+horovod/CONV_FIN --- output: [1, 1, 512, 512], kernel: [1, 1], stride: [1, 1], # of weights: 22877568,  memory: 0.5 MB
+Total # of blocks: 15,  weights: 2.3e+07, memory: 1496.5009765625 MB, ops: 8.00e+12 
+
+2019-03-23 21:59:24.297477: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:24.448533: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:24.509966: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:24.915822: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:25.184246: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:25.325162: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:25.331881: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:25.343448: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:25.408908: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:25.422703: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:25.438050: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-23 21:59:32.683565: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+Syncing horovod ranks...
+Prefilling I/O pipeline...
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.11
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.19
+time to read and convert to tensor: 0.30
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.33
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.02
+TensorFlow          ... 2.0.0-alpha0
+job name            ... stemdl
+job number          ... 306594
+job output          ... logs.o306594
+number of ranks     ... 12
+network_config      ... network_FCDenseNet_custom.json
+batch_size          ... 1
+                    ... 12 total
+data type           ... fp16
+data_dir            ... /mnt/bb/yngtodd
+input_flags         ... input_flags.json
+hyper_params        ... hyper_params.json
+checkpt_dir         ... checkpoints/FCDenseNet_custom_2_306594_checkpoint
+
+command line        ... unknown
+
+2019-03-23 21:59:36.173127: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.02
+2019-03-23 21:59:36.335607: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-23 21:59:36.344498: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-23 21:59:36.359490: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-23 21:59:36.390300: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-23 21:59:36.413624: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-23 21:59:36.446557: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-23 21:59:36.708444: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-23 21:59:36.708445: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-23 21:59:36.727268: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-23 21:59:36.727267: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-23 21:59:36.727694: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.02
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.02
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.02
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+time= 30.3, step= 10, epoch= 1.79e-03, loss= 4494.95, lr= 4.25e-02, step_time= 2.34 sec, ranks= 12, examples/sec= 5.1, flops = 4.10e+13, average_time= 0.98, average_flops= 9.829e+13
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.03
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+time= 33.6, step= 20, epoch= 3.58e-03, loss= 5789.77, lr= 4.25e-02, step_time= 0.35 sec, ranks= 12, examples/sec= 34.1, flops = 2.73e+14, average_time= 0.34, average_flops= 2.861e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 37.0, step= 30, epoch= 5.37e-03, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.6, flops = 2.85e+14, average_time= 0.34, average_flops= 2.845e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 40.4, step= 40, epoch= 7.16e-03, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.3, flops = 2.82e+14, average_time= 0.34, average_flops= 2.835e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 43.8, step= 50, epoch= 8.96e-03, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.4, flops = 2.83e+14, average_time= 0.34, average_flops= 2.834e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 47.2, step= 60, epoch= 1.07e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 34.9, flops = 2.80e+14, average_time= 0.34, average_flops= 2.842e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 50.6, step= 70, epoch= 1.25e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.2, flops = 2.82e+14, average_time= 0.34, average_flops= 2.843e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 54.0, step= 80, epoch= 1.43e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 34.9, flops = 2.80e+14, average_time= 0.34, average_flops= 2.821e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 57.3, step= 90, epoch= 1.61e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.0, flops = 2.80e+14, average_time= 0.34, average_flops= 2.837e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+loss is nan... Exiting!
+time= 60.7, step= 100, epoch= 1.79e-02, loss= nan, lr= 4.25e-02, step_time= 0.35 sec, ranks= 12, examples/sec= 34.7, flops = 2.78e+14, average_time= 0.34, average_flops= 2.825e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 64.1, step= 110, epoch= 1.97e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.0, flops = 2.80e+14, average_time= 0.34, average_flops= 2.844e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 67.5, step= 120, epoch= 2.15e-02, loss= nan, lr= 4.25e-02, step_time= 0.33 sec, ranks= 12, examples/sec= 36.5, flops = 2.92e+14, average_time= 0.34, average_flops= 2.857e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+loss is nan... Exiting!
+time= 70.8, step= 130, epoch= 2.33e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.2, flops = 2.82e+14, average_time= 0.34, average_flops= 2.848e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 74.2, step= 140, epoch= 2.51e-02, loss= nan, lr= 4.25e-02, step_time= 0.33 sec, ranks= 12, examples/sec= 36.4, flops = 2.91e+14, average_time= 0.34, average_flops= 2.828e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 77.6, step= 150, epoch= 2.69e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.6, flops = 2.85e+14, average_time= 0.34, average_flops= 2.843e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 81.0, step= 160, epoch= 2.87e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.1, flops = 2.81e+14, average_time= 0.34, average_flops= 2.817e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 84.4, step= 170, epoch= 3.04e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 34.8, flops = 2.79e+14, average_time= 0.34, average_flops= 2.836e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 87.8, step= 180, epoch= 3.22e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.0, flops = 2.80e+14, average_time= 0.34, average_flops= 2.826e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 91.2, step= 190, epoch= 3.40e-02, loss= nan, lr= 4.25e-02, step_time= 0.33 sec, ranks= 12, examples/sec= 35.9, flops = 2.87e+14, average_time= 0.34, average_flops= 2.856e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 94.6, step= 200, epoch= 3.58e-02, loss= nan, lr= 4.25e-02, step_time= 0.35 sec, ranks= 12, examples/sec= 34.7, flops = 2.78e+14, average_time= 0.34, average_flops= 2.843e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+loss is nan... Exiting!
+time= 98.0, step= 210, epoch= 3.76e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.0, flops = 2.80e+14, average_time= 0.34, average_flops= 2.819e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 101.3, step= 220, epoch= 3.94e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.6, flops = 2.85e+14, average_time= 0.34, average_flops= 2.837e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 104.7, step= 230, epoch= 4.12e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.8, flops = 2.86e+14, average_time= 0.34, average_flops= 2.866e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 108.1, step= 240, epoch= 4.30e-02, loss= nan, lr= 4.25e-02, step_time= 0.33 sec, ranks= 12, examples/sec= 36.1, flops = 2.89e+14, average_time= 0.34, average_flops= 2.826e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 111.5, step= 250, epoch= 4.48e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.1, flops = 2.81e+14, average_time= 0.34, average_flops= 2.841e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 114.9, step= 260, epoch= 4.66e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.2, flops = 2.82e+14, average_time= 0.34, average_flops= 2.817e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 118.3, step= 270, epoch= 4.84e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.3, flops = 2.82e+14, average_time= 0.34, average_flops= 2.851e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 121.6, step= 280, epoch= 5.01e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.1, flops = 2.81e+14, average_time= 0.34, average_flops= 2.833e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 125.0, step= 290, epoch= 5.19e-02, loss= nan, lr= 4.25e-02, step_time= 0.33 sec, ranks= 12, examples/sec= 35.9, flops = 2.88e+14, average_time= 0.34, average_flops= 2.821e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 128.4, step= 300, epoch= 5.37e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.0, flops = 2.80e+14, average_time= 0.34, average_flops= 2.844e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 131.8, step= 310, epoch= 5.55e-02, loss= nan, lr= 4.25e-02, step_time= 0.33 sec, ranks= 12, examples/sec= 35.8, flops = 2.87e+14, average_time= 0.34, average_flops= 2.843e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 135.2, step= 320, epoch= 5.73e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 34.8, flops = 2.79e+14, average_time= 0.34, average_flops= 2.836e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 138.6, step= 330, epoch= 5.91e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 34.9, flops = 2.79e+14, average_time= 0.34, average_flops= 2.821e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+loss is nan... Exiting!
+time= 142.0, step= 340, epoch= 6.09e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 34.8, flops = 2.78e+14, average_time= 0.34, average_flops= 2.822e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 145.4, step= 350, epoch= 6.27e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.0, flops = 2.80e+14, average_time= 0.34, average_flops= 2.828e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 148.8, step= 360, epoch= 6.45e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.0, flops = 2.80e+14, average_time= 0.34, average_flops= 2.805e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 152.2, step= 370, epoch= 6.63e-02, loss= nan, lr= 4.25e-02, step_time= 0.33 sec, ranks= 12, examples/sec= 36.3, flops = 2.90e+14, average_time= 0.34, average_flops= 2.831e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 155.6, step= 380, epoch= 6.81e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.0, flops = 2.80e+14, average_time= 0.34, average_flops= 2.829e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 159.0, step= 390, epoch= 6.99e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.0, flops = 2.80e+14, average_time= 0.34, average_flops= 2.836e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.02
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 162.3, step= 400, epoch= 7.16e-02, loss= nan, lr= 4.25e-02, step_time= 0.33 sec, ranks= 12, examples/sec= 36.3, flops = 2.91e+14, average_time= 0.34, average_flops= 2.862e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 165.7, step= 410, epoch= 7.34e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.3, flops = 2.83e+14, average_time= 0.34, average_flops= 2.843e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 169.1, step= 420, epoch= 7.52e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.1, flops = 2.81e+14, average_time= 0.34, average_flops= 2.847e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 172.5, step= 430, epoch= 7.70e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.4, flops = 2.84e+14, average_time= 0.34, average_flops= 2.837e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.02
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 175.9, step= 440, epoch= 7.88e-02, loss= nan, lr= 4.25e-02, step_time= 0.33 sec, ranks= 12, examples/sec= 35.8, flops = 2.87e+14, average_time= 0.34, average_flops= 2.833e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 179.3, step= 450, epoch= 8.06e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.7, flops = 2.85e+14, average_time= 0.34, average_flops= 2.830e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 182.6, step= 460, epoch= 8.24e-02, loss= nan, lr= 4.25e-02, step_time= 0.33 sec, ranks= 12, examples/sec= 36.0, flops = 2.88e+14, average_time= 0.34, average_flops= 2.847e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 186.0, step= 470, epoch= 8.42e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 34.8, flops = 2.79e+14, average_time= 0.34, average_flops= 2.818e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 189.5, step= 480, epoch= 8.60e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.2, flops = 2.82e+14, average_time= 0.34, average_flops= 2.821e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+loss is nan... Exiting!
+time= 192.8, step= 490, epoch= 8.78e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.1, flops = 2.81e+14, average_time= 0.34, average_flops= 2.832e+14
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.00
+rank=0, read image (268435456,) float16 and label (262144,) float16 from lmdb
+time to read and convert to tensor: 0.01
+last_step: 500, maxSteps: 500
+Loss value: <class 'numpy.float32'>, nan
+last_step: 500, maxSteps: 500
+Loss value: <class 'numpy.float32'>, nan
+last_step: 500, maxSteps: 500
+Loss value: <class 'numpy.float32'>, nan
+last_step: 500, maxSteps: 500
+Loss value: <class 'numpy.float32'>, nan
+last_step: 500, maxSteps: 500
+Loss value: <class 'numpy.float32'>, nan
+last_step: 500, maxSteps: 500
+Loss value: <class 'numpy.float32'>, nan
+last_step: 500, maxSteps: 500
+Loss value: <class 'numpy.float32'>, nan
+last_step: 500, maxSteps: 500
+Loss value: <class 'numpy.float32'>, nan
+last_step: 500, maxSteps: 500
+Loss value: <class 'numpy.float32'>, nan
+last_step: 500, maxSteps: 500
+Loss value: <class 'numpy.float32'>, nan
+loss is nan... Exiting!
+time= 196.3, step= 500, epoch= 8.96e-02, loss= nan, lr= 4.25e-02, step_time= 0.34 sec, ranks= 12, examples/sec= 35.2, flops = 2.82e+14, average_time= 0.34, average_flops= 2.808e+14
+last_step: 500, maxSteps: 500
+last_step: 500, maxSteps: 500
+Loss value: <class 'numpy.float32'>, nan
+Loss value: <class 'numpy.float32'>, nan
+loss is of type <class 'int'>
+Loss from objective function: 999
+loss is of type <class 'int'>
+Loss from objective function: 999
+loss is of type <class 'int'>
+Loss from objective function: 999
+loss is of type <class 'int'>
+Loss from objective function: 999
+loss is of type <class 'int'>
+Loss from objective function: 999
+loss is of type <class 'int'>
+Loss from objective function: 999
+loss is of type <class 'int'>
+Loss from objective function: 999
+loss is of type <class 'int'>
+Loss from objective function: 999
+loss is of type <class 'int'>
+Loss from objective function: 999
+loss is of type <class 'int'>
+Loss from objective function: 999
+loss is of type <class 'int'>
+Loss from objective function: 999
+loss is of type <class 'int'>
+Loss from objective function: 999
+2019-03-23 22:02:30.243877: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-23 22:02:30.243937: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 22:02:30.243948: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-23 22:02:30.243957: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-23 22:02:30.243877: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-23 22:02:30.243937: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 22:02:30.243948: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-23 22:02:30.243957: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-23 22:02:30.244276: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-23 22:02:30.244421: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+2019-03-23 22:02:30.315423: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 3
+2019-03-23 22:02:30.315484: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 22:02:30.315493: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      3 
+2019-03-23 22:02:30.315502: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 3:   N 
+2019-03-23 22:02:30.315423: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-23 22:02:30.315483: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 22:02:30.315494: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-23 22:02:30.315502: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-23 22:02:30.315435: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-23 22:02:30.315484: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 22:02:30.315493: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-23 22:02:30.315502: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-23 22:02:30.315747: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-23 22:02:30.315797: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-16GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+2019-03-23 22:02:30.315794: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 22:02:30.315805: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-23 22:02:30.315816: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+2019-03-23 22:02:30.315901: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14827 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+2019-03-23 22:02:30.315863: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 2
+2019-03-23 22:02:30.315893: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 22:02:30.315902: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      2 
+2019-03-23 22:02:30.315910: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 2:   N 
+2019-03-23 22:02:30.316033: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14827 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-23 22:02:30.316222: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14827 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+2019-03-23 22:02:30.316333: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14827 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-16GB, pci bus id: 0004:06:00.0, compute capability: 7.0)
+2019-03-23 22:02:30.318120: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 2
+2019-03-23 22:02:30.318173: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 22:02:30.318184: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      2 
+2019-03-23 22:02:30.318195: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 2:   N 
+2019-03-23 22:02:30.318484: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-16GB, pci bus id: 0004:06:00.0, compute capability: 7.0)
+2019-03-23 22:02:30.319263: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-23 22:02:30.319293: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 22:02:30.319302: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-23 22:02:30.319263: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 1
+2019-03-23 22:02:30.319292: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 22:02:30.319302: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      1 
+2019-03-23 22:02:30.319311: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 1:   N 
+2019-03-23 22:02:30.319315: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+2019-03-23 22:02:30.319557: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-16GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+2019-03-23 22:02:30.319678: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 3
+2019-03-23 22:02:30.319719: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 22:02:30.319702: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14825 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+2019-03-23 22:02:30.319731: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      3 
+2019-03-23 22:02:30.319739: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 3:   N 
+2019-03-23 22:02:30.320013: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-16GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+lmdb files ['batch_train_5.db', 'batch_train_0.db', 'batch_train_4.db', 'batch_train_3.db', 'batch_train_2.db', 'batch_train_1.db']
+2019-03-23 22:02:30.339076: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 1
+2019-03-23 22:02:30.339144: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-23 22:02:30.339158: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      1 
+2019-03-23 22:02:30.339170: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 1:   N 
+2019-03-23 22:02:30.339480: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14827 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-16GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+Starting up queue of images+labels: (1, 1024, 512, 512),  (1, 1, 512, 512) 
+Building Neural Net ...
+input: ---, dim: [1, 1024, 512, 512] memory: 512.0 MB
+Traceback (most recent call last):
+  File "stemdl_run.py", line 269, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 269, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 269, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 269, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 269, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 269, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 269, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 269, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 269, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 269, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 269, in <module>
+    main()
+  File "stemdl_run.py", line 245, in main
+    main()
+  File "stemdl_run.py", line 245, in main
+    main()
+  File "stemdl_run.py", line 245, in main
+    main()
+  File "stemdl_run.py", line 245, in main
+    main()
+  File "stemdl_run.py", line 245, in main
+Traceback (most recent call last):
+  File "stemdl_run.py", line 269, in <module>
+    main()
+  File "stemdl_run.py", line 245, in main
+    main()
+  File "stemdl_run.py", line 245, in main
+    main()
+  File "stemdl_run.py", line 245, in main
+    main()
+  File "stemdl_run.py", line 245, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 58, in run_hyperspace
+    main()
+  File "stemdl_run.py", line 245, in main
+    main()
+  File "stemdl_run.py", line 245, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 58, in run_hyperspace
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 58, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    main()
+  File "stemdl_run.py", line 245, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 58, in run_hyperspace
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 58, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 58, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 58, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 58, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 58, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 58, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 58, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 49, in <lambda>
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 49, in <lambda>
+    params
+  File "../hspace/small_objective.py", line 38, in objective
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 58, in run_hyperspace
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 49, in <lambda>
+    params
+  File "../hspace/small_objective.py", line 38, in objective
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 49, in <lambda>
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 49, in <lambda>
+    params
+  File "../hspace/small_objective.py", line 38, in objective
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 49, in <lambda>
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 49, in <lambda>
+    params
+  File "../hspace/small_objective.py", line 38, in objective
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 244, in train
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+  File "../stemdl/network.py", line 965, in build_model
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 49, in <lambda>
+    params
+  File "../hspace/small_objective.py", line 38, in objective
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 49, in <lambda>
+    params
+  File "../hspace/small_objective.py", line 38, in objective
+    params
+  File "../hspace/small_objective.py", line 38, in objective
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 244, in train
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 49, in <lambda>
+    params
+  File "../hspace/small_objective.py", line 38, in objective
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+  File "../stemdl/network.py", line 965, in build_model
+    params
+  File "../hspace/small_objective.py", line 38, in objective
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+  File "../stemdl/network.py", line 965, in build_model
+    params
+  File "../hspace/small_objective.py", line 38, in objective
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+  File "../stemdl/network.py", line 965, in build_model
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 49, in <lambda>
+    n_net.build_model()
+  File "../stemdl/network.py", line 965, in build_model
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+  File "../stemdl/network.py", line 965, in build_model
+    n_net.build_model()
+  File "../stemdl/network.py", line 965, in build_model
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+  File "../stemdl/network.py", line 965, in build_model
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/network.py", line 377, in _conv
+    params
+  File "../hspace/small_objective.py", line 38, in objective
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/network.py", line 377, in _conv
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 244, in train
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/network.py", line 377, in _conv
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/network.py", line 377, in _conv
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/network.py", line 377, in _conv
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 244, in train
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/network.py", line 377, in _conv
+    n_net.build_model()
+  File "../stemdl/network.py", line 965, in build_model
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/network.py", line 377, in _conv
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 49, in <lambda>
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    n_net.build_model()
+  File "../stemdl/network.py", line 965, in build_model
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    params
+  File "../hspace/small_objective.py", line 38, in objective
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1482, in get_variable
+    regularizer=self._weight_decay)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1482, in get_variable
+    regularizer=self._weight_decay)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1482, in get_variable
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1482, in get_variable
+    regularizer=self._weight_decay)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1482, in get_variable
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 244, in train
+    regularizer=self._weight_decay)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1482, in get_variable
+    regularizer=self._weight_decay)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1482, in get_variable
+    regularizer=self._weight_decay)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1482, in get_variable
+    regularizer=self._weight_decay)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1482, in get_variable
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/network.py", line 377, in _conv
+    n_net.build_model()
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/network.py", line 377, in _conv
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1223, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1223, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1223, in get_variable
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1223, in get_variable
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1223, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1223, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1223, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1223, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 530, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1223, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 530, in get_variable
+    regularizer=self._weight_decay)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1482, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 530, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 530, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 530, in get_variable
+    return custom_getter(**custom_getter_kwargs)
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    return custom_getter(**custom_getter_kwargs)
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    regularizer=self._weight_decay)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1482, in get_variable
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/network.py", line 377, in _conv
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 530, in get_variable
+    return custom_getter(**custom_getter_kwargs)
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 530, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 530, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 530, in get_variable
+    return custom_getter(**custom_getter_kwargs)
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 499, in _true_getter
+    return custom_getter(**custom_getter_kwargs)
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 499, in _true_getter
+    return custom_getter(**custom_getter_kwargs)
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 499, in _true_getter
+    return custom_getter(**custom_getter_kwargs)
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 499, in _true_getter
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 851, in _get_single_variable
+    return custom_getter(**custom_getter_kwargs)
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    return custom_getter(**custom_getter_kwargs)
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 499, in _true_getter
+    *args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 499, in _true_getter
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 851, in _get_single_variable
+    *args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 499, in _true_getter
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 851, in _get_single_variable
+    *args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 499, in _true_getter
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 851, in _get_single_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1223, in get_variable
+    *args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 499, in _true_getter
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 851, in _get_single_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 851, in _get_single_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 851, in _get_single_variable
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 851, in _get_single_variable
+    traceback.format_list(tb))))
+ValueError: Variable horovod/CONV_INIT/weights already exists, disallowed. Did you mean to set reuse=True or reuse=tf.AUTO_REUSE in VarScope? Originally defined at:
+
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+
+    traceback.format_list(tb))))
+ValueError: Variable horovod/CONV_INIT/weights already exists, disallowed. Did you mean to set reuse=True or reuse=tf.AUTO_REUSE in VarScope? Originally defined at:
+
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 851, in _get_single_variable
+    traceback.format_list(tb))))
+ValueError: Variable horovod/CONV_INIT/weights already exists, disallowed. Did you mean to set reuse=True or reuse=tf.AUTO_REUSE in VarScope? Originally defined at:
+
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+
+    traceback.format_list(tb))))
+ValueError: Variable horovod/CONV_INIT/weights already exists, disallowed. Did you mean to set reuse=True or reuse=tf.AUTO_REUSE in VarScope? Originally defined at:
+
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+
+    traceback.format_list(tb))))
+ValueError: Variable horovod/CONV_INIT/weights already exists, disallowed. Did you mean to set reuse=True or reuse=tf.AUTO_REUSE in VarScope? Originally defined at:
+
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+
+    traceback.format_list(tb))))
+ValueError: Variable horovod/CONV_INIT/weights already exists, disallowed. Did you mean to set reuse=True or reuse=tf.AUTO_REUSE in VarScope? Originally defined at:
+
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+
+    traceback.format_list(tb))))
+ValueError: Variable horovod/CONV_INIT/weights already exists, disallowed. Did you mean to set reuse=True or reuse=tf.AUTO_REUSE in VarScope? Originally defined at:
+
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+
+    traceback.format_list(tb))))
+ValueError: Variable horovod/CONV_INIT/weights already exists, disallowed. Did you mean to set reuse=True or reuse=tf.AUTO_REUSE in VarScope? Originally defined at:
+
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1223, in get_variable
+    traceback.format_list(tb))))
+ValueError: Variable horovod/CONV_INIT/weights already exists, disallowed. Did you mean to set reuse=True or reuse=tf.AUTO_REUSE in VarScope? Originally defined at:
+
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 530, in get_variable
+    regularizer=self._weight_decay)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1482, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 530, in get_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 1223, in get_variable
+    return custom_getter(**custom_getter_kwargs)
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 499, in _true_getter
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 530, in get_variable
+    return custom_getter(**custom_getter_kwargs)
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    return custom_getter(**custom_getter_kwargs)
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 499, in _true_getter
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 851, in _get_single_variable
+    *args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 499, in _true_getter
+    traceback.format_list(tb))))
+ValueError: Variable horovod/CONV_INIT/weights already exists, disallowed. Did you mean to set reuse=True or reuse=tf.AUTO_REUSE in VarScope? Originally defined at:
+
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 851, in _get_single_variable
+    aggregation=aggregation)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py", line 851, in _get_single_variable
+    traceback.format_list(tb))))
+ValueError: Variable horovod/CONV_INIT/weights already exists, disallowed. Did you mean to set reuse=True or reuse=tf.AUTO_REUSE in VarScope? Originally defined at:
+
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+
+    traceback.format_list(tb))))
+ValueError: Variable horovod/CONV_INIT/weights already exists, disallowed. Did you mean to set reuse=True or reuse=tf.AUTO_REUSE in VarScope? Originally defined at:
+
+  File "../stemdl/runtime.py", line 47, in float32_variable_storage_getter
+    *args, **kwargs)
+  File "../stemdl/network.py", line 778, in _cpu_variable_init
+    regularizer=self._weight_decay)
+  File "../stemdl/network.py", line 377, in _conv
+    kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+  File "../stemdl/network.py", line 965, in build_model
+    out, kernel = self._conv(input=self.images, params=layer_params)
+  File "../stemdl/runtime.py", line 244, in train
+    n_net.build_model()
+
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@batch2>
+Subject: Job 306594: <stemdl> in cluster <summit> Exited
+
+Job <stemdl> was submitted from host <login1> by user <yngtodd> in cluster <summit> at Sat Mar 23 21:57:54 2019
+Job was executed on host(s) <1*batch2>, in queue <batch>, as user <yngtodd> in cluster <summit> at Sat Mar 23 21:58:00 2019
+                            <42*h33n15>
+                            <42*h33n18>
+</ccs/home/yngtodd> was used as the home directory.
+</gpfs/alpine/lrn001/proj-shared/yngtodd/src/stemdl/scripts> was used as the working directory.
+Started at Sat Mar 23 21:58:00 2019
+Terminated at Sat Mar 23 22:02:33 2019
+Results reported at Sat Mar 23 22:02:33 2019
+
+The output (if any) is above this job summary.
+

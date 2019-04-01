@@ -1,0 +1,306 @@
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+
+Creating checkpoint directory checkpoints/FCDenseNet_custom_2_305777_checkpoint
+
+
+### hyper_params.json
+{
+   "mixing": 0.5,
+   "scaling": 1.0,
+   "learning_rate_decay_factor": 0.5,
+   "warm_up_max_learning_rate": 0.001,
+   "initial_learning_rate": 0.0001,
+   "warm_up": false,
+   "num_epochs_per_ramp": 0.25,
+   "network_type": "inverter",
+   "weight_decay": 0.0,
+   "num_epochs_in_warm_up": 5,
+   "optimization": "SGD",
+   "loss_function": {
+      "residual_num_epochs_decay": 10,
+      "residual_initial": 10.0,
+      "residual_decay_factor": 0.75,
+      "residual_minimum": 1.0,
+      "type": "MSE_PAIR"
+   },
+   "num_epochs_per_decay": 10,
+   "moving_average_decay": 0.9999,
+   "momentum": 0.9,
+   "batch_norm": {
+      "epsilon": 1e-05,
+      "decay": 0.8
+   },
+   "initializer": {
+      "type": "He"
+   },
+   "LARC": false,
+   "LARC_eta": 0.002,
+   "LARC_epsilon": 6.25e-06,
+   "LARC_mode": "scale",
+   "LSAL": false,
+   "langevin": false
+}
+### params passed at CLI
+{
+    "batch_size": 1,
+    "log_frequency": 10,
+    "max_steps": 500,
+    "network_config": "network_FCDenseNet_custom.json",
+    "data_dir": "/mnt/bb/yngtodd",
+    "checkpt_dir": "checkpoints/FCDenseNet_custom_2_305777_checkpoint",
+    "input_flags": "input_flags.json",
+    "hyper_params": "hyper_params.json",
+    "ilr": 0.0001,
+    "epochs_per_decay": null,
+    "scaling": 1.0,
+    "bn_decay": 0.8,
+    "save_epochs": 2000.0,
+    "validate_epochs": 1.0,
+    "mode": "hyperspace",
+    "cpu_threads": 1,
+    "accumulate_step": 1,
+    "filetype": "lmdb",
+    "hvd_group": 1,
+    "hyperspace_results_path": "/gpfs/alpine/lrn001/proj-shared/yngtodd/experiments/small_objective_march21",
+    "jobid": 0,
+    "fp16": true,
+    "fp32": null,
+    "restart": null,
+    "nvme": true,
+    "debug": true,
+    "hvd_fp16": true
+}
+/gpfs/alpine/lrn001/proj-shared/yngtodd/src/hyperspace/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+  warnings.warn("Each hyperspace contains a single value.")
+No previous save point for space hyperspace0
+2019-03-22 15:38:36.342702: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 15:38:38.941850: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-22 15:38:38.941926: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-22 15:38:38.941950: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-22 15:38:38.941987: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-22 15:38:39.365639: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-22 15:38:39.365672: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-22 15:38:39.365683: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+2019-03-22 15:38:39.366207: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14825 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+lmdb files ['batch_train_2.db', 'batch_train_4.db', 'batch_train_5.db', 'batch_train_3.db', 'batch_train_1.db', 'batch_train_0.db']
+Starting up queue of images+labels: (1, 1024, 512, 512),  (1, 1, 512, 512) 
+Building Neural Net ...
+input: ---, dim: [1, 1024, 512, 512] memory: 512.0 MB
+horovod/CONV_INIT --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 1180160,  memory: 64.0 MB
+>>> Adding Dense Block Down: DB_0
+    input: [1, 128, 512, 512]
+horovod/DB_0/conv_0 --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 1327616,  memory: 64.0 MB
+horovod/DB_0/conv_1 --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 1622528,  memory: 64.0 MB
+    output: [1, 384, 512, 512]
+>>> Adding Transition Down: TD_0
+    input: [1, 384, 512, 512]
+horovod/TD_0 --- output: [1, 384, 256, 256], kernel: [2, 2], stride: [2, 2], memory: 48.0 MB
+    output: [1, 384, 256, 256]
+>>> Adding Dense Block Down: DB_1
+    input: [1, 384, 256, 256]
+horovod/DB_1/conv_0 --- output: [1, 128, 256, 256], kernel: [3, 3], stride: [1, 1], # of weights: 2213120,  memory: 16.0 MB
+horovod/DB_1/conv_1 --- output: [1, 128, 256, 256], kernel: [3, 3], stride: [1, 1], # of weights: 2802944,  memory: 16.0 MB
+    output: [1, 640, 256, 256]
+>>> Adding Transition Down: TD_1
+    input: [1, 640, 256, 256]
+horovod/TD_1 --- output: [1, 640, 128, 128], kernel: [2, 2], stride: [2, 2], memory: 20.0 MB
+    output: [1, 640, 128, 128]
+>>> Adding Dense Block Down: DB_2
+    input: [1, 640, 128, 128]
+horovod/DB_2/conv_0 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 3951104,  memory: 4.0 MB
+horovod/DB_2/conv_1 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 4835840,  memory: 4.0 MB
+horovod/DB_2/conv_2 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 5868032,  memory: 4.0 MB
+    output: [1, 1024, 128, 128]
+>>> Adding Transition Down: TD_2
+    input: [1, 1024, 128, 128]
+horovod/TD_2 --- output: [1, 1024, 64, 64], kernel: [2, 2], stride: [2, 2], memory: 8.0 MB
+    output: [1, 1024, 64, 64]
+>>> Adding Dense Block Bottleneck: DB_3
+    input: [1, 1024, 64, 64]
+horovod/DB_3/conv_0 --- output: [1, 128, 64, 64], kernel: [3, 3], stride: [1, 1], # of weights: 8098304,  memory: 1.0 MB
+horovod/DB_3/conv_1 --- output: [1, 128, 64, 64], kernel: [3, 3], stride: [1, 1], # of weights: 9425408,  memory: 1.0 MB
+horovod/DB_3/conv_2 --- output: [1, 128, 64, 64], kernel: [3, 3], stride: [1, 1], # of weights: 10899968,  memory: 1.0 MB
+horovod/DB_3/conv_3 --- output: [1, 128, 64, 64], kernel: [3, 3], stride: [1, 1], # of weights: 12521984,  memory: 1.0 MB
+    output: [1, 1536, 64, 64]
+>>> Adding Transition Up: TU_0
+    input: [1, 1536, 64, 64]
+    output: [1, 1536, 128, 128]
+>>> Adding Dense Block Up: DB_4
+    input: [1, 1536, 128, 128]
+horovod/DB_4/conv_0 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 14553600,  memory: 4.0 MB
+horovod/DB_4/conv_1 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 16470528,  memory: 4.0 MB
+horovod/DB_4/conv_2 --- output: [1, 128, 128, 128], kernel: [3, 3], stride: [1, 1], # of weights: 18534912,  memory: 4.0 MB
+    output: [1, 1920, 128, 128]
+>>> Adding Transition Up: TU_1
+    input: [1, 1920, 128, 128]
+    output: [1, 1024, 256, 256]
+>>> Adding Dense Block Up: DB_5
+    input: [1, 1024, 256, 256]
+horovod/DB_5/conv_0 --- output: [1, 128, 256, 256], kernel: [3, 3], stride: [1, 1], # of weights: 19862016,  memory: 16.0 MB
+horovod/DB_5/conv_1 --- output: [1, 128, 256, 256], kernel: [3, 3], stride: [1, 1], # of weights: 21189120,  memory: 16.0 MB
+    output: [1, 1280, 256, 256]
+>>> Adding Transition Up: TU_2
+    input: [1, 1280, 256, 256]
+    output: [1, 640, 512, 512]
+>>> Adding Dense Block Up: DB_6
+    input: [1, 640, 512, 512]
+horovod/DB_6/conv_0 --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 21991936,  memory: 64.0 MB
+horovod/DB_6/conv_1 --- output: [1, 128, 512, 512], kernel: [3, 3], stride: [1, 1], # of weights: 22876672,  memory: 64.0 MB
+    output: [1, 896, 512, 512]
+>>> Adding Conv Layer: CONV_FIN
+    input: [1, 896, 512, 512]
+    output: [1, 1, 512, 512]
+horovod/CONV_FIN --- output: [1, 1, 512, 512], kernel: [1, 1], stride: [1, 1], # of weights: 22877568,  memory: 0.5 MB
+Total # of blocks: 15,  weights: 2.3e+07, memory: 1496.5009765625 MB, ops: 8.00e+12 
+
+2019-03-22 15:38:49.955027: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+Syncing horovod ranks...
+2019-03-22 15:38:50.434284: W tensorflow/core/framework/op_kernel.cc:1431] OP_REQUIRES failed at mpi_ops.cc:437 : Unknown: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+Traceback (most recent call last):
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1335, in _do_call
+    return fn(*args)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1320, in _run_fn
+    options, feed_dict, fetch_list, target_list, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1408, in _call_tf_sessionrun
+    run_metadata)
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[{{node HorovodBroadcast_global_step_0}}]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_89]]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "stemdl_run.py", line 268, in <module>
+    main()
+  File "stemdl_run.py", line 244, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 57, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 48, in <lambda>
+    params
+  File "../hspace/small_objective.py", line 36, in objective
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 303, in train
+    sess.run(sync_op)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 930, in run
+    run_metadata_ptr)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1153, in _run
+    feed_dict_tensor, options, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1329, in _do_run
+    run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1349, in _do_call
+    raise type(e)(node_def, op, message)
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[node HorovodBroadcast_global_step_0 (defined at <string>:271) ]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_89]]
+
+Errors may have originated from an input operation.
+Input Source operations connected to node HorovodBroadcast_global_step_0:
+ global_step/read (defined at ../stemdl/runtime.py:180)
+
+Original stack trace for 'HorovodBroadcast_global_step_0':
+  File "stemdl_run.py", line 268, in <module>
+    main()
+  File "stemdl_run.py", line 244, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 57, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 240, in base_minimize
+    y0 = list(map(func, x0))
+  File "../hspace/hyperspace_launcher.py", line 48, in <lambda>
+    params
+  File "../hspace/small_objective.py", line 36, in objective
+    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 302, in train
+    sync_op = hvd.broadcast_global_variables(0)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 106, in broadcast_global_variables
+    return broadcast_variables(tf.global_variables(), root_rank)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in broadcast_variables
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in <listcomp>
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/mpi_ops.py", line 169, in broadcast
+    return MPI_LIB.horovod_broadcast(tensor, name=name, root_rank=root_rank)
+  File "<string>", line 271, in horovod_broadcast
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py", line 800, in _apply_op_helper
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/util/deprecation.py", line 507, in new_func
+    return func(*args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 3479, in create_op
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 1961, in __init__
+    self._traceback = tf_stack.extract_stack()
+
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@batch4>
+Subject: Job 305777: <stemdl> in cluster <summit> Exited
+
+Job <stemdl> was submitted from host <login3> by user <yngtodd> in cluster <summit> at Fri Mar 22 15:37:15 2019
+Job was executed on host(s) <1*batch4>, in queue <batch>, as user <yngtodd> in cluster <summit> at Fri Mar 22 15:37:17 2019
+                            <42*a01n17>
+                            <42*a02n01>
+</ccs/home/yngtodd> was used as the home directory.
+</gpfs/alpine/lrn001/proj-shared/yngtodd/src/stemdl/scripts> was used as the working directory.
+Started at Fri Mar 22 15:37:17 2019
+Terminated at Fri Mar 22 15:38:51 2019
+Results reported at Fri Mar 22 15:38:51 2019
+
+The output (if any) is above this job summary.
+
