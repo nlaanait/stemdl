@@ -128,7 +128,7 @@ class TrainHelper(object):
     def nanloss(loss_value):
         if np.isnan(loss_value):
             print_rank('loss is nan... Exiting!')
-            #sys.exit(0)
+            sys.exit(0)
 
 
 def print_rank(*args, **kwargs):
@@ -136,7 +136,7 @@ def print_rank(*args, **kwargs):
         print(*args, **kwargs)
 
 
-def train(network_config, hyper_params, params, hyper_optimization=True):
+def train(network_config, hyper_params, params):
     """
     Train the network for a number of steps using horovod and asynchronous I/O staging ops.
 
@@ -155,7 +155,7 @@ def train(network_config, hyper_params, params, hyper_optimization=True):
     config.gpu_options.allow_growth = True
     config.gpu_options.visible_device_list = str(hvd.local_rank())
     config.gpu_options.force_gpu_compatible = True
-    config.intra_op_parallelism_threads = 6
+    config.intra_op_parallelism_threads = 6 
     config.inter_op_parallelism_threads = max(1, cpu_count()//6)
     config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
     jit_scope = tf.contrib.compiler.jit.experimental_jit_scope
@@ -212,7 +212,7 @@ def train(network_config, hyper_params, params, hyper_optimization=True):
         print_rank('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
                                                                 format(labels.get_shape())))
 
-        with tf.variable_scope('horovod',
+        with tf.variable_scope('horovod', 
                 # Force all variables to be stored as float32
                 custom_getter=float32_variable_storage_getter) as _:
 
@@ -226,9 +226,9 @@ def train(network_config, hyper_params, params, hyper_optimization=True):
             if params['network_class'] == 'fcdensenet':
                 n_net = network.FCDenseNet(scope, params, hyper_params, network_config, images, labels,
                                         operation='train', summary=False, verbose=True)
-
-
-            ###### XLA compilation #########
+            
+                
+            ###### XLA compilation #########    
             #if params['network_class'] == 'fcdensenet':
             #    def wrap_n_net(*args):
             #        images, labels = args
@@ -264,10 +264,10 @@ def train(network_config, hyper_params, params, hyper_optimization=True):
 
         # setup optimizer
         opt_dict = {}
-        train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization'],
-                                opt_dict, learning_policy_func, run_params=params, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", loss_scaling=hyper_params['loss_scaling'],
+        train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization'], 
+                                opt_dict, learning_policy_func, run_params=params, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", loss_scaling='Backoff', 
                                 skip_update_cond=skip_update_cond,
-                                on_horovod=True, model_scopes=n_net.scopes)
+                                on_horovod=True, model_scopes=n_net.scopes)  
 
         # Gather all training related ops into a single one.
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -301,7 +301,7 @@ def train(network_config, hyper_params, params, hyper_optimization=True):
     print_rank('Syncing horovod ranks...')
     sync_op = hvd.broadcast_global_variables(0)
     sess.run(sync_op)
-
+    
     # prefill pipeline first
     print_rank('Prefilling I/O pipeline...')
     for i in range(len(IO_ops)):
@@ -366,38 +366,13 @@ def train(network_config, hyper_params, params, hyper_optimization=True):
             train_elf.save_trace(run_metadata, params[ 'trace_dir' ], params[ 'trace_step' ] )
             train_elf.before_run()
         # Here we do validation:
-        if train_elf.elapsed_epochs > next_validation_epoch and hyper_optimization == False:
+        if train_elf.elapsed_epochs > next_validation_epoch:
             # do validation over 300 batches.
             validate(network_config, hyper_params, params, sess, dset)
             next_validation_epoch += params['epochs_per_validation']
-    
-    #print(f'last_step: {train_elf.last_step}, maxSteps: {maxSteps}')
-    if hyper_optimization:
-        # Are we guaranteed that doLog will be 1 here?
-        assert doLog, "Logging must be turned on for Hyperspace!"
-        if train_elf.last_step == maxSteps:
-            ### TMP: no longer return from the training function.
-            ###      Instead, call validate, and return the loss from there.
-            # Check if there is a lingering session before running Hyperspace
-            #if sess._closed == False:
-            #    sess.close()
-            #    tf.reset_default_graph()
-            #print(f'Loss value: {loss_value}')
-            #if np.isnan(loss_value):
-            #    return 666666666
-            #else:
-            #    return loss_value
-            valid_loss = validate(network_config, hyper_params, params, 
-                            sess, dset, num_batches=10, hyper_optimization=True)
-
-            if sess._closed == False:
-                sess.close()
-                tf.reset_default_graph()
-
-            return loss_value, valid_loss
 
 
-def validate(network_config, hyper_params, params, sess, dset, num_batches=10, hyper_optimization=False):
+def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
     """
     Runs validation with current weights
     :param params:
@@ -410,7 +385,7 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10, h
     print_rank("Running Validation over %d batches..." % num_batches)
     with tf.device(params['CPU_ID']):
         # Get Test data
-        dset.set_mode(mode='eval')
+        dset.set_mode(mode='test')
         images, labels = dset.minibatch()
         # Staging images on host
         staging_op, (images, labels) = dset.stage([images, labels])
@@ -431,8 +406,6 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10, h
     with tf.variable_scope('horovod', reuse=True) as _:
         # Setup Neural Net
         params['IMAGE_FP16'] = False
-        if images.dtype is not tf.float32:
-            images = tf.cast(images, tf.float32)
         # Setup Neural Net
         if params['network_class'] == 'resnet':
             n_net = network.ResNet(scope, params, hyper_params, network_config, images, labels,
@@ -484,14 +457,12 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10, h
             errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
             errors = tf.expand_dims(errors,axis=0)
             error_averaging = hvd.allreduce(errors)
-            error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(dset.num_samples)]) 
+            error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_batches)])
             print_rank('Validation Reconstruction Error: %3.3e' % error.mean())
-            if hyper_optimization:
-                return error.mean()
 
 
 def validate_ckpt(network_config, hyper_params, params,num_batches=25,
-                    last_model= False, sleep=-1, hyper_optimization=False):
+                    last_model= False, sleep=-1):
     """
     Runs evaluation with current weights
     :param params:
@@ -627,8 +598,6 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=25,
                     else:
                         error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(dset.num_samples)])
                         print_rank('Validation Reconstruction Error: %3.3e' % error.mean())
-                        if hyper_optimization:
-                            return error.mean()
                 if sleep < 0:
                     break
                 else:
