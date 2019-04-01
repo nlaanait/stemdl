@@ -6,7 +6,7 @@ from stemdl import runtime
 def get_space():
     space = [
         (1e-4, 0.1),           # initial_learning_rate
-        (0.0, 0.9),            # weight_decay
+        (0.0, 1e-2),           # weight_decay
         (1e-4, 0.1),           # LARC_eta
         #('clip', 'scale'),     # LARC_mode
         (1e-5, 0.1),           # LARC_min_update
@@ -16,7 +16,7 @@ def get_space():
     return space
 
 
-def objective(hparams, network_config, hyper_params, params):
+def objective(hparams, network_config, hyper_params, params, train_saver):
     """Objective function for hyperprameter optimization.
 
     Parameters
@@ -41,10 +41,11 @@ def objective(hparams, network_config, hyper_params, params):
 
     # When hyper_optimization == True, train will call validate()
     # loss here is then `error.mean()` over the *validation* set.
-    loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+    train_saver.save(train_loss)
     # Sanity check
     # Next time the objective function is called, we should be back in training mode.
     params['mode'] = 'train'
     params['IMAGE_FP16'] = True 
     #valid_loss = runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, hyper_optimization=True)
-    return loss 
+    return valid_loss 

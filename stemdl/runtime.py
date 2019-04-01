@@ -387,14 +387,14 @@ def train(network_config, hyper_params, params, hyper_optimization=True):
             #    return 666666666
             #else:
             #    return loss_value
-            loss = validate(network_config, hyper_params, params, 
+            valid_loss = validate(network_config, hyper_params, params, 
                             sess, dset, num_batches=10, hyper_optimization=True)
 
             if sess._closed == False:
                 sess.close()
                 tf.reset_default_graph()
 
-            return loss 
+            return loss_value, valid_loss
 
 
 def validate(network_config, hyper_params, params, sess, dset, num_batches=10, hyper_optimization=False):
