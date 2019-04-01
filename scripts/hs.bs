@@ -3,7 +3,7 @@
 #BSUB -J stemdl
 #BSUB -o logs.o%J
 #BSUB -W 02:00
-#BSUB -nnodes 32 
+#BSUB -nnodes 2 
 #BSUB -alloc_flags "smt4 nvme" 
 ##BSUB -alloc_flags "smt4 nvme maximizegpfs" 
 #BSUB -q batch
@@ -44,7 +44,7 @@ export PYTHONIOENCODING="utf8"
 #############
 
 ### nvme staging ###
-DATA="${PROJWORK}/lrn001/nl/sims/data/lmdb_bank"
+DATA="${PROJWORK}/lrn001/nl/sims/data/lmdb_superbank"
 LOG="printout_nvme.log"
 NVME_PURGE=0
 CMD="python -u nvme_stage.py $DATA $NVME_PURGE"
@@ -81,7 +81,7 @@ LOG_FREQ=10
 JOBID=0
 VALIDATE_EPOCHS=666
 HYPERSPACE_LOG="output_logs/printout_${NODES}_${LSB_JOBID}.log"
-HYPERSPACE_PATH="/gpfs/alpine/lrn001/proj-shared/yngtodd/experiments/medium_objective_march28"
+HYPERSPACE_PATH="/gpfs/alpine/lrn001/proj-shared/yngtodd/experiments/low_weight_decay_march29"
 CMD="python -u ${SCRIPT} --hyperspace_results_path $HYPERSPACE_PATH --jobid $JOBID --hvd_group 1 --hvd_fp16 --nvme --filetype ${FILETYPE} --data_dir ${DATA}  --${FP}  --cpu_threads $cpus --mode $MODE --save_epochs $EPOCH_PER_SAVE --batch_size $BATCH  --log_frequency ${LOG_FREQ} --max_steps $MAX_STEPS --network_config ${NETWORK} --checkpt_dir ${CKPT} --ilr ${ILR} --bn_decay ${BN_DECAY} --scaling ${SCALING} --input_flags ${INPUT} --validate_epochs $VALIDATE_EPOCHS --hyper_params ${HYPER}"
 #################
 

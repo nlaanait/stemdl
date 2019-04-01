@@ -1,0 +1,1112 @@
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/sklearn/ensemble/weight_boosting.py:29: DeprecationWarning: numpy.core.umath_tests is an internal NumPy module and should not be imported. It will be removed in a future NumPy release.
+  from numpy.core.umath_tests import inner1d
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/hyperspaces-0.3.0-py3.6.egg/hyperspace/space/skopt/space.py:173: UserWarning: Each hyperspace contains a single value.
+2019-03-29 17:41:56.340520: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:41:56.390040: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:41:56.477825: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:41:56.522381: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:41:56.529605: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:41:56.594914: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:41:56.634224: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:41:56.696502: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:41:56.996663: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:41:57.010379: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:41:57.117496: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:41:57.250316: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:42:01.522271: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:42:01.522395: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-29 17:42:01.522430: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-29 17:42:01.522481: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:01.522912: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:42:01.523020: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-29 17:42:01.523050: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 1
+2019-03-29 17:42:01.523098: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:01.570209: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:42:01.570313: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-29 17:42:01.570335: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-29 17:42:01.570373: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:01.870188: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:42:01.870293: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:03:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-29 17:42:01.870321: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 3
+2019-03-29 17:42:01.870361: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:01.915420: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:42:01.915545: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-29 17:42:01.915590: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 1
+2019-03-29 17:42:01.915657: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:01.919069: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:42:01.919194: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:06:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-29 17:42:01.919229: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 2
+2019-03-29 17:42:01.919278: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:01.922453: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:42:01.922562: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-29 17:42:01.922593: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-29 17:42:01.922641: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:01.939072: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:42:01.939165: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-29 17:42:01.939193: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-29 17:42:01.939240: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:02.311718: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:42:02.311797: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-29 17:42:02.311814: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-29 17:42:02.312535: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+2019-03-29 17:42:02.319068: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:42:02.319124: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      1 
+2019-03-29 17:42:02.319138: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 1:   N 
+2019-03-29 17:42:02.319288: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:42:02.319377: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:06:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-29 17:42:02.319401: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 2
+2019-03-29 17:42:02.319440: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:02.319796: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14825 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-16GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+2019-03-29 17:42:02.328738: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:42:02.328816: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:03:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-29 17:42:02.328837: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 3
+2019-03-29 17:42:02.328876: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:02.330089: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:42:02.330154: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0004:04:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-29 17:42:02.330173: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-29 17:42:02.330211: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:02.330325: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcuda.so.1
+2019-03-29 17:42:02.330407: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1467] Found device 0 with properties: 
+name: Tesla V100-SXM2-16GB major: 7 minor: 0 memoryClockRate(GHz): 1.53
+pciBusID: 0035:05:00.0
+totalMemory: 15.75GiB freeMemory: 15.34GiB
+2019-03-29 17:42:02.330432: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-29 17:42:02.330478: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:02.535018: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:42:02.535094: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      3 
+2019-03-29 17:42:02.535110: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 3:   N 
+2019-03-29 17:42:02.535867: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-16GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+2019-03-29 17:42:02.575867: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:42:02.575936: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      2 
+2019-03-29 17:42:02.575950: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 2:   N 
+2019-03-29 17:42:02.576719: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-16GB, pci bus id: 0004:06:00.0, compute capability: 7.0)
+2019-03-29 17:42:02.589505: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:42:02.589543: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-29 17:42:02.589556: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+2019-03-29 17:42:02.590213: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14823 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+2019-03-29 17:42:02.593541: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:42:02.593583: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-29 17:42:02.593596: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-29 17:42:02.594270: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14827 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-29 17:42:02.618889: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:42:02.618962: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-29 17:42:02.618977: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-29 17:42:02.619716: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14826 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+2019-03-29 17:42:02.695740: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:42:02.695810: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      1 
+2019-03-29 17:42:02.695829: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 1:   N 
+2019-03-29 17:42:02.696565: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14823 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-16GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+2019-03-29 17:42:02.803796: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:42:02.803835: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      2 
+2019-03-29 17:42:02.803848: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 2:   N 
+2019-03-29 17:42:02.804484: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14824 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-16GB, pci bus id: 0004:06:00.0, compute capability: 7.0)
+2019-03-29 17:42:02.806821: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:42:02.806842: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-29 17:42:02.806851: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+2019-03-29 17:42:02.807336: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+2019-03-29 17:42:02.868179: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:42:02.868248: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      3 
+2019-03-29 17:42:02.868259: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 3:   N 
+2019-03-29 17:42:02.868811: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14824 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-16GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+2019-03-29 17:42:02.902038: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:42:02.902093: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-29 17:42:02.902106: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-29 17:42:02.902846: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14823 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-29 17:42:07.303827: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:07.635182: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:07.984373: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:08.293781: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:08.348063: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:08.522198: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:08.540234: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:08.584759: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:08.591651: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:08.648070: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:08.793873: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:17.483369: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudart.so.9.2
+2019-03-29 17:42:21.157231: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-29 17:42:21.757275: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-29 17:42:21.786556: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-29 17:42:21.843031: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-29 17:42:21.895960: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-29 17:42:21.958867: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-29 17:42:22.103588: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-29 17:42:22.138392: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-29 17:42:22.179306: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-29 17:42:22.225558: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-29 17:42:22.226519: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+2019-03-29 17:42:22.230436: I tensorflow/stream_executor/platform/default/dso_loader.cc:42] Successfully opened dynamic library libcudnn.so.7
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    main()
+  File "stemdl_run.py", line 252, in main
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 45, in objective
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 45, in objective
+    train_saver
+  File "../hspace/medium_objective.py", line 45, in objective
+    train_saver.save(train_loss)
+  File "../hspace/save.py", line 58, in save
+    train_saver.save(train_loss)
+  File "../hspace/save.py", line 58, in save
+    train_saver.save(train_loss)
+  File "../hspace/save.py", line 58, in save
+    data = self.load()
+  File "../hspace/save.py", line 46, in load
+    data = self.load()
+  File "../hspace/save.py", line 46, in load
+    data = self.load()
+  File "../hspace/save.py", line 46, in load
+    data = json.load(infile)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/json/__init__.py", line 299, in load
+    parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/json/__init__.py", line 354, in loads
+    return _default_decoder.decode(s)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/json/decoder.py", line 339, in decode
+    data = json.load(infile)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/json/__init__.py", line 299, in load
+    parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/json/__init__.py", line 354, in loads
+    return _default_decoder.decode(s)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/json/decoder.py", line 339, in decode
+    data = json.load(infile)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/json/__init__.py", line 299, in load
+    parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/json/__init__.py", line 354, in loads
+    return _default_decoder.decode(s)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/json/decoder.py", line 339, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/json/decoder.py", line 357, in raw_decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/json/decoder.py", line 357, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/json/decoder.py", line 357, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2019-03-29 17:48:12.192572: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-29 17:48:12.192634: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:48:12.192644: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-29 17:48:12.192654: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-29 17:48:12.192975: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14826 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+2019-03-29 17:48:12.229418: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 1
+2019-03-29 17:48:12.229473: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:48:12.229482: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      1 
+2019-03-29 17:48:12.229491: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 1:   N 
+2019-03-29 17:48:12.229418: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 4
+2019-03-29 17:48:12.229473: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:48:12.229482: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      4 
+2019-03-29 17:48:12.229490: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 4:   N 
+2019-03-29 17:48:12.229785: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 4, name: Tesla V100-SXM2-16GB, pci bus id: 0035:04:00.0, compute capability: 7.0)
+2019-03-29 17:48:12.229928: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14825 MB memory) -> physical GPU (device: 1, name: Tesla V100-SXM2-16GB, pci bus id: 0004:05:00.0, compute capability: 7.0)
+2019-03-29 17:48:12.252502: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-29 17:48:12.252562: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:48:12.252572: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-29 17:48:12.252580: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-29 17:48:12.252897: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14823 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-29 17:48:12.273448: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 5
+2019-03-29 17:48:12.273484: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:48:12.273493: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      5 
+2019-03-29 17:48:12.273501: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 5:   N 
+2019-03-29 17:48:12.273460: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 2
+2019-03-29 17:48:12.273498: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:48:12.273507: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      2 
+2019-03-29 17:48:12.273515: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 2:   N 
+2019-03-29 17:48:12.273790: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14827 MB memory) -> physical GPU (device: 5, name: Tesla V100-SXM2-16GB, pci bus id: 0035:05:00.0, compute capability: 7.0)
+2019-03-29 17:48:12.273930: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 2, name: Tesla V100-SXM2-16GB, pci bus id: 0004:06:00.0, compute capability: 7.0)
+2019-03-29 17:48:12.274775: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 3
+2019-03-29 17:48:12.274803: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:48:12.274813: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      3 
+2019-03-29 17:48:12.274822: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 3:   N 
+2019-03-29 17:48:12.275073: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 3, name: Tesla V100-SXM2-16GB, pci bus id: 0035:03:00.0, compute capability: 7.0)
+2019-03-29 17:48:12.276094: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-29 17:48:12.276123: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:48:12.276132: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-29 17:48:12.276139: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+2019-03-29 17:48:12.276394: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14823 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+2019-03-29 17:48:12.288218: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1546] Adding visible gpu devices: 0
+2019-03-29 17:48:12.288257: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1015] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-03-29 17:48:12.288266: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1021]      0 
+2019-03-29 17:48:12.288274: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1034] 0:   N 
+2019-03-29 17:48:12.288568: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1149] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 14821 MB memory) -> physical GPU (device: 0, name: Tesla V100-SXM2-16GB, pci bus id: 0004:04:00.0, compute capability: 7.0)
+2019-03-29 17:48:16.862005: W tensorflow/core/framework/op_kernel.cc:1431] OP_REQUIRES failed at mpi_ops.cc:437 : Unknown: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+2019-03-29 17:48:16.897843: W tensorflow/core/framework/op_kernel.cc:1431] OP_REQUIRES failed at mpi_ops.cc:437 : Unknown: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+2019-03-29 17:48:16.898699: W tensorflow/core/framework/op_kernel.cc:1431] OP_REQUIRES failed at mpi_ops.cc:437 : Unknown: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+2019-03-29 17:48:16.928375: W tensorflow/core/framework/op_kernel.cc:1431] OP_REQUIRES failed at mpi_ops.cc:437 : Unknown: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+2019-03-29 17:48:16.950094: W tensorflow/core/framework/op_kernel.cc:1431] OP_REQUIRES failed at mpi_ops.cc:437 : Unknown: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+2019-03-29 17:48:16.950982: W tensorflow/core/framework/op_kernel.cc:1431] OP_REQUIRES failed at mpi_ops.cc:437 : Unknown: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+2019-03-29 17:48:16.953995: W tensorflow/core/framework/op_kernel.cc:1431] OP_REQUIRES failed at mpi_ops.cc:437 : Unknown: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+2019-03-29 17:48:16.965070: W tensorflow/core/framework/op_kernel.cc:1431] OP_REQUIRES failed at mpi_ops.cc:437 : Unknown: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+Traceback (most recent call last):
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1335, in _do_call
+Traceback (most recent call last):
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1335, in _do_call
+Traceback (most recent call last):
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1335, in _do_call
+Traceback (most recent call last):
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1335, in _do_call
+Traceback (most recent call last):
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1335, in _do_call
+Traceback (most recent call last):
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1335, in _do_call
+Traceback (most recent call last):
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1335, in _do_call
+Traceback (most recent call last):
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1335, in _do_call
+    return fn(*args)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1320, in _run_fn
+    return fn(*args)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1320, in _run_fn
+    return fn(*args)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1320, in _run_fn
+    return fn(*args)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1320, in _run_fn
+    return fn(*args)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1320, in _run_fn
+    return fn(*args)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1320, in _run_fn
+    return fn(*args)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1320, in _run_fn
+    options, feed_dict, fetch_list, target_list, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1408, in _call_tf_sessionrun
+    return fn(*args)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1320, in _run_fn
+    options, feed_dict, fetch_list, target_list, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1408, in _call_tf_sessionrun
+    options, feed_dict, fetch_list, target_list, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1408, in _call_tf_sessionrun
+    options, feed_dict, fetch_list, target_list, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1408, in _call_tf_sessionrun
+    options, feed_dict, fetch_list, target_list, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1408, in _call_tf_sessionrun
+    run_metadata)
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[{{node HorovodBroadcast_global_step_0}}]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    options, feed_dict, fetch_list, target_list, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1408, in _call_tf_sessionrun
+    run_metadata)
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[{{node HorovodBroadcast_global_step_0}}]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    options, feed_dict, fetch_list, target_list, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1408, in _call_tf_sessionrun
+    main()
+  File "stemdl_run.py", line 252, in main
+    options, feed_dict, fetch_list, target_list, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1408, in _call_tf_sessionrun
+    main()
+  File "stemdl_run.py", line 252, in main
+    run_metadata)
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[{{node HorovodBroadcast_global_step_0}}]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    run_metadata)
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[{{node HorovodBroadcast_global_step_0}}]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    run_metadata)
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[{{node HorovodBroadcast_global_step_0}}]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    main()
+  File "stemdl_run.py", line 252, in main
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    run_metadata)
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[{{node HorovodBroadcast_global_step_0}}]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    main()
+  File "stemdl_run.py", line 252, in main
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    main()
+  File "stemdl_run.py", line 252, in main
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    run_metadata)
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[{{node HorovodBroadcast_global_step_0}}]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    main()
+  File "stemdl_run.py", line 252, in main
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 303, in train
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 303, in train
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    sess.run(sync_op)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 930, in run
+    run_metadata)
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[{{node HorovodBroadcast_global_step_0}}]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_mean_0/_99]]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    sess.run(sync_op)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 930, in run
+    main()
+  File "stemdl_run.py", line 252, in main
+    run_metadata_ptr)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1153, in _run
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    run_metadata_ptr)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1153, in _run
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    feed_dict_tensor, options, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1329, in _do_run
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    feed_dict_tensor, options, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1329, in _do_run
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1349, in _do_call
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+    run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1349, in _do_call
+    main()
+  File "stemdl_run.py", line 252, in main
+    raise type(e)(node_def, op, message)
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    raise type(e)(node_def, op, message)
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[node HorovodBroadcast_global_step_0 (defined at <string>:271) ]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+Errors may have originated from an input operation.
+Input Source operations connected to node HorovodBroadcast_global_step_0:
+ global_step/read (defined at ../stemdl/runtime.py:180)
+
+Original stack trace for 'HorovodBroadcast_global_step_0':
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 302, in train
+    sync_op = hvd.broadcast_global_variables(0)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 106, in broadcast_global_variables
+    return broadcast_variables(tf.global_variables(), root_rank)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in broadcast_variables
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in <listcomp>
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/mpi_ops.py", line 169, in broadcast
+    return MPI_LIB.horovod_broadcast(tensor, name=name, root_rank=root_rank)
+  File "<string>", line 271, in horovod_broadcast
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py", line 800, in _apply_op_helper
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/util/deprecation.py", line 507, in new_func
+    return func(*args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 3479, in create_op
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 1961, in __init__
+    self._traceback = tf_stack.extract_stack()
+
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[node HorovodBroadcast_global_step_0 (defined at <string>:271) ]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+Errors may have originated from an input operation.
+Input Source operations connected to node HorovodBroadcast_global_step_0:
+ global_step/read (defined at ../stemdl/runtime.py:180)
+
+Original stack trace for 'HorovodBroadcast_global_step_0':
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 302, in train
+    sync_op = hvd.broadcast_global_variables(0)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 106, in broadcast_global_variables
+    return broadcast_variables(tf.global_variables(), root_rank)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in broadcast_variables
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in <listcomp>
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/mpi_ops.py", line 169, in broadcast
+    return MPI_LIB.horovod_broadcast(tensor, name=name, root_rank=root_rank)
+  File "<string>", line 271, in horovod_broadcast
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py", line 800, in _apply_op_helper
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/util/deprecation.py", line 507, in new_func
+    return func(*args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 3479, in create_op
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 1961, in __init__
+    self._traceback = tf_stack.extract_stack()
+
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 303, in train
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 303, in train
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 303, in train
+    sess.run(sync_op)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 930, in run
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 303, in train
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    sess.run(sync_op)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 930, in run
+    sess.run(sync_op)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 930, in run
+    sess.run(sync_op)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 930, in run
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    run_metadata_ptr)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1153, in _run
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    run_metadata_ptr)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1153, in _run
+    run_metadata_ptr)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1153, in _run
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    run_metadata_ptr)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1153, in _run
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    feed_dict_tensor, options, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1329, in _do_run
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 303, in train
+    feed_dict_tensor, options, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1329, in _do_run
+    feed_dict_tensor, options, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1329, in _do_run
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 303, in train
+    feed_dict_tensor, options, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1329, in _do_run
+    sess.run(sync_op)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 930, in run
+    run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1349, in _do_call
+    sess.run(sync_op)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 930, in run
+    run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1349, in _do_call
+    run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1349, in _do_call
+    run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1349, in _do_call
+    run_metadata_ptr)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1153, in _run
+    raise type(e)(node_def, op, message)
+    run_metadata_ptr)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1153, in _run
+    raise type(e)(node_def, op, message)
+    raise type(e)(node_def, op, message)
+    raise type(e)(node_def, op, message)
+    feed_dict_tensor, options, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1329, in _do_run
+    feed_dict_tensor, options, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1329, in _do_run
+    run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1349, in _do_call
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[node HorovodBroadcast_global_step_0 (defined at <string>:271) ]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+Errors may have originated from an input operation.
+Input Source operations connected to node HorovodBroadcast_global_step_0:
+ global_step/read (defined at ../stemdl/runtime.py:180)
+
+Original stack trace for 'HorovodBroadcast_global_step_0':
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 302, in train
+    sync_op = hvd.broadcast_global_variables(0)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 106, in broadcast_global_variables
+    return broadcast_variables(tf.global_variables(), root_rank)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in broadcast_variables
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in <listcomp>
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/mpi_ops.py", line 169, in broadcast
+    return MPI_LIB.horovod_broadcast(tensor, name=name, root_rank=root_rank)
+  File "<string>", line 271, in horovod_broadcast
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py", line 800, in _apply_op_helper
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/util/deprecation.py", line 507, in new_func
+    return func(*args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 3479, in create_op
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 1961, in __init__
+    self._traceback = tf_stack.extract_stack()
+
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[node HorovodBroadcast_global_step_0 (defined at <string>:271) ]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+Errors may have originated from an input operation.
+Input Source operations connected to node HorovodBroadcast_global_step_0:
+ global_step/read (defined at ../stemdl/runtime.py:180)
+
+Original stack trace for 'HorovodBroadcast_global_step_0':
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 302, in train
+    sync_op = hvd.broadcast_global_variables(0)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 106, in broadcast_global_variables
+    return broadcast_variables(tf.global_variables(), root_rank)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in broadcast_variables
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in <listcomp>
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/mpi_ops.py", line 169, in broadcast
+    return MPI_LIB.horovod_broadcast(tensor, name=name, root_rank=root_rank)
+  File "<string>", line 271, in horovod_broadcast
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py", line 800, in _apply_op_helper
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/util/deprecation.py", line 507, in new_func
+    return func(*args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 3479, in create_op
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 1961, in __init__
+    self._traceback = tf_stack.extract_stack()
+
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[node HorovodBroadcast_global_step_0 (defined at <string>:271) ]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+Errors may have originated from an input operation.
+Input Source operations connected to node HorovodBroadcast_global_step_0:
+ global_step/read (defined at ../stemdl/runtime.py:180)
+
+Original stack trace for 'HorovodBroadcast_global_step_0':
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 302, in train
+    sync_op = hvd.broadcast_global_variables(0)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 106, in broadcast_global_variables
+    return broadcast_variables(tf.global_variables(), root_rank)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in broadcast_variables
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in <listcomp>
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/mpi_ops.py", line 169, in broadcast
+    return MPI_LIB.horovod_broadcast(tensor, name=name, root_rank=root_rank)
+  File "<string>", line 271, in horovod_broadcast
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py", line 800, in _apply_op_helper
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/util/deprecation.py", line 507, in new_func
+    return func(*args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 3479, in create_op
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 1961, in __init__
+    self._traceback = tf_stack.extract_stack()
+
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[node HorovodBroadcast_global_step_0 (defined at <string>:271) ]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+Errors may have originated from an input operation.
+Input Source operations connected to node HorovodBroadcast_global_step_0:
+ global_step/read (defined at ../stemdl/runtime.py:180)
+
+Original stack trace for 'HorovodBroadcast_global_step_0':
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 302, in train
+    sync_op = hvd.broadcast_global_variables(0)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 106, in broadcast_global_variables
+    return broadcast_variables(tf.global_variables(), root_rank)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in broadcast_variables
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in <listcomp>
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/mpi_ops.py", line 169, in broadcast
+    return MPI_LIB.horovod_broadcast(tensor, name=name, root_rank=root_rank)
+  File "<string>", line 271, in horovod_broadcast
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py", line 800, in _apply_op_helper
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/util/deprecation.py", line 507, in new_func
+    return func(*args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 3479, in create_op
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 1961, in __init__
+    self._traceback = tf_stack.extract_stack()
+
+    run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1349, in _do_call
+    raise type(e)(node_def, op, message)
+    raise type(e)(node_def, op, message)
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[node HorovodBroadcast_global_step_0 (defined at <string>:271) ]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_mean_0/_99]]
+
+Errors may have originated from an input operation.
+Input Source operations connected to node HorovodBroadcast_global_step_0:
+ global_step/read (defined at ../stemdl/runtime.py:180)
+
+Original stack trace for 'HorovodBroadcast_global_step_0':
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 302, in train
+    sync_op = hvd.broadcast_global_variables(0)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 106, in broadcast_global_variables
+    return broadcast_variables(tf.global_variables(), root_rank)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in broadcast_variables
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in <listcomp>
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/mpi_ops.py", line 169, in broadcast
+    return MPI_LIB.horovod_broadcast(tensor, name=name, root_rank=root_rank)
+  File "<string>", line 271, in horovod_broadcast
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py", line 800, in _apply_op_helper
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/util/deprecation.py", line 507, in new_func
+    return func(*args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 3479, in create_op
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 1961, in __init__
+    self._traceback = tf_stack.extract_stack()
+
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[node HorovodBroadcast_global_step_0 (defined at <string>:271) ]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+Errors may have originated from an input operation.
+Input Source operations connected to node HorovodBroadcast_global_step_0:
+ global_step/read (defined at ../stemdl/runtime.py:180)
+
+Original stack trace for 'HorovodBroadcast_global_step_0':
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 302, in train
+    sync_op = hvd.broadcast_global_variables(0)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 106, in broadcast_global_variables
+    return broadcast_variables(tf.global_variables(), root_rank)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in broadcast_variables
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in <listcomp>
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/mpi_ops.py", line 169, in broadcast
+    return MPI_LIB.horovod_broadcast(tensor, name=name, root_rank=root_rank)
+  File "<string>", line 271, in horovod_broadcast
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py", line 800, in _apply_op_helper
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/util/deprecation.py", line 507, in new_func
+    return func(*args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 3479, in create_op
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 1961, in __init__
+    self._traceback = tf_stack.extract_stack()
+
+2019-03-29 17:48:24.230746: W tensorflow/core/framework/op_kernel.cc:1431] OP_REQUIRES failed at mpi_ops.cc:437 : Unknown: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+Traceback (most recent call last):
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1335, in _do_call
+    return fn(*args)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1320, in _run_fn
+    options, feed_dict, fetch_list, target_list, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1408, in _call_tf_sessionrun
+    run_metadata)
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[{{node HorovodBroadcast_global_step_0}}]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 303, in train
+    sess.run(sync_op)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 930, in run
+    run_metadata_ptr)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1153, in _run
+    feed_dict_tensor, options, run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1329, in _do_run
+    run_metadata)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1349, in _do_call
+    raise type(e)(node_def, op, message)
+tensorflow.python.framework.errors_impl.UnknownError: Horovod has been shut down. This was caused by an exception on one of the ranks or an attempt to allreduce, allgather or broadcast a tensor after one of the ranks finished execution. If the shutdown was caused by an exception, you should see the exception in the log before the first shutdown message.
+	 [[node HorovodBroadcast_global_step_0 (defined at <string>:271) ]]
+	 [[HorovodBroadcast_horovod_TD_0_BatchNorm_moving_variance_0/_97]]
+
+Errors may have originated from an input operation.
+Input Source operations connected to node HorovodBroadcast_global_step_0:
+ global_step/read (defined at ../stemdl/runtime.py:180)
+
+Original stack trace for 'HorovodBroadcast_global_step_0':
+  File "stemdl_run.py", line 276, in <module>
+    main()
+  File "stemdl_run.py", line 252, in main
+    FLAGS
+  File "../hspace/hyperspace_launcher.py", line 63, in run_hyperspace
+    random_state=777
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/gp.py", line 228, in gp_minimize
+    callback=callback, n_jobs=n_jobs)
+  File "/gpfs/alpine/lrn001/proj-shared/yngtodd/src/scikit-optimize/skopt/optimizer/base.py", line 257, in base_minimize
+    next_y = func(next_x)
+  File "../hspace/hyperspace_launcher.py", line 54, in <lambda>
+    train_saver
+  File "../hspace/medium_objective.py", line 44, in objective
+    train_loss, valid_loss = runtime.train(network_config, hyper_params, params, hyper_optimization=True)
+  File "../stemdl/runtime.py", line 302, in train
+    sync_op = hvd.broadcast_global_variables(0)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 106, in broadcast_global_variables
+    return broadcast_variables(tf.global_variables(), root_rank)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in broadcast_variables
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/__init__.py", line 118, in <listcomp>
+    for var in variables])
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/horovod/tensorflow/mpi_ops.py", line 169, in broadcast
+    return MPI_LIB.horovod_broadcast(tensor, name=name, root_rank=root_rank)
+  File "<string>", line 271, in horovod_broadcast
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/op_def_library.py", line 800, in _apply_op_helper
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/util/deprecation.py", line 507, in new_func
+    return func(*args, **kwargs)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 3479, in create_op
+    op_def=op_def)
+  File "/gpfs/alpine/proj-shared/lrn001/jqyin/native-build/latest/anaconda3/lib/python3.6/site-packages/tensorflow/python/framework/ops.py", line 1961, in __init__
+    self._traceback = tf_stack.extract_stack()
+
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@batch3>
+Subject: Job 313792: <stemdl> in cluster <summit> Exited
+
+Job <stemdl> was submitted from host <login2> by user <yngtodd> in cluster <summit> at Fri Mar 29 17:40:31 2019
+Job was executed on host(s) <1*batch3>, in queue <batch>, as user <yngtodd> in cluster <summit> at Fri Mar 29 17:40:42 2019
+                            <42*a02n07>
+                            <42*a16n17>
+</ccs/home/yngtodd> was used as the home directory.
+</gpfs/alpine/lrn001/proj-shared/yngtodd/src/stemdl/scripts> was used as the working directory.
+Started at Fri Mar 29 17:40:42 2019
+Terminated at Fri Mar 29 17:48:26 2019
+Results reported at Fri Mar 29 17:48:26 2019
+
+The output (if any) is above this job summary.
+

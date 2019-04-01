@@ -6,6 +6,7 @@ from skopt import load
 from skopt import callbacks
 from skopt import gp_minimize
 
+from .save import Saver
 from hyperspace import create_hyperspace
 from hyperspace.rover.checkpoints import JsonCheckpointSaver
 
@@ -29,6 +30,7 @@ def run_hyperspace(objective_function, search_bounds,
     hspace = create_hyperspace(search_bounds)
     space = hspace[args.jobid]
 
+    train_saver = Saver(args.hyperspace_results_path, 'train_loss')
     checkpoint_file = os.path.join(args.hyperspace_results_path, f'bayes{args.jobid}')
     checkpoint_saver = JsonCheckpointSaver(args.hyperspace_results_path, f'bayes{args.jobid}')
 
@@ -48,7 +50,8 @@ def run_hyperspace(objective_function, search_bounds,
             x, 
             network_config, 
             hyper_params, 
-            params
+            params,
+            train_saver
         ),                              # the function to minimize
         search_bounds,                  # the bounds on each dimension of x
         x0=x0,                          # already examined values for x
