@@ -1,0 +1,64 @@
+import os
+import json
+import dill
+
+from skopt import load
+from skopt import callbacks
+from skopt import gp_minimize
+
+from .save import Saver
+from hyperspace import create_hyperspace
+from hyperspace.rover.checkpoints import JsonCheckpointSaver
+
+
+def run_hyperspace(objective_function, search_bounds, 
+                   network_config, hyper_params, params, args):
+    """Launch Hyperspace on Summit.
+
+    Parameters
+    ----------
+    search_bounds : list of tuples/lists
+
+    objective_function : function
+
+    hyper_params : dict
+
+    params : dict
+
+    args : argparse object
+    """
+    hspace = create_hyperspace(search_bounds)
+    space = hspace[args.jobid]
+
+    train_saver = Saver(args.hyperspace_results_path, 'train_loss')
+    checkpoint_file = os.path.join(args.hyperspace_results_path, f'bayes{args.jobid}')
+    checkpoint_saver = JsonCheckpointSaver(args.hyperspace_results_path, f'bayes{args.jobid}')
+
+    try:
+        with open(checkpoint_file) as json_file:  
+            res = json.load(json_file)
+        x0 = res['x_iters']
+        y0 = res['func_vals']
+    except FileNotFoundError:
+        print(f'No previous save point for space hyperspace{args.jobid}')
+        # Need to randomly sample the bounds to prime the optimization.
+        x0 = space.rvs(1)
+        y0 = None
+
+    gp_minimize(
+        lambda x: objective_function(
+            x, 
+            network_config, 
+            hyper_params, 
+            params,
+            train_saver
+        ),                              # the function to minimize
+        search_bounds,                  # the bounds on each dimension of x
+        x0=x0,                          # already examined values for x
+        y0=y0,                          # observed values for x0
+        acq_func="LCB",                 # the acquisition function (optional)
+        n_calls=20,                     # the number of evaluations of f including at x0
+        n_random_starts=0,              # the number of random initialization points
+        callback=[checkpoint_saver],
+        random_state=777
+    )
