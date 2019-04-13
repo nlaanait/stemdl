@@ -259,13 +259,15 @@ def train(network_config, hyper_params, params):
             return lr_policies.decay_warmup(params, hyper_params, step)
             ## TODO: implement other policies in lr_policies
 
-        iter_size = params.get('accumulate_step', 1)
+        iter_size = params.get('accumulate_step', 0)
         skip_update_cond = tf.cast(tf.floormod(global_step, tf.constant(iter_size, dtype=tf.int32)), tf.bool)
 
         # setup optimizer
         opt_dict = {}
         train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization'], 
-                                opt_dict, learning_policy_func, run_params=params, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", loss_scaling='Backoff', 
+                                opt_dict, learning_policy_func, run_params=params, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", 
+                                loss_scaling=hyper_params.get('loss_scaling',1.0), 
+                                #loss_scaling=1.0, 
                                 skip_update_cond=skip_update_cond,
                                 on_horovod=True, model_scopes=n_net.scopes)  
 
@@ -314,7 +316,16 @@ def train(network_config, hyper_params, params):
 
     # Check if training is a restart from checkpoint
     if params['restart'] and ckpt is not None:
-        saver.restore(sess, ckpt.model_checkpoint_path)
+        # Find models in checkpoint directory
+        dirs = np.array(os.listdir(params['checkpt_dir']))
+        pattern = re.compile("meta")
+        steps = np.array([bool(re.search(pattern,itm)) for itm in dirs])
+        saved_steps = dirs[steps]
+        model_steps = np.array([int(itm.split('.')[1].split('-')[-1]) for itm in saved_steps])
+        model_steps = np.sort(model_steps)
+        ckpt_paths = [os.path.join(params['checkpt_dir'], "model.ckpt-%s" % step) for step in model_steps]
+        saver.restore(sess, ckpt_paths[-2])
+        #saver.restore(sess, ckpt.model_checkpoint_path)
         print_rank("Restoring from previous checkpoint @ step=%d" % last_step)
 
     # Train
@@ -334,12 +345,15 @@ def train(network_config, hyper_params, params):
     maxSteps  = params[ 'max_steps' ]
     logFreq   = params[ 'log_frequency' ]
     traceStep = params[ 'trace_step' ]
+    saveStep =  params['save_step']
+    validateStep = params['validate_step']
 
     while train_elf.last_step < maxSteps :
         train_elf.before_run()
 
         doLog   = train_elf.last_step % logFreq  == 0
-        doSave  = train_elf.elapsed_epochs > next_checkpoint_epoch
+        #doSave  = train_elf.elapsed_epochs > next_checkpoint_epoch
+        doSave  = train_elf.last_step > saveStep 
         doTrace = train_elf.last_step == traceStep and params['gpu_trace']
         if not doLog and not doSave and not doTrace :
             sess.run(train_op)
@@ -353,23 +367,27 @@ def train(network_config, hyper_params, params):
             if hvd.rank( ) == 0 :
                 saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
                 print_rank('Saved Checkpoint.')
-            next_checkpoint_epoch += params['epochs_per_saving']
+            #next_checkpoint_epoch += params['epochs_per_saving']
+            saveStep += params['save_step']
         elif doSave :
             summary = sess.run([train_op,  summary_merged])[-1]
             train_elf.write_summaries( summary )
             if hvd.rank( ) == 0 :
                 saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
                 print_rank('Saved Checkpoint.')
-            next_checkpoint_epoch += params['epochs_per_saving']
+            saveStep += params['save_step']
+            #next_checkpoint_epoch += params['epochs_per_saving']
         elif doTrace :
             sess.run(train_op, options=run_options, run_metadata=run_metadata)
             train_elf.save_trace(run_metadata, params[ 'trace_dir' ], params[ 'trace_step' ] )
             train_elf.before_run()
         # Here we do validation:
-        if train_elf.elapsed_epochs > next_validation_epoch:
+        #if train_elf.elapsed_epochs > next_validation_epoch:
+        if train_elf.last_step > validateStep:
             # do validation over 300 batches.
             validate(network_config, hyper_params, params, sess, dset)
-            next_validation_epoch += params['epochs_per_validation']
+            validateStep += params['validate_step']
+            #next_validation_epoch += params['epochs_per_validation']
 
 
 def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
@@ -385,7 +403,7 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
     print_rank("Running Validation over %d batches..." % num_batches)
     with tf.device(params['CPU_ID']):
         # Get Test data
-        dset.set_mode(mode='test')
+        dset.set_mode(mode='eval')
         images, labels = dset.minibatch()
         # Staging images on host
         staging_op, (images, labels) = dset.stage([images, labels])
@@ -406,6 +424,8 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
     with tf.variable_scope('horovod', reuse=True) as _:
         # Setup Neural Net
         params['IMAGE_FP16'] = False
+        if images.dtype != tf.float32:
+            images = tf.cast(images, tf.float32)
         # Setup Neural Net
         if params['network_class'] == 'resnet':
             n_net = network.ResNet(scope, params, hyper_params, network_config, images, labels,
@@ -454,7 +474,7 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
             #TODO: implement evaluation call for hybrid network
             print('not implemented')
         elif hyper_params['network_type'] == 'inverter':
-            errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
+            errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32), reduction=tf.losses.Reduction.MEAN)
             errors = tf.expand_dims(errors,axis=0)
             error_averaging = hvd.allreduce(errors)
             error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_batches)])
@@ -516,18 +536,18 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=25,
                                         operation='eval_ckpt', summary=False, verbose=False)
             if params['network_class'] == 'fcdensenet':
                 n_net = network.FCDenseNet(scope, params, hyper_params, network_config, tf.cast(images, tf.float32),
-                                            labels, operation='eval_ckpt', summary=False, verbose=False)
+                                            labels, operation='eval_ckpt', summary=False, verbose=True)
             # Build it and propagate images through it.
             n_net.build_model()
 
             # Calculate predictions
-            if hyper_params['network_type'] == 'regressor' or hyper_params['network_type'] == 'classifier':
-                labels_shape = labels.get_shape().as_list()
-                layer_params={'bias':labels_shape[-1], 'weights':labels_shape[-1],'regularize':False}
-                logits = fully_connected(n_net, layer_params, params['batch_size'],
-                                        name='linear',reuse=None)
-            else:
-                pass
+            #if hyper_params['network_type'] == 'regressor' or hyper_params['network_type'] == 'classifier':
+            #    labels_shape = labels.get_shape().as_list()
+            #    layer_params={'bias':labels_shape[-1], 'weights':labels_shape[-1],'regularize':False}
+            #    logits = fully_connected(n_net, layer_params, params['batch_size'],
+            #                            name='linear',reuse=None)
+            #else:
+            #    pass
 
             # Initialize variables
             init_op = tf.global_variables_initializer()
@@ -584,10 +604,10 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=25,
                 elif hyper_params['network_type'] == 'hybrid':
                     pass
                 elif hyper_params['network_type'] == 'inverter':
-                    errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
-                    errors = tf.expand_dims(errors,axis=0)
-                    error_averaging = hvd.allreduce(errors)
                     if params['debug']:
+                        errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
+                        errors = tf.expand_dims(errors,axis=0)
+                        error_averaging = hvd.allreduce(errors)
                         error = np.array([])
                         for _ in range(dset.num_samples):
                             rec_err, pot = sess.run([IO_ops, errors, labels])[-2:]
@@ -595,7 +615,19 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=25,
                             pot = pot.astype(np.float32)
                             print_rank('labels stats (min, max, std): (%2.2f, %2.2f, %2.2f)' % (pot.mean(), pot.sum(), pot.std()))
                         print_rank('Validation Reconstruction Error: %s' % format(error))
+                    elif params['output']:
+                       output = tf.cast(n_net.model_output, tf.float32)
+                       print('output shape',output.get_shape().as_list()) 
+                       output_dir = os.path.join(os.getcwd(),'outputs')
+                       for idx in range(dset.num_samples):
+                           output_arr, label_arr = sess.run([IO_ops, n_net.model_output, labels])[-2:]
+                           #label_arr = sess.run([IO_ops, labels])[-1]
+                           np.save(os.path.join(output_dir,'label_%d_%d_%s.npy' % (idx, hvd.rank(), format(last_step))), label_arr)
+                           np.save(os.path.join(output_dir,'output_%d_%d_%s.npy' % (idx, hvd.rank(), format(last_step))), output_arr)
                     else:
+                        errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
+                        errors = tf.expand_dims(errors,axis=0)
+                        error_averaging = hvd.allreduce(errors)
                         error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(dset.num_samples)])
                         print_rank('Validation Reconstruction Error: %3.3e' % error.mean())
                 if sleep < 0:

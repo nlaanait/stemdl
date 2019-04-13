@@ -198,9 +198,9 @@ def optimize_loss(loss,
     raise AttributeError(
         "LARC and gradient norm clipping should not be used together"
     )
-
+    
   if run_params['grad_ckpt'] is not None: 
-    import memory_saving_gradients
+    from . import memory_saving_gradients
     from tensorflow.python.ops import gradients
     def gradients_memory(ys, xs, grad_ys=None, **kwargs):
       return memory_saving_gradients.gradients(ys, xs, grad_ys, checkpoints=run_params['grad_ckpt'], **kwargs)
@@ -233,7 +233,8 @@ def optimize_loss(loss,
       )
       if "loss_scale" in summaries:
         tf.summary.scalar("loss_scale", loss_scaling.loss_scale)
-
+    else:
+        loss_scaling=None
     if dtype == 'mixed':
       opt = MixedPrecisionOptimizerWrapper(opt, loss_scale=loss_scaling)
 

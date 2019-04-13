@@ -353,10 +353,15 @@ class DatasetTFRecords(object):
         :return:
         scaled label tensor
         """
-        min_tensor = tf.constant(min_vals, dtype=tf.float64)
-        max_tensor = tf.constant(max_vals, dtype=tf.float64)
+        min_tensor = tf.constant(min_vals, dtype=tf.float32)
+        max_tensor = tf.constant(max_vals, dtype=tf.float32)
+        if label.dtype != tf.float32:
+            orig_dtype = label.dtype
+            label = tf.cast(label, tf.float32)
         scaled_label = (label - min_tensor)/(max_tensor - min_tensor)
         scaled_label = scaled_label * (scale_range[-1] - scale_range[0]) + scale_range[0]
+        if scaled_label.dtype != orig_dtype:
+            scaled_label = tf.cast(scaled_label, orig_dtype)
         return scaled_label
 
 
@@ -446,7 +451,9 @@ class DatasetLMDB(DatasetTFRecords):
             'label_dtype':'float16', 'image_dtype': 'float16', 'label_key':'potential_', 'image_key': 'cbed_'}
         self.image_keys = [bytes(self.data_specs['image_key']+str(idx), "ascii") for idx in self.records]
         self.label_keys = [bytes(self.data_specs['label_key']+str(idx), "ascii") for idx in self.records]
-    
+        if self.debug:
+            print('rank=%d, lmdb=%s, num_samples=%' %(hvd.rank(),lmdb_path, self.num_samples))
+
     def decode_image_label(self, idx):
         """
         idx: index of sample
@@ -492,9 +499,10 @@ class DatasetLMDB(DatasetTFRecords):
             if self.mode == 'train':
                 max_num_records = self.params['num_epochs'] * self.params['NUM_EXAMPLES_PER_EPOCH']
                 ds = ds.take(max_num_records)
-                ds = ds.prefetch(10)
+                ds = ds.prefetch(min(1, self.num_samples))
                 ds = ds.batch(self.params['batch_size'], drop_remainder=True)
-                ds = ds.map(self.wrapped_decode, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+                #ds = ds.map(self.wrapped_decode, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+                ds = ds.map(self.wrapped_decode)
                 iterator = ds.make_one_shot_iterator()
                 #for _ in range(self.params['batch_size']):
                 images, labels = iterator.get_next()
@@ -514,6 +522,7 @@ class DatasetLMDB(DatasetTFRecords):
             labels = tf.reshape(labels, labels_newshape)
             images = tf.reshape(images, images_newshape)
          
+            #labels= self.label_minmaxscaling(labels, 0.0, 1.0, scale_range=[0., 10.0])
         # Display the training images in the Tensorboard visualizer.
         if self.debug: tf.summary.image("potential", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
         return images, labels
