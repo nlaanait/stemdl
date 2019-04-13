@@ -67,6 +67,12 @@ def main():
                          help="""Hyper parameters.""")
     cmdline.add_argument( '--ilr', default=None, type=float,
                          help="""Initial learning rate ( hyper parameter).""")
+    cmdline.add_argument( '--warm_steps', default=int(1e6), type=int,
+                         help="""Number of Steps to do linear warm-up.""")
+    cmdline.add_argument( '--save_steps', default=int(1e3), type=int,
+                         help="""Number of Steps to save""")
+    cmdline.add_argument( '--validate_steps', default=int(1e3), type=int,
+                         help="""Number of Steps to validate.""")
     cmdline.add_argument( '--epochs_per_decay', default=None, type=float,
                          help="""Number of epochs per lr decay ( hyper parameter).""")
     cmdline.add_argument( '--scaling', default=None, type=float,
@@ -81,7 +87,7 @@ def main():
                          help="""train or eval (:validates from checkpoint)""")
     cmdline.add_argument('--cpu_threads', default=10, type=int,
                          help="""cpu threads per rank""")
-    cmdline.add_argument('--accumulate_step', default=1, type=int,
+    cmdline.add_argument('--accumulate_step', default=0, type=int,
                          help="""cpu threads per rank""")
     cmdline.add_argument( '--filetype', default=None, type=str,
                          help=""" lmdb or tfrecord""")
@@ -117,7 +123,7 @@ def main():
     else :
        params = io_utils.get_dict_from_json('input_flags.json')
        params[ 'input_flags' ] = 'input_flags.json'
-
+    params['no_jit'] = True 
     params[ 'start_time' ] = time.time( )
     params[ 'cmdline' ] = 'unknown'
     params['accumulate_step'] = FLAGS.accumulate_step
@@ -157,7 +163,8 @@ def main():
         params['debug'] = FLAGS.debug
     else: 
         params['debug'] = False
-
+    params['save_step'] = FLAGS.save_steps 
+    params['validate_step']= FLAGS.validate_steps 
     #group=None will follow default horovod behavior 
     #FLAGS.hvd_group= 'layer'
     params['hvd_group'] = FLAGS.hvd_group
@@ -174,11 +181,11 @@ def main():
     checkpt_dir = params[ 'checkpt_dir' ]
     # Also need a directory within the checkpoint dir for event files coming from eval
     eval_dir = os.path.join( checkpt_dir, '_eval' )
-    if hvd.rank() == 0:
+    #if hvd.rank() == 0:
         #print('ENVIRONMENT VARIABLES: %s' %format(os.environ))
-        print( 'Creating checkpoint directory %s' % checkpt_dir )
-    tf.gfile.MakeDirs( checkpt_dir )
-    tf.gfile.MakeDirs( eval_dir )
+    #    print( 'Creating checkpoint directory %s' % checkpt_dir )
+    #tf.gfile.MakeDirs( checkpt_dir )
+    #tf.gfile.MakeDirs( eval_dir )
 
     if params[ 'gpu_trace' ] :
         if tf.gfile.Exists( params[ 'trace_dir' ] ) :
@@ -189,7 +196,6 @@ def main():
 
     params['train_dir'] = checkpt_dir
     params['eval_dir'] = eval_dir
-
     # load network config file and hyper_parameters
     network_config = io_utils.load_json_network_config(params['network_config'])
     hyper_params = io_utils.load_json_hyper_params(params['hyper_params'])
@@ -202,7 +208,11 @@ def main():
        hyper_params[ 'num_epochs_per_decay' ] = FLAGS.epochs_per_decay
     if FLAGS.bn_decay is not None :
        hyper_params[ 'batch_norm' ][ 'decay' ] = FLAGS.bn_decay
+    hyper_params['num_steps_in_warm_up'] = FLAGS.warm_steps 
     
+    #cap max warm-up learning rate by ilr
+    hyper_params["warm_up_max_learning_rate"] = hyper_params['initial_learning_rate'] * hvd.size()/2
+
     # print relevant params passed to training 
     if hvd.rank( ) == 0 :
        if os.path.isfile( 'cmd.log' ) :
@@ -217,12 +227,14 @@ def main():
        print("### params passed at CLI")
        _input = json.dumps(vars(FLAGS), indent=4)
        print("%s" % _input) 
-
+  
     # train or evaluate
     if params['mode'] == 'train':
         runtime.train(network_config, hyper_params, params)
     elif params['mode'] == 'eval':
         params[ 'IMAGE_FP16' ] = False
+        params['output'] = True
+        params['debug'] = False
         runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, sleep=-1, num_batches=20)
         
     # copy checkpoints from nvme
