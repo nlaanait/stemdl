@@ -52,7 +52,13 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
                                 name='linear', wd=hyper_params['weight_decay'])
         _ = calculate_loss_regressor(output, labels, params, hyper_params)
     if hyper_params['network_type'] == 'inverter':
-        _ = calculate_loss_regressor(n_net.model_output, labels, params, hyper_params)
+        #mask = np.ones((512,512), dtype=np.float32)
+        #snapshot = slice(512// 4, 3 * 512//4)
+        #mask[snapshot, snapshot] = 0.0 
+        #mask = np.expand_dims(np.expand_dims(mask, axis=0), axis=0)
+        #weight = tf.constant(mask)
+        weight=None
+        _ = calculate_loss_regressor(n_net.model_output, labels, params, hyper_params, weight=weight)
     if hyper_params['network_type'] == 'fft_inverter':
         n_net.model_output = tf.exp(1.j * tf.cast(n_net.model_output, tf.complex64))
         psi_pos = tf.ones([1,16,512,512], dtype=tf.complex64)
@@ -79,6 +85,7 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
     regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
     # Calculate the total loss 
     total_loss = tf.add_n(losses + regularization, name='total_loss')
+    total_loss = tf.cast(total_loss, tf.float32)
     # Generate summaries for the losses and get corresponding op
     loss_averages_op = _add_loss_summaries(total_loss, losses, summaries=summary)
     return total_loss, loss_averages_op
@@ -138,16 +145,16 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
         weight = 1.0
     if global_step is None:
         global_step = 1
-    params = hyper_params['loss_function']
-    assert params['type'] == 'Huber' or params['type'] == 'MSE' \
-    or params['type'] == 'LOG' or params['type'] == 'MSE_PAIR', "Type of regression loss function must be 'Huber' or 'MSE'"
-    if params['type'] == 'Huber':
+    loss_params = hyper_params['loss_function']
+    assert loss_params['type'] == 'Huber' or loss_params['type'] == 'MSE' \
+    or loss_params['type'] == 'LOG' or loss_params['type'] == 'MSE_PAIR' or loss_params['type'] == 'ABS_DIFF', "Type of regression loss function must be 'Huber' or 'MSE'"
+    if loss_params['type'] == 'Huber':
         # decay the residual cutoff exponentially
         decay_steps = int(params['NUM_EXAMPLES_PER_EPOCH'] / params['batch_size'] \
-                          * params['residual_num_epochs_decay'])
-        initial_residual = params['residual_initial']
-        min_residual = params['residual_minimum']
-        decay_residual = params['residual_decay_factor']
+                          * loss_params['residual_num_epochs_decay'])
+        initial_residual = loss_params['residual_initial']
+        min_residual = loss_params['residual_minimum']
+        decay_residual = loss_params['residual_decay_factor']
         residual_tol = tf.train.exponential_decay(initial_residual, global_step, decay_steps,
                                                   decay_residual, staircase=False)
         # cap the residual cutoff to some min value.
@@ -157,11 +164,14 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
         # calculate the cost
         cost = tf.losses.huber_loss(labels, weights=weight, predictions=net_output, delta=residual_tol,
                                     reduction=tf.losses.Reduction.MEAN)
-    if params['type'] == 'MSE':
+    if loss_params['type'] == 'MSE':
         cost = tf.losses.mean_squared_error(labels, weights=weight, predictions=net_output,
                                             reduction=tf.losses.Reduction.MEAN)
-    if params['type'] == 'MSE_PAIR':
+    if loss_params['type'] == 'ABS_DIFF':
+        cost = tf.losses.absolute_difference(labels, weights=weight, predictions=net_output,
+                                            reduction=tf.losses.Reduction.MEAN)
+    if loss_params['type'] == 'MSE_PAIR':
         cost = tf.losses.mean_pairwise_squared_error(labels, net_output, weights=weight)
-    if params['type'] == 'LOG':
+    if loss_params['type'] == 'LOG':
         cost = tf.losses.log_loss(labels, weights=weight, predictions=net_output, reduction=tf.losses.Reduction.MEAN)
     return cost
