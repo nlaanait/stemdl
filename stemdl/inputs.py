@@ -443,12 +443,19 @@ class DatasetLMDB(DatasetTFRecords):
         if self.debug: print_rank('lmdb files %s' %format(lmdb_files))
         lmdb_path = os.path.join(lmdb_dir, 'batch_%s_%d.db' %  (self.mode, int(hvd.rank())))
         self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
-        self.num_samples = (self.env.stat()['entries'] - 4)//2 ## TODO: remove hard-coded # of headers by storing #samples key, val
+        self.num_samples = (self.env.stat()['entries'] - 6)//2 ## TODO: remove hard-coded # of headers by storing #samples key, val
         self.first_record = 0
         self.records = np.arange(self.first_record, self.num_samples)
-        if self.params['dataset'] == '2d_reconstruction': ## TODO: this dict can be populated from lmdb headers
-            self.data_specs={'label_shape': [1,512,512], 'image_shape': [1024, 512, 512], 
-            'label_dtype':'float16', 'image_dtype': 'float16', 'label_key':'potential_', 'image_key': 'cbed_'}
+        with self.env.begin(write=False) as txn:
+            input_shape = np.frombuffer(txn.get(b"input_shape"), dtype='int64')
+            output_shape = np.frombuffer(txn.get(b"output_shape"), dtype='int64')
+            input_dtype = np.dtype(txn.get(b"input_dtype").decode("ascii"))
+            output_dtype = np.dtype(txn.get(b"output_dtype").decode("ascii"))
+            output_name = txn.get(b"output_name").decode("ascii")
+            input_name = txn.get(b"input_name").decode("ascii")
+            
+        self.data_specs={'label_shape': list(output_shape), 'image_shape': list(input_shape), 
+            'label_dtype':output_dtype, 'image_dtype': input_dtype, 'label_key':output_name, 'image_key': input_name}
         self.image_keys = [bytes(self.data_specs['image_key']+str(idx), "ascii") for idx in self.records]
         self.label_keys = [bytes(self.data_specs['label_key']+str(idx), "ascii") for idx in self.records]
         if self.debug:
@@ -504,18 +511,23 @@ class DatasetLMDB(DatasetTFRecords):
                 #ds = ds.map(self.wrapped_decode, num_parallel_calls=tf.data.experimental.AUTOTUNE)
                 ds = ds.map(self.wrapped_decode)
                 iterator = ds.make_one_shot_iterator()
-                #for _ in range(self.params['batch_size']):
-                images, labels = iterator.get_next()
-                    #images.append(tf.reshape(image, self.data_specs['image_shape']))
-                    #labels.append(tf.reshape(label, self.data_specs['label_shape']))
+                images, labels = [],[]
+                for _ in range(self.params['batch_size']):
+                    image, label = iterator.get_next()
+                    images.append(tf.reshape(image, self.data_specs['image_shape']))
+                    labels.append(tf.reshape(label, self.data_specs['label_shape']))
             elif self.mode == 'eval':
                 ds = ds.batch(self.params['batch_size'])
-                ds = ds.map(self.wrapped_decode, num_parallel_calls=6)
+                ds = ds.map(self.wrapped_decode)
                 iterator = ds.make_one_shot_iterator()
-                images, labels = iterator.get_next() 
+                images, labels = [],[]
+                for _ in range(self.params['batch_size']):
+                    image, label = iterator.get_next()
+                    images.append(tf.reshape(image, self.data_specs['image_shape']))
+                    labels.append(tf.reshape(label, self.data_specs['label_shape']))
 
-            #images = tf.parallel_stack(images)
-            #labels = tf.parallel_stack(labels)
+            images = tf.parallel_stack(images)
+            labels = tf.parallel_stack(labels)
             # reshape them to the expected shape:
             labels_newshape = [self.params['batch_size']] + self.data_specs['label_shape']
             images_newshape = [self.params['batch_size']] + self.data_specs['image_shape']
