@@ -469,13 +469,15 @@ class ConvNet(object):
         shape = [input.shape[1].value]
         epsilon = self.hyper_params["batch_norm"]["epsilon"]
         decay = self.hyper_params["batch_norm"]["decay"]
+        decay = 0.9
         is_training = 'train' == self.operation
         # TODO: scaling and centering during normalization need to be hyperparams. Now hardwired.
-        param_initializers={
-              'beta': tf.constant_initializer(0.0),
-              'gamma': tf.constant_initializer(0.1),
-        }
-        output = tf.contrib.layers.batch_norm(input, decay=decay, scale=True, epsilon=epsilon,zero_debias_moving_mean=False,is_training=is_training,fused=True,data_format='NCHW',renorm=False,param_initializers=param_initializers)
+        #param_initializers={
+        #      'beta': tf.constant_initializer(0.0),
+        #      'gamma': tf.constant_initializer(0.1),
+        #}
+        #output = tf.contrib.layers.batch_norm(input, decay=decay, scale=True, epsilon=epsilon,zero_debias_moving_mean=False,is_training=is_training,fused=True,data_format='NCHW',renorm=False,param_initializers=param_initializers)
+        output = tf.contrib.layers.batch_norm(input, decay=decay, scale=True, epsilon=epsilon,zero_debias_moving_mean=False,is_training=is_training,fused=True,data_format='NCHW',renorm=False)
         # output = input
         # Keep tabs on the number of weights
         self.num_weights += 2 * shape[0]  # scale and offset (beta, gamma)
@@ -1068,7 +1070,7 @@ class FCDenseNet(ConvNet):
         Also add skip connection from skip hub to current output
         """
         out, _ = self._deconv(input, layer_params['deconv'], scope)
-        out = tf.concat([out,block_connect], axis=1)
+        out = tf.concat([out,block_connect*0.1], axis=1)
         return out
 
     def _transition_down(self, input, layer_params, scope):
@@ -1078,7 +1080,10 @@ class FCDenseNet(ConvNet):
         """
         # BN >> RELU >> 1x1 conv >> Dropout
         conv_layer_params = layer_params['conv']
-        out = self._batch_norm(input=input)
+        if layer_params.get('batch_norm', False):
+            out = self._batch_norm(input=input)
+        else:
+            out = input
         out = self._activate(input=out, params=conv_layer_params)
         out, _ = self._conv(input=out, params=conv_layer_params)
         keep_prob = layer_params.get('dropout', None)
