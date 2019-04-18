@@ -263,8 +263,8 @@ def train(network_config, hyper_params, params):
         skip_update_cond = tf.cast(tf.floormod(global_step, tf.constant(iter_size, dtype=tf.int32)), tf.bool)
 
         # setup optimizer
-        opt_dict = {}
-        train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization'], 
+        opt_dict = hyper_params['optimization']['params'] 
+        train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization']['name'], 
                                 opt_dict, learning_policy_func, run_params=params, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", 
                                 loss_scaling=hyper_params.get('loss_scaling',1.0), 
                                 #loss_scaling=1.0, 
@@ -474,11 +474,17 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
             #TODO: implement evaluation call for hybrid network
             print('not implemented')
         elif hyper_params['network_type'] == 'inverter':
-            errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32), reduction=tf.losses.Reduction.MEAN)
+            loss_params = hyper_params['loss_function']
+            if loss_params['type'] == 'MSE_PAIR':
+                errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
+                loss_label= 'MSE_PAIR'
+            else: 
+                loss_label= 'ABS_DIFF'
+                errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32), reduction=tf.losses.Reduction.MEAN)
             errors = tf.expand_dims(errors,axis=0)
             error_averaging = hvd.allreduce(errors)
             error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_batches)])
-            print_rank('Validation Reconstruction Error: %3.3e' % error.mean())
+            print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, error.mean()))
 
 
 def validate_ckpt(network_config, hyper_params, params,num_batches=25,
