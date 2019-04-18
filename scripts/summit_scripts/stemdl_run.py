@@ -73,8 +73,8 @@ def main():
                          help="""Number of Steps to save""")
     cmdline.add_argument( '--validate_steps', default=int(1e3), type=int,
                          help="""Number of Steps to validate.""")
-    cmdline.add_argument( '--epochs_per_decay', default=None, type=float,
-                         help="""Number of epochs per lr decay ( hyper parameter).""")
+    cmdline.add_argument( '--decay_steps', default=int(1e3), type=int,
+                         help="""Number of steps per lr decay ( hyper parameter).""")
     cmdline.add_argument( '--scaling', default=None, type=float,
                          help="""Scaling (hyper parameter).""")
     cmdline.add_argument( '--bn_decay', default=None, type=float,
@@ -202,16 +202,16 @@ def main():
 
     if FLAGS.ilr  is not None :
        hyper_params[ 'initial_learning_rate' ] = FLAGS.ilr
+       #hyper_params[ 'initial_learning_rate' ] = 1e-5 
     if FLAGS.scaling  is not None :
        hyper_params[ 'scaling' ] = FLAGS.scaling
-    if FLAGS.epochs_per_decay is not None :
-       hyper_params[ 'num_epochs_per_decay' ] = FLAGS.epochs_per_decay
     if FLAGS.bn_decay is not None :
        hyper_params[ 'batch_norm' ][ 'decay' ] = FLAGS.bn_decay
     hyper_params['num_steps_in_warm_up'] = FLAGS.warm_steps 
-    
+    hyper_params['num_steps_per_warm_up'] = FLAGS.warm_steps/10 
+    hyper_params['num_steps_per_decay'] = FLAGS.decay_steps 
     #cap max warm-up learning rate by ilr
-    hyper_params["warm_up_max_learning_rate"] = hyper_params['initial_learning_rate'] * hvd.size()/2
+    hyper_params["warm_up_max_learning_rate"] = min(1, hyper_params['initial_learning_rate'] * hvd.size())
 
     # print relevant params passed to training 
     if hvd.rank( ) == 0 :
