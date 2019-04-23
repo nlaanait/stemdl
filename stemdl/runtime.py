@@ -208,7 +208,8 @@ def train(network_config, hyper_params, params):
         # Build model, forward propagate, and calculate loss
         scope = 'horovod'
         summary = False
-
+        if params['debug']:
+            summary=True
         print_rank('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
                                                                 format(labels.get_shape())))
 
@@ -219,13 +220,13 @@ def train(network_config, hyper_params, params):
             # Setup Neural Net
             if params['network_class'] == 'resnet':
                 n_net = network.ResNet(scope, params, hyper_params, network_config, images, labels,
-                                        operation='train', summary=False, verbose=False)
+                                        operation='train', summary=summary, verbose=False)
             if params['network_class'] == 'cnn':
                 n_net = network.ConvNet(scope, params, hyper_params, network_config, images, labels,
-                                        operation='train', summary=False, verbose=False)
+                                        operation='train', summary=summary, verbose=False)
             if params['network_class'] == 'fcdensenet':
                 n_net = network.FCDenseNet(scope, params, hyper_params, network_config, images, labels,
-                                        operation='train', summary=False, verbose=True)
+                                        operation='train', summary=summary, verbose=True)
             
                 
             ###### XLA compilation #########    
@@ -262,10 +263,14 @@ def train(network_config, hyper_params, params):
         iter_size = params.get('accumulate_step', 0)
         skip_update_cond = tf.cast(tf.floormod(global_step, tf.constant(iter_size, dtype=tf.int32)), tf.bool)
 
+        if params['IMAGE_FP16']:
+            opt_type=tf.float16
+        else:
+            opt_type=tf.float32
         # setup optimizer
         opt_dict = hyper_params['optimization']['params'] 
         train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization']['name'], 
-                                opt_dict, learning_policy_func, run_params=params, hyper_params=hyper_params, iter_size=iter_size, dtype="mixed", 
+                                opt_dict, learning_policy_func, run_params=params, hyper_params=hyper_params, iter_size=iter_size, dtype=opt_type, 
                                 loss_scaling=hyper_params.get('loss_scaling',1.0), 
                                 #loss_scaling=1.0, 
                                 skip_update_cond=skip_update_cond,
@@ -289,6 +294,10 @@ def train(network_config, hyper_params, params):
     if hvd.rank() == 0:
         summary_writer = tf.summary.FileWriter(params['checkpt_dir'], sess.graph)
         # Add Summary histograms for trainable variables and their gradients
+    if params['debug']:
+        predic = tf.transpose(n_net.model_output, perm=[0,2,3,1])
+        output_summary = tf.summary.image("prediction", predic, max_outputs=4) 
+    
     summary_merged = tf.summary.merge_all()
 
      ###############################
@@ -347,15 +356,16 @@ def train(network_config, hyper_params, params):
     traceStep = params[ 'trace_step' ]
     saveStep =  params['save_step']
     validateStep = params['validate_step']
+    summaryStep = logFreq * 50
 
     while train_elf.last_step < maxSteps :
         train_elf.before_run()
 
         doLog   = train_elf.last_step % logFreq  == 0
-        #doSave  = train_elf.elapsed_epochs > next_checkpoint_epoch
         doSave  = train_elf.last_step > saveStep 
+        doSumm  = train_elf.last_step > summaryStep 
         doTrace = train_elf.last_step == traceStep and params['gpu_trace']
-        if not doLog and not doSave and not doTrace :
+        if not doLog and not doSave and not doTrace and not doSumm:
             sess.run(train_op)
         elif doLog and not doSave :
             loss_value, lr = sess.run( [ train_op, total_loss, learning_rate ] )[ -2: ]
@@ -369,9 +379,14 @@ def train(network_config, hyper_params, params):
                 print_rank('Saved Checkpoint.')
             #next_checkpoint_epoch += params['epochs_per_saving']
             saveStep += params['save_step']
+        elif doSumm and params['debug']:
+            if hvd.rank() == 0:
+                summary = sess.run([train_op,  summary_merged])[-1]
+                train_elf.write_summaries( summary )
+            summaryStep += logFreq * 50
         elif doSave :
-            summary = sess.run([train_op,  summary_merged])[-1]
-            train_elf.write_summaries( summary )
+            #summary = sess.run([train_op,  summary_merged])[-1]
+            #train_elf.write_summaries( summary )
             if hvd.rank( ) == 0 :
                 saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
                 print_rank('Saved Checkpoint.')

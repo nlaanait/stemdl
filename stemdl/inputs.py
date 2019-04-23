@@ -440,7 +440,6 @@ class DatasetLMDB(DatasetTFRecords):
         self.mode = self.params['mode']
         lmdb_dir = self.params['data_dir']
         lmdb_files = os.listdir(lmdb_dir)
-        if self.debug: print_rank('lmdb files %s' %format(lmdb_files))
         lmdb_path = os.path.join(lmdb_dir, 'batch_%s_%d.db' %  (self.mode, int(hvd.rank())))
         self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
         self.num_samples = (self.env.stat()['entries'] - 6)//2 ## TODO: remove hard-coded # of headers by storing #samples key, val
@@ -459,7 +458,7 @@ class DatasetLMDB(DatasetTFRecords):
         self.image_keys = [bytes(self.data_specs['image_key']+str(idx), "ascii") for idx in self.records]
         self.label_keys = [bytes(self.data_specs['label_key']+str(idx), "ascii") for idx in self.records]
         if self.debug:
-            print('rank=%d, lmdb=%s, num_samples=%' %(hvd.rank(),lmdb_path, self.num_samples))
+            print('rank=%d, lmdb=%s, num_samples=%d' %(hvd.rank(),lmdb_path, self.num_samples))
 
     def decode_image_label(self, idx):
         """
@@ -478,11 +477,11 @@ class DatasetLMDB(DatasetTFRecords):
         image = np.frombuffer(image_bytes, dtype=self.data_specs['image_dtype'])
         #image = image.reshape(self.data_specs['image_shape'])
 
-        if self.debug: 
-            print_rank('rank=%d, read image %s %s and label %s %s from lmdb' %(hvd.rank(),format(image.shape), 
-            format(image.dtype), format(label.shape), format(label.dtype)))
-        if self.debug:
-            print_rank('time to read and convert to tensor: %2.2f' % (time.time()-t))
+        #if self.debug: 
+        #    print_rank('rank=%d, read image %s %s and label %s %s from lmdb' %(hvd.rank(),format(image.shape), 
+        #    format(image.dtype), format(label.shape), format(label.dtype)))
+        #if self.debug:
+        #    print_rank('time to read and convert to tensor: %2.2f' % (time.time()-t))
         return image, label
 
             
@@ -523,7 +522,8 @@ class DatasetLMDB(DatasetTFRecords):
                 images, labels = [],[]
                 for _ in range(self.params['batch_size']):
                     image, label = iterator.get_next()
-                    images.append(tf.reshape(image, self.data_specs['image_shape']))
+                    image = tf.reshape(image, self.data_specs['image_shape'])
+                    images.append(image)
                     labels.append(tf.reshape(label, self.data_specs['label_shape']))
 
             images = tf.parallel_stack(images)
@@ -536,7 +536,9 @@ class DatasetLMDB(DatasetTFRecords):
          
             #labels= self.label_minmaxscaling(labels, 0.0, 1.0, scale_range=[0., 10.0])
         # Display the training images in the Tensorboard visualizer.
-        if self.debug: tf.summary.image("potential", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
+        if self.debug: 
+            tf.summary.image("potential", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
+            tf.summary.image("images", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4)
         return images, labels
 
 
