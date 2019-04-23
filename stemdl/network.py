@@ -42,6 +42,8 @@ class ConvNet(object):
         self.images = images
         if self.params['IMAGE_FP16']: #and self.images.dtype is not tf.float16 and operation == 'train':
             self.images = tf.cast(self.images, tf.float16)
+        else:
+            self.images = tf.cast(self.images, tf.float32)
         image_shape = images.get_shape().as_list()
         if self.params['TENSOR_FORMAT'] != 'NCHW' :
             # change from NHWC to NCHW format
@@ -1064,13 +1066,20 @@ class FCDenseNet(ConvNet):
         with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
             self._calculate_loss_regressor()
 
+    def skip_strength(self):
+        coeff = self._cpu_variable_init('skip_strength', regularize=False, shape=[], initializer=tf.zeros_initializer())
+        strength = tf.math.erf(tf.nn.relu(coeff))
+        return strength 
+
     def _transition_up(self, input, block_connect, layer_params, scope):
         """
         Transition up block : transposed deconvolution.
         Also add skip connection from skip hub to current output
         """
+        strength = self.skip_strength()
         out, _ = self._deconv(input, layer_params['deconv'], scope)
-        out = tf.concat([out,block_connect*0.1], axis=1)
+        block_connect = tf.scalar_mul(strength, block_connect)
+        out = tf.concat([out,block_connect], axis=1)
         return out
 
     def _transition_down(self, input, layer_params, scope):

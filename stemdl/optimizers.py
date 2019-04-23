@@ -384,6 +384,7 @@ def post_process_gradients(grads_and_vars, summaries, lr,
           var_dtype = layer_vars[0].dtype
           var_nom = tf.norm(tensor=tf.cast(var_vec, tf.float32))
           grad_norm = tf.norm(tensor=tf.cast(grad_vec, tf.float32))
+          #grad_norm = tf.norm(grad_vec)
           if hyper_params['LARC']:
             check_params( config=hyper_params,
                           required_dict={'LARC_eta': float},
@@ -414,11 +415,13 @@ def post_process_gradients(grads_and_vars, summaries, lr,
                           )
             min_update = hyper_params.get('LSAL_min_update', 1e-7)
             eps = hyper_params.get('LSAL_epsilon', 1e-7)  
-            grad_updates = [ tf.maximum( 1 + tf.log1p( 1/ (grad_norm + eps)), min_update) * grad 
+            grad_updates = [ ( 1 + tf.log1p( 1/ (grad_norm + eps))) * grad 
                               for grad in layer_grads]
           else:
              grad_updates = layer_grads
-          new_grads_vars_layer = [( tf.saturate_cast(grad_update, var_dtype ), var) 
+          #new_grads_vars_layer = [( tf.saturate_cast(grad_update, var_dtype ), var) 
+          #                            for grad_update, var in zip(grad_updates, layer_vars)]      
+          new_grads_vars_layer = [( grad_update,  var) 
                                       for grad_update, var in zip(grad_updates, layer_vars)]      
           new_grads_vars.append(new_grads_vars_layer)
     new_grads_vars = list(chain.from_iterable(new_grads_vars))
