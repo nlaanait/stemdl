@@ -43,8 +43,9 @@ class MixedPrecisionOptimizerWrapper(tf.train.Optimizer):
 
     # collecting regularization functions
     reg_var_funcs = tf.get_collection('REGULARIZATION_FUNCTIONS')
+    print(reg_var_funcs)
     reg_funcs = dict(map(lambda x: (x[0].name, x[1]), reg_var_funcs))
-
+    # reg_funcs = [None]
     # creating FP-32 variables and filling the fp32 dict
     grads_and_vars_fp32 = []
     with tf.variable_scope('FP32-master-copy'):

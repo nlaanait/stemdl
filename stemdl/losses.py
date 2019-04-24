@@ -85,6 +85,7 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
     regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
     # Calculate the total loss 
     total_loss = tf.add_n(losses + regularization, name='total_loss')
+    # return tf.add_n(losses), None
     total_loss = tf.cast(total_loss, tf.float32)
     # Generate summaries for the losses and get corresponding op
     loss_averages_op = _add_loss_summaries(total_loss, losses, summaries=summary)
@@ -141,9 +142,9 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
     :param params: dictionary, specifies the objective to use
     :return: cost
     """
-    weight = 1./ hyper_params.get('scaling', 1)
-    #if weight is None:
-    #    weight = 1.0
+    # weight = 1./ hyper_params.get('scaling', 1)
+    if weight is None:
+        weight = 1.0
     if global_step is None:
         global_step = 1
     loss_params = hyper_params['loss_function']
@@ -176,7 +177,6 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
     #    cost = tf.losses.absolute_difference(labels, weights=weight, predictions=net_output,
                                             #reduction=tf.losses.Reduction.SUM)
     if loss_params['type'] == 'MSE_PAIR':
-        weight = 1.
         cost = tf.losses.mean_pairwise_squared_error(labels, net_output, weights=weight)
     if loss_params['type'] == 'LOG':
         cost = tf.losses.log_loss(labels, weights=weight, predictions=net_output, reduction=tf.losses.Reduction.MEAN)
