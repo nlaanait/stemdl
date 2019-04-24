@@ -213,7 +213,7 @@ def train(network_config, hyper_params, params):
         print_rank('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
                                                                 format(labels.get_shape())))
 
-        with tf.variable_scope('horovod', 
+        with tf.variable_scope('horovod',
                 # Force all variables to be stored as float32
                 custom_getter=float32_variable_storage_getter) as _:
 
@@ -264,7 +264,7 @@ def train(network_config, hyper_params, params):
         skip_update_cond = tf.cast(tf.floormod(global_step, tf.constant(iter_size, dtype=tf.int32)), tf.bool)
 
         if params['IMAGE_FP16']:
-            opt_type=tf.float16
+            opt_type='mixed'
         else:
             opt_type=tf.float32
         # setup optimizer
