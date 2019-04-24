@@ -67,6 +67,29 @@ OPTIMIZER_SUMMARIES = [
 ]
 
 
+def scale_loss(loss_tensor, loss_scale):
+  if loss_scale is None:
+    loss_scale = 1.0
+  elif isinstance(loss_scale, float):
+    loss_scale = loss_scale
+  elif isinstance(loss_scale, AutomaticLossScaler):
+    loss_scaler = loss_scale
+    loss_scale = loss_scaler.loss_scale
+  return loss_tensor * loss_scale, loss_scale
+
+
+def scale_grads(grads_and_vars, scale):
+  scaled_grads_and_vars = []
+  for grad, var in grads_and_vars:
+    if grad is not None:
+      if isinstance(grad, tf.IndexedSlices):
+        grad_values = grad.values * scale
+        grad = tf.IndexedSlices(grad_values, grad.indices, grad.dense_shape)
+      else:
+        grad *= scale
+    scaled_grads_and_vars.append((grad, var))
+  return scaled_grads_and_vars
+
 # necessary to redefine this function for pure float16 support
 def get_regularization_loss(scope=None, name="total_regularization_loss"):
   """Gets the total regularization loss.
@@ -113,9 +136,9 @@ def reduce_gradients(grads_and_vars, on_horovod, model=None, run_params=None):
                 for i in range(len(grads_and_vars) // num_grads_per_group)]
     
         if len(grads_and_vars) % num_grads_per_group != 0:
-            group_ids.append(register_group(len(grads) % num_grads_per_group, 
+            group_ids.append(register_group(len(grads_and_vars) % num_grads_per_group, 
                                         "%s:%s:%d" % (grads_and_vars[0][0].name, grads_and_vars[-1][0].name,
-                                        len(grads) // num_grads_per_group + 1)))
+                                        len(grads_and_vars) // num_grads_per_group + 1)))
     if size() > 1:
       averaged_grads_and_vars = []
       with tf.name_scope("all_reduce"):
@@ -235,13 +258,20 @@ def optimize_loss(loss,
         tf.summary.scalar("loss_scale", loss_scaling.loss_scale)
     else:
         loss_scaling=None
-    if dtype == 'mixed':
-      opt = MixedPrecisionOptimizerWrapper(opt, loss_scale=loss_scaling)
+
+    if dtype == 'mixed' or dtype == tf.float16:
+      # apply loss scaling
+      loss, scale = scale_loss(loss, loss_scaling)
+
 
     # Compute gradients.
     grads_and_vars = opt.compute_gradients(
         loss, colocate_gradients_with_ops=True, var_list=var_list
     )
+
+    if dtype == 'mixed' or dtype == tf.float16:
+      # Scale gradients
+      grads_and_vars = scale_grads(grads_and_vars, scale)
 
     if on_horovod:
       if iter_size > 1 :
@@ -336,8 +366,8 @@ def post_process_gradients(grads_and_vars, summaries, lr,
     )
 
   # Optionally clip gradients by global norm.
-  if clip_gradients is not None:
-    grads_and_vars = _clip_gradients_by_norm(grads_and_vars, clip_gradients)
+  # if clip_gradients is not None:
+    # grads_and_vars = _clip_gradients_by_norm(grads_and_vars, clip_gradients)
 
   # Add histograms for variables, gradients and gradient norms.
   for gradient, variable in grads_and_vars:
@@ -383,8 +413,8 @@ def post_process_gradients(grads_and_vars, summaries, lr,
           var_vec = tf.concat([tf.expand_dims(tf.reshape(var, [-1]), 0) for var in layer_vars], 1)
           var_dtype = layer_vars[0].dtype
           var_nom = tf.norm(tensor=tf.cast(var_vec, tf.float32))
-          grad_norm = tf.norm(tensor=tf.cast(grad_vec, tf.float32))
-          #grad_norm = tf.norm(grad_vec)
+          # grad_norm = tf.norm(tensor=tf.cast(grad_vec, tf.float32))
+          grad_norm = tf.norm(grad_vec)
           if hyper_params['LARC']:
             check_params( config=hyper_params,
                           required_dict={'LARC_eta': float},
@@ -415,12 +445,12 @@ def post_process_gradients(grads_and_vars, summaries, lr,
                           )
             min_update = hyper_params.get('LSAL_min_update', 1e-7)
             eps = hyper_params.get('LSAL_epsilon', 1e-7)  
-            grad_updates = [ ( 1 + tf.log1p( 1/ (grad_norm + eps))) * grad 
+            grad_updates = [ ( 1 + tf.log1p( grad_norm ** (-1) )) * grad
                               for grad in layer_grads]
           else:
              grad_updates = layer_grads
           #new_grads_vars_layer = [( tf.saturate_cast(grad_update, var_dtype ), var) 
-          #                            for grad_update, var in zip(grad_updates, layer_vars)]      
+          #                           for grad_update, var in zip(grad_updates, layer_vars)]      
           new_grads_vars_layer = [( grad_update,  var) 
                                       for grad_update, var in zip(grad_updates, layer_vars)]      
           new_grads_vars.append(new_grads_vars_layer)
