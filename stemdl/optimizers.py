@@ -90,6 +90,24 @@ def scale_grads(grads_and_vars, scale):
     scaled_grads_and_vars.append((grad, var))
   return scaled_grads_and_vars
 
+
+def apply_gradients(opt, grads_and_vars, loss_scaler, global_step, name=None):
+    def apply_ops_wrapper():
+      update_op = opt.apply_gradients(grads_and_vars,
+                                                  global_step, name)
+      return update_op
+
+    if loss_scaler:
+      grad_has_nans, grad_amax = AutomaticLossScaler.check_grads(grads_and_vars)
+      should_skip_update = tf.logical_or(tf.is_inf(grad_amax), grad_has_nans)
+      loss_scale_update_op = loss_scaler.update_op(grad_has_nans,
+                                                         grad_amax)
+      with tf.control_dependencies([loss_scale_update_op]):
+        return tf.cond(should_skip_update, tf.no_op, apply_ops_wrapper)
+    else:
+      return apply_ops_wrapper()
+
+
 # necessary to redefine this function for pure float16 support
 def get_regularization_loss(scope=None, name="total_regularization_loss"):
   """Gets the total regularization loss.
@@ -304,7 +322,7 @@ def optimize_loss(loss,
 
         def update_and_clear_op():
           with tf.control_dependencies([accumulate()]):
-            red_grad_updates = opt.apply_gradients(
+            red_grad_updates = apply_gradients(opt,
                 post_process_gradients(
                     reduce_gradients(grads_and_vars_accum, on_horovod=True, model=model_scopes, run_params=run_params),
                     lr=lr,
@@ -313,7 +331,8 @@ def optimize_loss(loss,
                     summaries=summaries,
                     model_scopes=model_scopes
                 ),
-                global_step=None,
+                loss_scaling,
+                global_step=global_step
             )
           with tf.control_dependencies([red_grad_updates]):
             update_ops = tf.group([tf.assign(g, tf.zeros_like(g))
@@ -326,7 +345,7 @@ def optimize_loss(loss,
             true_fn=accumulate
         )
       else:
-        grad_updates = opt.apply_gradients(
+        grad_updates = apply_gradients(opt,
             post_process_gradients(
                 reduce_gradients(grads_and_vars, on_horovod=True, model=model_scopes, run_params=run_params),
                 lr=lr,
@@ -335,10 +354,11 @@ def optimize_loss(loss,
                 summaries=summaries,
                 model_scopes=model_scopes
             ),
-            global_step=None
+            loss_scaling,
+            global_step=global_step
         )
     else:
-      grad_updates = opt.apply_gradients(
+      grad_updates = apply_gradients(opt,
           post_process_gradients(
               grads_and_vars,
               lr=lr,
@@ -347,7 +367,8 @@ def optimize_loss(loss,
               summaries=summaries,
               model_scopes=model_scopes
           ),
-          global_step=None,
+          loss_scaling,
+          global_step=global_step
       )
 
     # Ensure the train_tensor computes grad_updates.
