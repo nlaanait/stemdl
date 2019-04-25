@@ -272,7 +272,6 @@ def train(network_config, hyper_params, params):
         train_opt, learning_rate = optimizers.optimize_loss(total_loss, hyper_params['optimization']['name'], 
                                 opt_dict, learning_policy_func, run_params=params, hyper_params=hyper_params, iter_size=iter_size, dtype=opt_type, 
                                 loss_scaling=hyper_params.get('loss_scaling',1.0), 
-                                #loss_scaling=1.0, 
                                 skip_update_cond=skip_update_cond,
                                 on_horovod=True, model_scopes=n_net.scopes)  
 
