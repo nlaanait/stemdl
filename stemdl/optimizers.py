@@ -434,8 +434,7 @@ def post_process_gradients(grads_and_vars, summaries, lr,
           var_vec = tf.concat([tf.expand_dims(tf.reshape(var, [-1]), 0) for var in layer_vars], 1)
           var_dtype = layer_vars[0].dtype
           var_nom = tf.norm(tensor=tf.cast(var_vec, tf.float32))
-          # grad_norm = tf.norm(tensor=tf.cast(grad_vec, tf.float32))
-          grad_norm = tf.norm(grad_vec)
+          grad_norm = tf.norm(tensor=tf.cast(grad_vec, tf.float32))
           if hyper_params['LARC']:
             check_params( config=hyper_params,
                           required_dict={'LARC_eta': float},
@@ -451,10 +450,10 @@ def post_process_gradients(grads_and_vars, summaries, lr,
             eps = hyper_params.get('LARC_epsilon', 1e-7)
 
             if larc_mode == 'scale':
-              grad_updates = [ tf.minimum( tf.maximum( larc_eta * var_nom / (grad_norm + eps), min_update), 1) * grad 
+              grad_updates = [ tf.minimum( tf.maximum( larc_eta * var_nom / (grad_norm + eps), min_update), 1) * tf.cast(grad, tf.float32) 
                                 for grad in layer_grads]
             elif larc_mode == 'clip':
-              grad_updates = [ tf.minimum( tf.maximum( larc_eta * var_nom / ( lr * (grad_norm + eps)), min_update), 1) * grad 
+              grad_updates = [ tf.minimum( tf.maximum( larc_eta * var_nom / ( lr * (grad_norm + eps)), min_update), 1) * tf.cast(grad, tf.float32) 
                                 for grad in layer_grads]
           elif hyper_params['LSAL']:
             check_params( config=hyper_params,
@@ -466,14 +465,14 @@ def post_process_gradients(grads_and_vars, summaries, lr,
                           )
             min_update = hyper_params.get('LSAL_min_update', 1e-7)
             eps = hyper_params.get('LSAL_epsilon', 1e-7)  
-            grad_updates = [ ( 1 + tf.log1p( grad_norm ** (-1) )) * grad
+            grad_updates = [ ( 1 + tf.log1p( grad_norm ** (-1) )) * tf.cast(grad, tf.float32)
                               for grad in layer_grads]
           else:
              grad_updates = layer_grads
-          #new_grads_vars_layer = [( tf.saturate_cast(grad_update, var_dtype ), var) 
-          #                           for grad_update, var in zip(grad_updates, layer_vars)]      
-          new_grads_vars_layer = [( grad_update,  var) 
-                                      for grad_update, var in zip(grad_updates, layer_vars)]      
+          new_grads_vars_layer = [( tf.saturate_cast(grad_update, var_dtype ), var) 
+                                     for grad_update, var in zip(grad_updates, layer_vars)]      
+          #new_grads_vars_layer = [( grad_update,  var) 
+          #                            for grad_update, var in zip(grad_updates, layer_vars)]      
           new_grads_vars.append(new_grads_vars_layer)
     new_grads_vars = list(chain.from_iterable(new_grads_vars))
     return new_grads_vars

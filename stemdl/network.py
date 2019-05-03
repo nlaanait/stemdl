@@ -39,7 +39,7 @@ class ConvNet(object):
         self.global_step = 0
         self.hyper_params = hyper_params
         self.network = network
-        self.images = images
+        self.images = self.image_scaling(images)
         if self.params['IMAGE_FP16']: #and self.images.dtype is not tf.float16 and operation == 'train':
             self.images = tf.cast(self.images, tf.float16)
         else:
@@ -98,7 +98,10 @@ class ConvNet(object):
         self.print_rank('input: ---, dim: %s memory: %s MB' %(format(self.images.get_shape().as_list()), format(self.mem/1024)))
         layer_name, layer_params = list(self.network.items())[0]
         with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
-            out, kernel = self._conv(input=self.images, params=layer_params)
+            if layer_params['type'] == 'coord_conv':
+                out, kernel = self._coord_conv(input=self.images, params=layer_params)
+            else:
+                out, kernel = self._conv(input=self.images, params=layer_params)
             do_bn = layer_params.get('batch_norm', False)
             if do_bn:
                 out = self._batch_norm(input=out)
@@ -119,7 +122,7 @@ class ConvNet(object):
         for layer_name, layer_params in list(self.network.items())[1:]:
             with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
                 in_shape = out.get_shape().as_list()
-                if layer_params['type'] == 'convolutional':
+                if layer_params['type'] == 'conv_2D':
                     out, _ = self._conv(input=out, params=layer_params)
                     do_bn = layer_params.get('batch_norm', False)
                     if do_bn:
@@ -128,11 +131,18 @@ class ConvNet(object):
                         out = self._add_bias(input=out, params=layer_params)
                     out = self._activate(input=out, name=scope.name, params=layer_params)
                     if self.summary: self._activation_summary(out)
+                
+                if layer_params['type'] == 'coord_conv':
+                    self.print_verbose(">>> Adding Coord Conv Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out, _ = self._coord_conv(input=out, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: self._activation_summary(out)
 
                 if layer_params['type'] == 'pooling':
                     out = self._pool(input=out, name=scope.name, params=layer_params)
 
-                if layer_params['type'] not in ['convolutional', 'pooling', 'fully_connected', 'linear_output']:
+                if layer_params['type'] not in ['conv_2D', 'coord_conv', 'pooling', 'fully_connected', 'linear_output']:
                     out = self._compound_layer(out, layer_params, scope)
                     # Continue any summary
                     if self.summary: self._activation_summary(out)
@@ -371,13 +381,68 @@ class ConvNet(object):
         elif isinstance(conv_initializer, tf.random_normal_initializer):
             init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
 
-            self.print_verbose('stddev: %s' % format(init_val))
+            #self.print_verbose('stddev: %s' % format(init_val))
             conv_initializer.mean = 0.0
             conv_initializer.stddev = init_val
         # TODO: make and modify local copy only
 
         kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
         output = tf.nn.conv2d(input, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
+
+        # Keep tabs on the number of weights and memory
+        self.num_weights += np.cumprod(kernel_shape)[-1]
+        self.mem += np.cumprod(output.get_shape().as_list())[-1]*self.bytesize / 1024
+        # batch * width * height * in_channels * kern_h * kern_w * features
+        # input = batch_size (ignore), channels, height, width
+        # http://imatge-upc.github.io/telecombcn-2016-dlcv/slides/D2L1-memory.pdf
+        # this_ops = np.prod(params['kernel'] + input.get_shape().as_list()[1:] + [features])
+        # self.print_rank('\tops: %3.2e' % (this_ops))
+        """
+        # batch * width * height * in_channels * (kern_h * kern_w * channels)
+        # at each location in the image:
+        ops_per_conv = 2 * np.prod(params['kernel'] + [input.shape[1].value])
+        # number of convolutions on the image for a single filter / output channel (stride brings down the number)
+        convs_per_filt = np.prod([input.shape[2].value, input.shape[3].value]) // np.prod(params['stride'])
+        # final = filters * convs/filter * ops/conv
+        this_ops = np.prod([params['features'], convs_per_filt, ops_per_conv])
+        if verbose:
+            self.print_verbose('\t%d ops/conv, %d convs/filter, %d filters = %3.2e ops' % (ops_per_conv, convs_per_filt,
+                                                                              params['features'], this_ops))
+        """
+        # 2*dim(input=N*H*W)*dim(kernel=H*W*N)
+        this_ops = 2 * np.prod(params['kernel']) * features * np.prod(input.get_shape().as_list()[1:])
+        self.ops += this_ops
+
+        return output, kernel
+
+    def _depth_conv(self, input=None, params=None):
+        """
+        Builds 2-D depthwise convolutional layer
+        :param input: as it says
+        :param params: dict, must specify kernel shape, stride, and # of features.
+        :return: output of convolutional layer and filters
+        """
+        stride_shape = [1,1]+list(params['stride'])
+        features = params['features']
+        kernel_shape = list(params['kernel']) + [input.shape[1].value, features]
+
+        # Fine tunining the initializer:
+        conv_initializer = self._get_initializer(self.hyper_params.get('initializer', None))
+        if isinstance(conv_initializer, tf.truncated_normal_initializer):
+            init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
+            conv_initializer.stddev = init_val
+        elif isinstance(conv_initializer, tf.uniform_unit_scaling_initializer):
+            conv_initializer.factor = 1.43
+        elif isinstance(conv_initializer, tf.random_normal_initializer):
+            init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
+
+            # self.print_verbose('stddev: %s' % format(init_val))
+            conv_initializer.mean = 0.0
+            conv_initializer.stddev = init_val
+        # TODO: make and modify local copy only
+
+        kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+        output = tf.nn.depthwise_conv2d(input, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
 
         # Keep tabs on the number of weights and memory
         self.num_weights += np.cumprod(kernel_shape)[-1]
@@ -425,8 +490,8 @@ class ConvNet(object):
             conv_initializer.factor = 1.43
         elif isinstance(conv_initializer, tf.random_normal_initializer):
             init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
-            if verbose:
-                self.print_verbose('stddev: %s' % format(init_val))
+            # if verbose:
+                # self.print_verbose('stddev: %s' % format(init_val))
             conv_initializer.mean = 0.0
             conv_initializer.stddev = init_val
         # TODO: make and modify local copy only
@@ -438,6 +503,74 @@ class ConvNet(object):
         # Keep tabs on the number of weights, memory, and flops
         self.num_weights += np.cumprod(kernel_shape)[-1]
         self.mem += np.cumprod(output.get_shape().as_list())[-1]*self.bytesize / 1024
+        # 2*dim(input=N*H*W)*dim(kernel=H*W*N)
+        this_ops = 2 * np.prod(params['kernel']) * features * np.prod(input.get_shape().as_list()[1:])
+        self.ops += this_ops
+
+        return output, kernel
+
+    def _coord_conv(self, input=None, params=None):
+        """
+        Builds 2-D coord convolutional layer
+        :param input: as it says
+        :param params: dict, must specify kernel shape, stride, and # of features.
+        :return: output of convolutional layer and filters
+        """
+        stride_shape = [1,1]+list(params['stride'])
+        features = params['features'] - 2
+        kernel_shape = list(params['kernel']) + [input.shape[1].value, features]
+        kernel_shape[-2] += 2 
+        kernel_shape[-1] += 2
+
+        # Fine tunining the initializer:
+        conv_initializer = self._get_initializer(self.hyper_params.get('initializer', None))
+        if isinstance(conv_initializer, tf.truncated_normal_initializer):
+            init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
+            conv_initializer.stddev = init_val
+        elif isinstance(conv_initializer, tf.uniform_unit_scaling_initializer):
+            conv_initializer.factor = 1.43
+        elif isinstance(conv_initializer, tf.random_normal_initializer):
+            init_val = np.sqrt(2.0/(kernel_shape[0] * kernel_shape[1] * features))
+
+            # self.print_verbose('stddev: %s' % format(init_val))
+            conv_initializer.mean = 0.0
+            conv_initializer.stddev = init_val
+        # TODO: make and modify local copy only
+
+        kernel = self._cpu_variable_init('weights', shape=kernel_shape, initializer=conv_initializer)
+
+        batch_size = tf.shape(input)[0]
+        x_dim = tf.shape(input)[-1]
+        y_dim  = tf.shape(input)[-2]
+
+        xx_indices = tf.tile(
+            tf.expand_dims(tf.expand_dims(tf.range(x_dim), 0), 0),
+            [batch_size, y_dim, 1])
+        xx_indices = tf.expand_dims(xx_indices, -1)
+        xx_indices = tf.transpose(xx_indices, (0,3,1,2))
+        
+        yy_indices = tf.tile(
+            tf.expand_dims(tf.reshape(tf.range(y_dim), (y_dim, 1)), 0),
+            [batch_size, 1, x_dim])
+        yy_indices = tf.expand_dims(yy_indices, -1)
+        yy_indices = tf.transpose(yy_indices, (0,3,1,2))
+
+        xx_indices = tf.divide(xx_indices, x_dim - 1)
+        yy_indices = tf.divide(yy_indices, y_dim - 1)
+
+        xx_indices = tf.cast(tf.subtract(tf.multiply(xx_indices, 2.), 1.),
+                                dtype=input.dtype)
+        yy_indices = tf.cast(tf.subtract(tf.multiply(yy_indices, 2.), 1.),
+                                dtype=input.dtype)
+
+        output = tf.concat([input, xx_indices, yy_indices], axis=1)
+
+        output = tf.nn.conv2d(output, kernel, stride_shape, data_format='NCHW', padding=params['padding'])
+
+        # Keep tabs on the number of weights and memory
+        self.num_weights += np.cumprod(kernel_shape)[-1]
+        self.mem += np.cumprod(output.get_shape().as_list())[-1]*self.bytesize / 1024
+
         # 2*dim(input=N*H*W)*dim(kernel=H*W*N)
         this_ops = 2 * np.prod(params['kernel']) * features * np.prod(input.get_shape().as_list()[1:])
         self.ops += this_ops
@@ -498,7 +631,7 @@ class ConvNet(object):
         dim_input = input_reshape.shape[1].value
         weights_shape = [dim_input, params['weights']]
         init_val = max(np.sqrt(2.0/params['weights']), 0.01)
-        self.print_verbose('stddev: %s' % format(init_val))
+        # self.print_verbose('stddev: %s' % format(init_val))
         bias_shape = [params['bias']]
 
         # Fine tuning the initializer:
@@ -514,7 +647,7 @@ class ConvNet(object):
         elif isinstance(lin_initializer, tf.random_normal_initializer):
             init_val = max(np.sqrt(2.0 / params['weights']), 0.01)
             if verbose:
-                self.print_verbose('stddev: %s' % format(init_val))
+                print('stddev: %s' % format(init_val))
             lin_initializer.mean = 0.0
             lin_initializer.stddev = init_val
 
@@ -709,7 +842,7 @@ class ConvNet(object):
 
     def _print_layer_specs(self, params, scope, input_shape, output_shape):
         mem_in_MB = np.cumprod(output_shape)[-1] * self.bytesize / 1024**2
-        if params['type'] == 'convolutional':
+        if 'conv' in params['type'] :
             self.print_verbose('%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB' %
                   (scope.name, format(output_shape), format(params['kernel']),
                    format(params['stride']), format(self.num_weights), format(mem_in_MB)))
@@ -840,6 +973,12 @@ class ConvNet(object):
                                                  uniform_noise=False, name='batch_glimpses')
         return glimpse_batch
 
+    @staticmethod
+    def image_scaling(image_batch):
+        image_batch -= tf.reduce_min(image_batch, axis=[2,3], keepdims=True)
+        # image_batch = tf.sqrt(image_batch)
+        image_batch = tf.log1p(image_batch)
+        return image_batch
 
 class ResNet(ConvNet):
 
@@ -898,7 +1037,7 @@ class ResNet(ConvNet):
         layer_ids = []
         for parm_name in res_block_params.keys():
             if isinstance(res_block_params[parm_name], OrderedDict):
-                if res_block_params[parm_name]['type'] == 'convolutional':
+                if res_block_params[parm_name]['type'] == 'conv_2D':
                     layer_ids.append(parm_name)
         """
         if verbose:
@@ -940,7 +1079,7 @@ class ResNet(ConvNet):
             self.print_verbose('Residual Layer: ' + scope.name)
             for parm_name in params.keys():
                 if isinstance(params[parm_name], OrderedDict):
-                    if params[parm_name]['type'] == 'convolutional':
+                    if 'conv' in params[parm_name]['type'] :
                         conv_parms = params[parm_name]
                         self.print_verbose('\t%s --- output: %s, kernel: %s, stride: %s, # of weights: %s,  memory: %s MB' %
                               (parm_name, format(output_shape), format(conv_parms['kernel']),
@@ -966,7 +1105,10 @@ class FCDenseNet(ConvNet):
         self.print_rank('input: ---, dim: %s memory: %s MB' %(format(self.images.get_shape().as_list()), format(self.mem/1024)))
         layer_name, layer_params = list(self.network.items())[0]
         with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
-            out, kernel = self._conv(input=self.images, params=layer_params)
+            if layer_params['type'] == 'coord_conv':
+                out, kernel = self._coord_conv(input=self.images, params=layer_params)
+            else:
+                out, kernel = self._conv(input=self.images, params=layer_params)
             do_bn = layer_params.get('batch_norm', False)
             if do_bn:
                 out = self._batch_norm(input=out)
@@ -985,15 +1127,22 @@ class FCDenseNet(ConvNet):
 
         # Initiate the remaining layers
         skip_connection_list = list()
-        block_upsample_list = list()
+        #block_upsample_list = list()
         skip_hub = -1
         for layer_name, layer_params in list(self.network.items())[1:]:
             with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
                 in_shape = out.get_shape().as_list()
-                if layer_params['type'] == 'convolutional':
+                if layer_params['type'] == 'conv_2D':
                     self.print_verbose(">>> Adding Conv Layer: %s" % layer_name)
                     self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out, _ = self._conv(input=out, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: self._activation_summary(out)
+
+                if layer_params['type'] == 'coord_conv':
+                    self.print_verbose(">>> Adding Coord Conv Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out, _ = self._coord_conv(input=out, params=layer_params)
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
                     if self.summary: self._activation_summary(out)
 
@@ -1060,7 +1209,7 @@ class FCDenseNet(ConvNet):
                                                                                         self.num_weights,
                                                                                         format(self.mem / 1024),
                                                                                         self.get_ops()))
-        self.model_output = tf.cast(out, tf.float32)
+        self.model_output = tf.saturate_cast(out, tf.float32)
 
     def get_loss(self):
         with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
@@ -1076,10 +1225,10 @@ class FCDenseNet(ConvNet):
         Transition up block : transposed deconvolution.
         Also add skip connection from skip hub to current output
         """
-        # strength = self.skip_strength()
+        strength = self.skip_strength()
         out, _ = self._deconv(input, layer_params['deconv'], scope)
-        # block_connect = tf.scalar_mul(strength, block_connect)
-        # out = tf.concat([out,block_connect], axis=1)
+        block_connect = tf.scalar_mul(strength, block_connect)
+        out = tf.concat([out,block_connect], axis=1)
         return out
 
     def _transition_down(self, input, layer_params, scope):
@@ -1094,7 +1243,10 @@ class FCDenseNet(ConvNet):
         else:
             out = input
         out = self._activate(input=out, params=conv_layer_params)
-        out, _ = self._conv(input=out, params=conv_layer_params)
+        if conv_layer_params['type'] == 'coord_conv':
+            out, _ = self._coord_conv(input=out, params=conv_layer_params)
+        else:
+            out, _ = self._conv(input=out, params=conv_layer_params)
         keep_prob = layer_params.get('dropout', None)
         if keep_prob is not None:
             out = self._dropout(input=out, name=scope.name+ '_dropout')
@@ -1117,7 +1269,10 @@ class FCDenseNet(ConvNet):
         else:
             out = input
         out = self._activate(input=out, params=layer_params)
-        out, _ = self._conv(input=out, params=layer_params)
+        if layer_params['type'] == 'coord_conv':
+           out, _ = self._coord_conv(input=out, params=layer_params)
+        else:
+            out, _ = self._conv(input=out, params=layer_params)
         keep_prob = layer_params.get('dropout', None)
         if keep_prob is not None:
             out = self._dropout(input=out, name=scope.name+ '_dropout')
@@ -1135,7 +1290,7 @@ class FCDenseNet(ConvNet):
         layer_ids = []
         for parm_name in layer_params.keys():
             if isinstance(layer_params[parm_name], OrderedDict):
-                if layer_params[parm_name]['type'] == 'convolutional':
+                if 'conv' in layer_params[parm_name]['type']: 
                     layer_ids.append(parm_name)
         # Build layer by layer
         block_features = []
@@ -1149,3 +1304,130 @@ class FCDenseNet(ConvNet):
                 input = tf.concat([input, layer], axis=1)
         block_features = tf.concat(block_features, axis=1)
         return input, block_features
+
+
+class FCNet(ConvNet):
+    """
+    Fully (vanilla) convolutional neural net
+    """
+    def build_model(self, summaries=False):
+        """
+        Here we build the model.
+        :param summaries: bool, flag to print out summaries.
+        """
+        # Initiate 1st layer
+        self.print_rank('Building Neural Net ...')
+        self.print_rank('input: ---, dim: %s memory: %s MB' %(format(self.images.get_shape().as_list()), format(self.mem/1024)))
+        layer_name, layer_params = list(self.network.items())[0]
+        with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
+            if layer_params['type'] == 'coord_conv':
+                out, kernel = self._coord_conv(input=self.images, params=layer_params)
+            if layer_params['type'] == 'depth_conv':
+                out, kernel = self._depth_conv(input=self.images, params=layer_params)
+            else:
+                out, kernel = self._conv(input=self.images, params=layer_params)
+            do_bn = layer_params.get('batch_norm', False)
+            if do_bn:
+                out = self._batch_norm(input=out)
+            else:
+                out = self._add_bias(input=out, params=layer_params)
+            out = self._activate(input=out, name=scope.name, params=layer_params)
+            in_shape = self.images.get_shape().as_list()
+            # Tensorboard Summaries
+            if self.summary:
+                self._activation_summary(out)
+                self._activation_image_summary(out)
+                self._kernel_image_summary(kernel)
+
+            self._print_layer_specs(layer_params, scope, in_shape, out.get_shape().as_list())
+            self.scopes.append(scope)
+
+        # Initiate the remaining layers
+        for layer_name, layer_params in list(self.network.items())[1:]:
+            with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
+                in_shape = out.get_shape().as_list()
+                if layer_params['type'] == 'conv_2D':
+                    self.print_verbose(">>> Adding Conv Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out, _ = self._conv(input=out, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: self._activation_summary(out)
+
+                if layer_params['type'] == 'depth_conv':
+                    self.print_verbose(">>> Adding depthwise Conv Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out, _ = self._depth_conv(input=out, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: self._activation_summary(out)
+
+                if layer_params['type'] == 'coord_conv':
+                    self.print_verbose(">>> Adding Coord Conv Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out, _ = self._coord_conv(input=out, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: self._activation_summary(out)
+
+                if layer_params['type'] == 'pooling':
+                    self.print_verbose(">>> Adding Pooling Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out = self._pool(input=out, name=scope.name, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+
+                if layer_params['type'] == 'deconv_2D':
+                    self.print_verbose(">>> Adding de-Conv Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out, _ = self._deconv(input=out, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: self._activation_summary(out) 
+
+                if layer_params['type'] == 'dense_layers_block':
+                    self.print_verbose(">>> Adding Dense Layers Block: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out, _ = self._dense_layers_block(input=out, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: self._activation_summary(out) 
+
+                
+                # print layer specs and generate Tensorboard summaries
+                if out is None:
+                    raise NotImplementedError('Layer type: ' + layer_params['type'] + 'is not implemented!')
+                out_shape = out.get_shape().as_list()
+                self._print_layer_specs(layer_params, scope, in_shape, out_shape)
+            self.scopes.append(scope)
+        self.print_rank('Total # of blocks: %d,  weights: %2.1e, memory: %s MB, ops: %3.2e \n' % (len(self.network),
+                                                                                        self.num_weights,
+                                                                                        format(self.mem / 1024),
+                                                                                        self.get_ops()))
+        self.model_output = tf.saturate_cast(out, tf.float32)
+
+    def _dense_layers_block(self, input=None, params=None):
+        conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
+                                'features': 1,
+                                'activation': 'relu', 'padding': 'VALID', 'batch_norm': False})
+        tensor_slices = []
+        num_slices = self.images.get_shape().as_list()[1]
+        tensor_slices = tf.split(input, num_slices, axis=1)
+        for idx, tens in enumerate(tensor_slices):
+            with tf.variable_scope('split_%d' %idx, reuse=self.reuse) as _:
+                # 1by1 conv to collapse channels
+                out, _ = self._conv(input=tens, params=conv_1by1) 
+                old_shape = out.get_shape().as_list()
+                # apply n_layers of fully_connected layers
+                for n_layer in range(params['n_layers']):
+                    with tf.variable_scope('fully_connnected_%d' %n_layer, reuse=self.reuse) as _:
+                        params['type'] = 'fully_connected'
+                        params['weights'] = old_shape[-1] * old_shape[-2]
+                        params['bias'] = params['weights']
+                        out = self._linear(input=out, params=params, verbose=False)
+                tensor_slices[idx] = out
+        # self.print_rank('tensor slices shape:', [tens.get_shape().as_list() for tens in tensor_slices])
+        # concatenate along depth
+        out = tf.concat(tensor_slices, 1)
+        # expand dims
+        out = tf.expand_dims(tf.expand_dims(out, -1), -1)
+        # self.print_rank('output_shape', out.get_shape().as_list())
+        # layout spatially
+        out = tf.nn.depth_to_space(out, self.images.get_shape().as_list()[-1], data_format=self.params['TENSOR_FORMAT'])
+        return out, None
+        # self.print_rank('output_shape', out.get_shape().as_list())
+        

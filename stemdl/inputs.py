@@ -473,9 +473,7 @@ class DatasetLMDB(DatasetTFRecords):
             image_bytes = txn.get(image_key)
             label_bytes = txn.get(label_key)
         label = np.frombuffer(label_bytes, dtype=self.data_specs['label_dtype'])
-        #label = label.reshape(self.data_specs['label_shape'])
         image = np.frombuffer(image_bytes, dtype=self.data_specs['image_dtype'])
-        #image = image.reshape(self.data_specs['image_shape'])
 
         #if self.debug: 
         #    print_rank('rank=%d, read image %s %s and label %s %s from lmdb' %(hvd.rank(),format(image.shape), 
@@ -490,7 +488,8 @@ class DatasetLMDB(DatasetTFRecords):
             yield (record)
 
     def wrapped_decode(self, idx):
-        return tf.py_func(self.decode_image_label, [idx], [tf.float16, tf.float16])
+        return tf.py_func(self.decode_image_label, [idx], 
+                         [tf.as_dtype(self.data_specs['image_dtype']),tf.as_dtype(self.data_specs['label_dtype'])])
 
     def minibatch(self):
         """
@@ -535,12 +534,18 @@ class DatasetLMDB(DatasetTFRecords):
             images = tf.reshape(images, images_newshape)
          
             #labels= self.label_minmaxscaling(labels, 0.0, 1.0, scale_range=[0., 10.0])
+        # images = self.image_scaling(images)
         # Display the training images in the Tensorboard visualizer.
         if self.debug: 
             tf.summary.image("potential", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
             tf.summary.image("images", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4)
         return images, labels
 
+    @staticmethod
+    def image_scaling(image_batch):
+        image_batch -= tf.reduce_min(image_batch, axis=[2,3], keepdims=True)
+        image_batch = tf.sqrt(image_batch)
+        return image_batch
 
 ### common datasets ### 
 spacegroup = {'energy': {'dtype':'float64', 'shape':[1]},
