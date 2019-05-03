@@ -223,9 +223,12 @@ def train(network_config, hyper_params, params):
                                         operation='train', summary=summary, verbose=False)
             if params['network_class'] == 'cnn':
                 n_net = network.ConvNet(scope, params, hyper_params, network_config, images, labels,
-                                        operation='train', summary=summary, verbose=False)
+                                        operation='train', summary=summary, verbose=True)
             if params['network_class'] == 'fcdensenet':
                 n_net = network.FCDenseNet(scope, params, hyper_params, network_config, images, labels,
+                                        operation='train', summary=summary, verbose=True)
+            if params['network_class'] == 'fcnet':
+                n_net = network.FCNet(scope, params, hyper_params, network_config, images, labels,
                                         operation='train', summary=summary, verbose=True)
             
                 
@@ -343,25 +346,31 @@ def train(network_config, hyper_params, params):
         train_elf = TrainHelper(params, saver, None, n_net.get_ops(), last_step=last_step)
 
     if params['restart']:
-        next_validation_epoch = train_elf.elapsed_epochs + params['epochs_per_validation']
-        next_checkpoint_epoch = train_elf.elapsed_epochs + params['epochs_per_saving']
+        saveStep = train_elf.last_step + params['save_step']
+        validateStep = train_elf.last_step + params['validate_step']
+        summaryStep = train_elf.last_step + params['log_frequency'] * 50 
+        #next_validation_epoch = train_elf.elapsed_epochs + params['epochs_per_validation']
+        #next_checkpoint_epoch = train_elf.elapsed_epochs + params['epochs_per_saving']
     else:
-        next_validation_epoch = params['epochs_per_validation']
-        next_checkpoint_epoch = params['epochs_per_saving']
+        saveStep =  params['save_step']
+        validateStep = params['validate_step']
+        summaryStep = params['log_frequency'] * 50
+        #next_validation_epoch = params['epochs_per_validation']
+        #next_checkpoint_epoch = params['epochs_per_saving']
 
     train_elf.run_summary( )
     maxSteps  = params[ 'max_steps' ]
     logFreq   = params[ 'log_frequency' ]
     traceStep = params[ 'trace_step' ]
-    saveStep =  params['save_step']
-    validateStep = params['validate_step']
-    summaryStep = logFreq * 50
+    #saveStep =  params['save_step']
+    #validateStep = params['validate_step']
+    #summaryStep = logFreq * 50
 
     while train_elf.last_step < maxSteps :
         train_elf.before_run()
 
         doLog   = train_elf.last_step % logFreq  == 0
-        doSave  = train_elf.last_step > saveStep 
+        doSave  = train_elf.last_step >= saveStep 
         doSumm  = train_elf.last_step > summaryStep 
         doTrace = train_elf.last_step == traceStep and params['gpu_trace']
         if not doLog and not doSave and not doTrace and not doSumm:
