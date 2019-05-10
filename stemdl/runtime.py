@@ -299,6 +299,8 @@ def train(network_config, hyper_params, params):
     if params['debug']:
         predic = tf.transpose(n_net.model_output, perm=[0,2,3,1])
         output_summary = tf.summary.image("prediction", predic, max_outputs=4) 
+        tf.summary.image("potential", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
+        tf.summary.image("images", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4)
     
     summary_merged = tf.summary.merge_all()
 
@@ -373,6 +375,10 @@ def train(network_config, hyper_params, params):
         doSave  = train_elf.last_step >= saveStep 
         doSumm  = train_elf.last_step > summaryStep 
         doTrace = train_elf.last_step == traceStep and params['gpu_trace']
+        if train_elf.last_step == 1 :
+            if hvd.rank() == 0:
+                summary = sess.run([train_op,  summary_merged])[-1]
+                train_elf.write_summaries( summary )
         if not doLog and not doSave and not doTrace and not doSumm:
             sess.run(train_op)
         elif doLog and not doSave :
@@ -423,7 +429,7 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
     :param num_batches: default 100.
     :return:
     """
-    print_rank("Running Validation over %d batches..." % num_batches)
+    print_rank("Running Validation ..." )
     with tf.device(params['CPU_ID']):
         # Get Test data
         dset.set_mode(mode='eval')
@@ -452,13 +458,16 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
         # Setup Neural Net
         if params['network_class'] == 'resnet':
             n_net = network.ResNet(scope, params, hyper_params, network_config, images, labels,
-                                      operation='train', summary=False, verbose=False)
+                                      operation='eval', summary=False, verbose=False)
         if params['network_class'] == 'cnn':
             n_net = network.ConvNet(scope, params, hyper_params, network_config, images, labels,
-                                     operation='train', summary=False, verbose=False)
+                                     operation='eval', summary=False, verbose=False)
         if params['network_class'] == 'fcdensenet':
             n_net = network.FCDenseNet(scope, params, hyper_params, network_config, images, labels,
-                                     operation='train', summary=False, verbose=False)
+                                     operation='eval', summary=False, verbose=False)
+        if params['network_class'] == 'fcnet':
+            n_net = network.FCNet(scope, params, hyper_params, network_config, images, labels,
+                                    operation='eval', summary=summary, verbose=True)
 
         # Build it and propagate images through it.
         n_net.build_model()
@@ -500,13 +509,13 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
             loss_params = hyper_params['loss_function']
             if loss_params['type'] == 'MSE_PAIR':
                 errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
-                loss_label= 'MSE_PAIR'
+                loss_label= loss_params['type'] 
             else: 
                 loss_label= 'ABS_DIFF'
                 errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32), reduction=tf.losses.Reduction.MEAN)
             errors = tf.expand_dims(errors,axis=0)
             error_averaging = hvd.allreduce(errors)
-            error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_batches)])
+            error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(dset.num_samples)])
             print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, error.mean()))
 
 
@@ -566,6 +575,9 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=25,
             if params['network_class'] == 'fcdensenet':
                 n_net = network.FCDenseNet(scope, params, hyper_params, network_config, tf.cast(images, tf.float32),
                                             labels, operation='eval_ckpt', summary=False, verbose=True)
+            if params['network_class'] == 'fcnet':
+                n_net = network.FCNet(scope, params, hyper_params, network_config, images, labels,
+                                        operation='eval_ckpt', summary=False, verbose=True)
             # Build it and propagate images through it.
             n_net.build_model()
 
@@ -633,18 +645,8 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=25,
                 elif hyper_params['network_type'] == 'hybrid':
                     pass
                 elif hyper_params['network_type'] == 'inverter':
-                    if params['debug']:
-                        errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
-                        errors = tf.expand_dims(errors,axis=0)
-                        error_averaging = hvd.allreduce(errors)
-                        error = np.array([])
-                        for _ in range(dset.num_samples):
-                            rec_err, pot = sess.run([IO_ops, errors, labels])[-2:]
-                            error = np.append(error, rec_err)
-                            pot = pot.astype(np.float32)
-                            print_rank('labels stats (min, max, std): (%2.2f, %2.2f, %2.2f)' % (pot.mean(), pot.sum(), pot.std()))
-                        print_rank('Validation Reconstruction Error: %s' % format(error))
-                    elif params['output']:
+                    loss_params = hyper_params['loss_function']
+                    if params['output']:
                        output = tf.cast(n_net.model_output, tf.float32)
                        print('output shape',output.get_shape().as_list()) 
                        output_dir = os.path.join(os.getcwd(),'outputs')
@@ -654,11 +656,16 @@ def validate_ckpt(network_config, hyper_params, params,num_batches=25,
                            np.save(os.path.join(output_dir,'label_%d_%d_%s.npy' % (idx, hvd.rank(), format(last_step))), label_arr)
                            np.save(os.path.join(output_dir,'output_%d_%d_%s.npy' % (idx, hvd.rank(), format(last_step))), output_arr)
                     else:
-                        errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
+                        if loss_params['type'] == 'MSE_PAIR':
+                            errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
+                            loss_label= loss_params['type'] 
+                        else: 
+                            loss_label= 'ABS_DIFF'
+                            errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32), reduction=tf.losses.Reduction.MEAN)
                         errors = tf.expand_dims(errors,axis=0)
                         error_averaging = hvd.allreduce(errors)
                         error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(dset.num_samples)])
-                        print_rank('Validation Reconstruction Error: %3.3e' % error.mean())
+                        print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, error.mean()))
                 if sleep < 0:
                     break
                 else:
