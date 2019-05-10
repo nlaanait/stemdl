@@ -664,7 +664,6 @@ class ConvNet(object):
         # http://imatge-upc.github.io/telecombcn-2016-dlcv/slides/D2L1-memory.pdf
         # this_ops = input.get_shape().as_list()[1] * params['weights']
         # self.print_verbose('\tops: %3.2e' % (this_ops))
-        """
         # for each element in the output - feature^2 multiplies + feature^2 additions
         ops_per_element = 2 * dim_input ** 2
         # number of elements in outputs = batch * hidden nodes in this layer
@@ -673,12 +672,7 @@ class ConvNet(object):
         bias_ops = params['weights']
         # batch * nodes * 2 * features + nodes <- 2 comes in for the dot prod + sum
         this_ops = ops_per_element * num_dot_prods + bias_ops
-        if verbose:
-            self.print_verbose('\t%d ops/element, %d dot products, %d additions for bias = %3.2e ops' % (ops_per_element,
-                                                                                                  num_dot_prods,
-                                                                                            bias_ops, this_ops))
-        """
-        # self.ops += this_ops
+        self.ops += this_ops
         return output
 
     def _dropout(self, input=None, keep_prob=0.5, params=None, name=None):
@@ -701,15 +695,17 @@ class ConvNet(object):
         """
         # should ignore the batch size in the calculation!
         # this_ops = 2 * np.prod(input.get_shape().as_list()[1:])
-        if verbose:
-            self.print_verbose('\tactivation = %3.2e ops' % this_ops)
+        # if verbose:
+            # self.print_verbose('\tactivation = %3.2e ops' % this_ops)
         # self.ops += this_ops
 
         if params is not None:
             if params['activation'] == 'tanh':
                 return tf.nn.tanh(input, name=name)
-
-        return tf.nn.relu(input, name=name)
+            else:
+                return tf.nn.relu(input, name=name)
+        else:
+            return input
 
     def _pool(self, input=None, params=None, name=None, verbose=True):
         """
@@ -976,8 +972,8 @@ class ConvNet(object):
     @staticmethod
     def image_scaling(image_batch):
         image_batch -= tf.reduce_min(image_batch, axis=[2,3], keepdims=True)
-        # image_batch = tf.sqrt(image_batch)
-        image_batch = tf.log1p(image_batch)
+        image_batch = tf.sqrt(image_batch)
+        #image_batch = tf.log1p(image_batch)
         return image_batch
 
 class ResNet(ConvNet):
@@ -1350,6 +1346,12 @@ class FCNet(ConvNet):
                     self.print_verbose(">>> Adding Conv Layer: %s" % layer_name)
                     self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out, _ = self._conv(input=out, params=layer_params)
+                    do_bn = layer_params.get('batch_norm', False)
+                    if do_bn:
+                        out = self._batch_norm(input=out)
+                    else:
+                        out = self._add_bias(input=out, params=layer_params)
+                    out = self._activate(input=out, name=scope.name, params=layer_params)
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
                     if self.summary: self._activation_summary(out)
 
@@ -1357,6 +1359,12 @@ class FCNet(ConvNet):
                     self.print_verbose(">>> Adding depthwise Conv Layer: %s" % layer_name)
                     self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out, _ = self._depth_conv(input=out, params=layer_params)
+                    do_bn = layer_params.get('batch_norm', False)
+                    if do_bn:
+                        out = self._batch_norm(input=out)
+                    else:
+                        out = self._add_bias(input=out, params=layer_params)
+                    out = self._activate(input=out, name=scope.name, params=layer_params)
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
                     if self.summary: self._activation_summary(out)
 
@@ -1364,6 +1372,12 @@ class FCNet(ConvNet):
                     self.print_verbose(">>> Adding Coord Conv Layer: %s" % layer_name)
                     self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out, _ = self._coord_conv(input=out, params=layer_params)
+                    do_bn = layer_params.get('batch_norm', False)
+                    if do_bn:
+                        out = self._batch_norm(input=out)
+                    else:
+                        out = self._add_bias(input=out, params=layer_params)
+                    out = self._activate(input=out, name=scope.name, params=layer_params)
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
                     if self.summary: self._activation_summary(out)
 
@@ -1386,6 +1400,7 @@ class FCNet(ConvNet):
                     out, _ = self._dense_layers_block(input=out, params=layer_params)
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
                     if self.summary: self._activation_summary(out) 
+                    self._activation_image_summary(out)
 
                 
                 # print layer specs and generate Tensorboard summaries
@@ -1404,30 +1419,39 @@ class FCNet(ConvNet):
         conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
                                 'features': 1,
                                 'activation': 'relu', 'padding': 'VALID', 'batch_norm': False})
+        fully_connected = OrderedDict({'type': 'fully_connected','weights': None,'bias': None, 'activation': 'relu',
+                                   'regularize': True})
+    
         tensor_slices = []
         num_slices = self.images.get_shape().as_list()[1]
         tensor_slices = tf.split(input, num_slices, axis=1)
         for idx, tens in enumerate(tensor_slices):
-            with tf.variable_scope('split_%d' %idx, reuse=self.reuse) as _:
+            with tf.variable_scope('split_%d' %idx, reuse=self.reuse) as scope:
                 # 1by1 conv to collapse channels
                 out, _ = self._conv(input=tens, params=conv_1by1) 
+                do_bn = conv_1by1.get('batch_norm', False)
+                if do_bn:
+                    out = self._batch_norm(input=out)
+                else:
+                    out = self._add_bias(input=out, params=conv_1by1)
+                out = self._activate(input=out, name=scope.name, params=conv_1by1)
                 old_shape = out.get_shape().as_list()
+
                 # apply n_layers of fully_connected layers
                 for n_layer in range(params['n_layers']):
-                    with tf.variable_scope('fully_connnected_%d' %n_layer, reuse=self.reuse) as _:
-                        params['type'] = 'fully_connected'
-                        params['weights'] = old_shape[-1] * old_shape[-2]
-                        params['bias'] = params['weights']
-                        out = self._linear(input=out, params=params, verbose=False)
+                    with tf.variable_scope('fully_connnected_%d' %n_layer, reuse=self.reuse) as scope_2:
+                        # params['type'] = 'fully_connected'
+                        fully_connected['weights'] = old_shape[-1] * old_shape[-2]
+                        fully_connected['bias'] = fully_connected['weights']
+                        # params['activation']
+                        out = self._linear(input=out, params=fully_connected, verbose=False)
+                        out = self._activate(input=out, name=scope_2.name, params=fully_connected)
                 tensor_slices[idx] = out
-        # self.print_rank('tensor slices shape:', [tens.get_shape().as_list() for tens in tensor_slices])
         # concatenate along depth
         out = tf.concat(tensor_slices, 1)
         # expand dims
         out = tf.expand_dims(tf.expand_dims(out, -1), -1)
-        # self.print_rank('output_shape', out.get_shape().as_list())
         # layout spatially
-        out = tf.nn.depth_to_space(out, self.images.get_shape().as_list()[-1], data_format=self.params['TENSOR_FORMAT'])
+        out = tf.nn.depth_to_space(out, int(np.sqrt(self.images.shape.as_list()[1])), data_format=self.params['TENSOR_FORMAT'])
         return out, None
-        # self.print_rank('output_shape', out.get_shape().as_list())
         

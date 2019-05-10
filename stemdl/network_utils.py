@@ -203,10 +203,10 @@ def generate_fcnet_json(conv_type="conv_2D", input_channels= 64, features=64, ke
         name ='network_'+ model + '_%s_%s_%s.json' %(str(features), str(n_layers_per_path * n_pool), conv_type) 
         io_utils.write_json_network_config(name, layers_keys, layers_params)
     return OrderedDict(zip(layers_keys,layers_params)) 
-            
+        
 
-def generate_fc_dense_json(conv_type="conv_2D", input_channels= 64, features=64, kernel=[5,5], n_pool=5, n_layers_per_path=2,
-                        output_channels=1, dropout_prob=None, save=True, model='fc_dense'):
+def generate_fc_dense_json(conv_type="conv_2D", input_channels= 64, input_size = 256, features=64, kernel=[5,5], n_pool=5, n_layers_per_path=2,
+                        output_channels=1, output_size=128, dropout_prob=None, save=True, model='fc_dense'):
     
     # if type(n_layers) == int:
     #     n_layers = n_layers * (2 * n_pool + 1)
@@ -215,6 +215,8 @@ def generate_fc_dense_json(conv_type="conv_2D", input_channels= 64, features=64,
     pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
     conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': features,
                             'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout':dropout_prob})
+    deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': kernel, 'features': features,
+                             'padding': 'SAME', 'upsample': pool['kernel'][0]})
     if conv_type == 'depth_conv':
         conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': features,
                             'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout':dropout_prob})
@@ -245,25 +247,33 @@ def generate_fc_dense_json(conv_type="conv_2D", input_channels= 64, features=64,
     layers_keys.append('dense_layers_block')
     layers_params.append(dense_layers_block)
 
+    # conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 'features': output_channels,
+                            # 'activation': 'relu', 'padding': 'VALID', 'batch_norm': True})
+    # layers_keys.append('CONV_1by1')
+    # layers_params.append(conv_1by1)
     conv_type = 'conv_2D'
-    features_2d = 64
+    features_2d = int((input_size/2**n_pool)**2)
     conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': features_2d,
                             'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout':dropout_prob})
-    for _ in range(n_layers_per_path * n_pool):
-        conv_layer = deepcopy(conv_layer_base)
-        conv_layer['features'] = features_2d 
-        layers_keys.append('conv_%s' % rank )
-        layers_params.append(conv_layer)
-        rank += 1
+    num_upsamples = int(output_size/int(np.sqrt(input_channels)))
+    for i in range(num_upsamples -1):
+        deconv_layer = deepcopy(deconv_layer_base)
+        deconv_layer['features'] = features_2d  
+        layers_keys.append('deconv_%s' % i )
+        layers_params.append(deconv_layer)
+        for _ in range(n_layers_per_path):
+            conv_layer = deepcopy(conv_layer_base)
+            conv_layer['features'] = features_2d 
+            layers_keys.append('conv_%s' % rank )
+            layers_params.append(conv_layer)
+            rank += 1
+        features_2d = features_2d //2
     
     # final conv 1x1
-    conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [2, 2], 'kernel': [1, 1], 'features': output_channels,
+    conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 'features': output_channels,
                             'activation': 'relu', 'padding': 'VALID', 'batch_norm': False})
     layers_keys.append('CONV_FIN')
     layers_params.append(conv_1by1)
-
-    if conv_type == 'coord_conv':
-        features += 2
 
     if save:
         name ='network_'+ model + '_%s_%s_%s.json' %(str(features), str(n_layers_per_path * n_pool), conv_type) 
