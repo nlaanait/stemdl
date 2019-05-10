@@ -536,9 +536,9 @@ class DatasetLMDB(DatasetTFRecords):
             #labels= self.label_minmaxscaling(labels, 0.0, 1.0, scale_range=[0., 10.0])
         # images = self.image_scaling(images)
         # Display the training images in the Tensorboard visualizer.
-        if self.debug: 
-            tf.summary.image("potential", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
-            tf.summary.image("images", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4)
+        #if self.debug: 
+        #    tf.summary.image("potential", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
+        #    tf.summary.image("images", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4)
         return images, labels
 
     @staticmethod
