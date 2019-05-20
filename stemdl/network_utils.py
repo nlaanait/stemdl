@@ -205,7 +205,7 @@ def generate_fcnet_json(conv_type="conv_2D", input_channels= 64, features=64, ke
     return OrderedDict(zip(layers_keys,layers_params)) 
         
 
-def generate_fc_dense_json(conv_type="conv_2D", input_channels= 64, input_size = 256, features=64, kernel=[5,5], n_pool=5, n_layers_per_path=2,
+def generate_fc_dense_json(conv_type="conv_2D", input_channels= 64, fc_layers= 4, input_size = 256, features=64, kernel=[5,5], n_pool=5, n_layers_per_path=2,
                         output_channels=1, output_size=128, dropout_prob=None, save=True, model='fc_dense'):
     
     # if type(n_layers) == int:
@@ -243,7 +243,7 @@ def generate_fc_dense_json(conv_type="conv_2D", input_channels= 64, input_size =
     # Decoder path
 
     dense_layers_block = OrderedDict({'type': 'dense_layers_block', 'activation': 'relu',
-                                   'regularize': True, 'n_layers': 2})
+                                   'regularize': True, 'n_layers': fc_layers})
     layers_keys.append('dense_layers_block')
     layers_params.append(dense_layers_block)
 
