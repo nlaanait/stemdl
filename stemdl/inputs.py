@@ -515,7 +515,8 @@ class DatasetLMDB(DatasetTFRecords):
                     images.append(tf.reshape(image, self.data_specs['image_shape']))
                     labels.append(tf.reshape(label, self.data_specs['label_shape']))
             elif self.mode == 'eval':
-                ds = ds.batch(self.params['batch_size'])
+                # self.params['batch_size'] = 1
+                ds = ds.batch(self.params['batch_size'], drop_remainder=True)
                 ds = ds.map(self.wrapped_decode)
                 iterator = ds.make_one_shot_iterator()
                 images, labels = [],[]
