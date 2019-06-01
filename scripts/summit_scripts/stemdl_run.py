@@ -75,12 +75,12 @@ def main():
                          help="""Number of Steps to validate.""")
     cmdline.add_argument( '--decay_steps', default=int(1e3), type=int,
                          help="""Number of steps per lr decay ( hyper parameter).""")
+    cmdline.add_argument( '--summary_steps', default=int(1e3), type=int,
+                         help="""Number of steps to save summaries.""")
     cmdline.add_argument( '--scaling', default=None, type=float,
                          help="""Scaling (hyper parameter).""")
     cmdline.add_argument( '--bn_decay', default=None, type=float,
                          help="""Batch norm decay (hyper parameter).""")
-    cmdline.add_argument('--save_epochs', default=0.5, type=float,
-                         help="""Number of epochs to save checkpoint. """)
     cmdline.add_argument('--validate_epochs', default=1.0, type=float,
                          help="""Number of epochs to validate """)
     cmdline.add_argument('--mode', default='train', type=str,
@@ -147,8 +147,6 @@ def main():
         params[ 'IMAGE_FP16' ] = False
     if FLAGS.restart is not None :
         params[ 'restart' ] = True
-    if FLAGS.save_epochs is not None:
-        params['epochs_per_saving'] = FLAGS.save_epochs
     if FLAGS.validate_epochs is not None:
         params['epochs_per_validation'] = FLAGS.validate_epochs
     if FLAGS.mode == 'train':
@@ -165,8 +163,7 @@ def main():
         params['debug'] = False
     params['save_step'] = FLAGS.save_steps 
     params['validate_step']= FLAGS.validate_steps 
-    #group=None will follow default horovod behavior 
-    #FLAGS.hvd_group= 'layer'
+    params['summary_step']= FLAGS.summary_steps 
     params['hvd_group'] = FLAGS.hvd_group
     if FLAGS.hvd_fp16 is not None:
         params['hvd_fp16'] = hvd.Compression.fp16
@@ -234,8 +231,8 @@ def main():
     elif params['mode'] == 'eval':
         params[ 'IMAGE_FP16' ] = False
         params['output'] = True
-        params['debug'] = False
-        runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, sleep=-1, num_batches=20)
+        params['debug'] = True 
+        runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, sleep=-1, num_batches=None)
         
     # copy checkpoints from nvme
     if FLAGS.nvme is not None:
