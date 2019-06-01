@@ -1429,38 +1429,87 @@ class FCNet(ConvNet):
                                                                                         self.get_ops()))
         self.model_output = tf.saturate_cast(out, tf.float32)
  
+    # def _dense_layers_block(self, input=None, params=None):
+    #     conv_1by1_base = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
+    #                             'features': 1,
+    #                             'activation': 'relu', 'padding': 'VALID', 'batch_norm': True, 'dropout': None})
+    #     fully_connected = OrderedDict({'type': 'fully_connected','weights': None,'bias': None, 'activation': 'relu',
+    #                                'regularize': True})
+    
+    #     num_slices = self.images.get_shape().as_list()[1]
+    #     new_shape = [input.shape.as_list()[0], num_slices, -1, 
+    #                  input.shape.as_list()[-2], input.shape.as_list()[-1]] 
+    #     tensor_slices = tf.reshape(input, new_shape)
+    #     tensor_slices = tf.transpose(tensor_slices, perm=[1, 0, 2, 3, 4])
+
+    #     # num_pattern = '[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?'
+    #     # re_vals = re.compile(num_pattern, re.VERBOSE)
+    #     def freq_to_space(tens):
+    #         with tf.variable_scope('slices' , reuse=self.reuse) as scope:
+    #             conv_1by1 = deepcopy(conv_1by1_base)
+    #             out, _ = self._conv(input=tens, params=conv_1by1) 
+    #             do_bn = conv_1by1.get('batch_norm', False)
+    #             # if do_bn:
+    #             #     out = self._batch_norm(input=out)
+    #             # else:
+    #             #     out = self._add_bias(input=out, params=conv_1by1)
+    #             out = self._activate(input=out, name=scope.name, params=conv_1by1)
+    #             out = tf.reshape(out, [self.params['batch_size'], -1])
+    #             fully_connected['weights']= out.shape.as_list()[-1] 
+    #             fully_connected['bias'] = out.shape.as_list()[-1] 
+    #         if params['n_layers'] == 0:
+    #             out = tf.reshape(out, [self.params['batch_size'], -1])
+    #         for n_layer in range(params['n_layers']):
+    #             with tf.variable_scope('fully_connnected_%d' % n_layer, reuse=self.reuse) as _ :
+    #                 out = self._linear(input=out, params=fully_connected)
+    #                 out = self._activate(input=out, params=fully_connected)
+    #         if self.operation == 'train' and conv_1by1['dropout'] is not None:
+    #             rate = conv_1by1['dropout']
+    #         else:
+    #             rate = 0
+    #         out = tf.nn.dropout(out, rate=tf.constant(rate, dtype=tens.dtype))
+    #         return out
+    #     ops_map_fn = 2 * np.prod(conv_1by1_base['kernel']) * conv_1by1_base['features'] * np.prod(tensor_slices.shape.as_list()[2:])
+    #     self.ops += num_slices * ops_map_fn
+    #     out_slices = tf.map_fn(freq_to_space, tensor_slices, parallel_iterations=num_slices, back_prop=True)
+    #     out_slices = tf.transpose(out_slices, perm=[1, 0, 2])
+    #     out_slices = tf.reshape(out_slices, [self.images.shape.as_list()[0], -1])
+    #     # expand dims
+    #     out_slices = tf.expand_dims(tf.expand_dims(out_slices, -1), -1)
+    #     # layout spatially
+    #     out = tf.nn.depth_to_space(out_slices, int(np.sqrt(self.images.shape.as_list()[1])), data_format=self.params['TENSOR_FORMAT'])
+    #     return out, None
+    
     def _dense_layers_block(self, input=None, params=None):
         conv_1by1_base = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
                                 'features': 1,
-                                'activation': 'relu', 'padding': 'VALID', 'batch_norm': False, 'dropout': None})
+                                'activation': 'relu', 'padding': 'VALID', 'batch_norm': True, 'dropout': 0.25})
         fully_connected = OrderedDict({'type': 'fully_connected','weights': None,'bias': None, 'activation': 'relu',
                                    'regularize': True})
     
         num_slices = self.images.get_shape().as_list()[1]
         new_shape = [input.shape.as_list()[0], num_slices, -1, 
                      input.shape.as_list()[-2], input.shape.as_list()[-1]] 
-        tensor_slices = tf.reshape(input, new_shape)
-        tensor_slices = tf.transpose(tensor_slices, perm=[1, 0, 2, 3, 4])
+        # tensor_slices = tf.reshape(input, new_shape)
+        # tensor_slices = tf.transpose(tensor_slices, perm=[1, 0, 2, 3, 4])
 
-        num_pattern = '[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?'
-        re_vals = re.compile(num_pattern, re.VERBOSE)
-
+        # num_pattern = '[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?'
+        # re_vals = re.compile(num_pattern, re.VERBOSE)
         def freq_to_space(tens):
-            lbl = re_vals.findall(tens.name)
-            # with tf.variable_scope('slice_%s' %format(lbl[0]), reuse=self.reuse) as scope:
             with tf.variable_scope('slices' , reuse=self.reuse) as scope:
                 conv_1by1 = deepcopy(conv_1by1_base)
                 out, _ = self._conv(input=tens, params=conv_1by1) 
                 do_bn = conv_1by1.get('batch_norm', False)
-                if do_bn:
-                    out = self._batch_norm(input=out)
-                else:
-                    out = self._add_bias(input=out, params=conv_1by1)
+                # if do_bn:
+                #     out = self._batch_norm(input=out)
+                # else:
+                #     out = self._add_bias(input=out, params=conv_1by1)
                 out = self._activate(input=out, name=scope.name, params=conv_1by1)
                 out = tf.reshape(out, [self.params['batch_size'], -1])
-                bias_shape= [out.shape.as_list()[-1]]
                 fully_connected['weights']= out.shape.as_list()[-1] 
                 fully_connected['bias'] = out.shape.as_list()[-1] 
+            if params['n_layers'] == 0:
+                out = tf.reshape(out, [self.params['batch_size'], -1])
             for n_layer in range(params['n_layers']):
                 with tf.variable_scope('fully_connnected_%d' % n_layer, reuse=self.reuse) as _ :
                     out = self._linear(input=out, params=fully_connected)
@@ -1471,12 +1520,22 @@ class FCNet(ConvNet):
                 rate = 0
             out = tf.nn.dropout(out, rate=tf.constant(rate, dtype=tens.dtype))
             return out
-
-        out_slices = tf.map_fn(freq_to_space, tensor_slices, parallel_iterations=num_slices, back_prop=True)
-        out_slices = tf.transpose(out_slices, perm=[1, 0, 2])
-        out_slices = tf.reshape(out_slices, [self.images.shape.as_list()[0], -1])
+        # ops_map_fn = 2 * np.prod(conv_1by1_base['kernel']) * conv_1by1_base['features'] * np.prod(tensor_slices.shape.as_list()[2:])
+        # self.ops += num_slices * ops_map_fn
+        # out_slices = tf.map_fn(freq_to_space, tensor_slices, parallel_iterations=num_slices, back_prop=True)
+        conv_1by1 = deepcopy(conv_1by1_base)
+        conv_1by1['features'] = num_slices
+        out, _ = self._conv(input=input, params=conv_1by1) 
+        do_bn = conv_1by1.get('batch_norm', False)
+        if do_bn:
+            out = self._batch_norm(input=out)
+        else:
+            out = self._add_bias(input=out, params=conv_1by1)
+        out = self._activate(input=out, name=None, params=conv_1by1) 
+        out_slices = tf.reshape(out, [self.params['batch_size'], -1])
         # expand dims
         out_slices = tf.expand_dims(tf.expand_dims(out_slices, -1), -1)
         # layout spatially
         out = tf.nn.depth_to_space(out_slices, int(np.sqrt(self.images.shape.as_list()[1])), data_format=self.params['TENSOR_FORMAT'])
         return out, None
+    
