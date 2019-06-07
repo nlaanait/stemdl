@@ -445,6 +445,7 @@ class DatasetLMDB(DatasetTFRecords):
         self.num_samples = (self.env.stat()['entries'] - 6)//2 ## TODO: remove hard-coded # of headers by storing #samples key, val
         self.first_record = 0
         self.records = np.arange(self.first_record, self.num_samples)
+        np.random.shuffle(self.records)
         with self.env.begin(write=False) as txn:
             input_shape = np.frombuffer(txn.get(b"input_shape"), dtype='int64')
             output_shape = np.frombuffer(txn.get(b"output_shape"), dtype='int64')

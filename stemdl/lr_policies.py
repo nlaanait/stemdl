@@ -28,8 +28,7 @@ def decay_warmup(params, hyper_params, global_step):
     WARM_UP_LEARNING_RATE_MAX = tf.constant(hyper_params['warm_up_max_learning_rate'], tf.float32)
 
     # Set parameters that affect the learning rate.
-    num_batches_per_epoch = params['NUM_EXAMPLES_PER_EPOCH'] / params['batch_size'] / hvd.size( )
-    decay_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
+    decay_steps = hyper_params['num_steps_per_decay'] 
     ramp_steps = NUM_STEPS_PER_WARM_UP 
     ramp_up_steps = NUM_STEPS_IN_WARM_UP 
     # Decay/ramp the learning rate exponentially based on the number of steps.
@@ -58,8 +57,6 @@ def decay_warmup(params, hyper_params, global_step):
     else:
         LEARNING_RATE = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step, decay_steps,
                                         LEARNING_RATE_DECAY_FACTOR, staircase=True) 
-        #LEARNING_RATE = LEARNING_RATE * tf.cast((1 + global_step/NUM_STEPS_IN_WARM_UP), tf.float32)
-        #LEARNING_RATE = tf.math.minimum(LEARNING_RATE, tf.cast(WARM_UP_LEARNING_RATE_MAX, tf.float32))
 
     return LEARNING_RATE
 
