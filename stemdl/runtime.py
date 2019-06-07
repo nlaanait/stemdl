@@ -343,23 +343,16 @@ def train(network_config, hyper_params, params):
     if params['restart']:
         saveStep = train_elf.last_step + params['save_step']
         validateStep = train_elf.last_step + params['validate_step']
-        summaryStep = train_elf.last_step + params['log_frequency'] * 50 
-        #next_validation_epoch = train_elf.elapsed_epochs + params['epochs_per_validation']
-        #next_checkpoint_epoch = train_elf.elapsed_epochs + params['epochs_per_saving']
+        summaryStep = train_elf.last_step + params['summary_step'] 
     else:
         saveStep =  params['save_step']
         validateStep = params['validate_step']
-        summaryStep = params['log_frequency'] * 50
-        #next_validation_epoch = params['epochs_per_validation']
-        #next_checkpoint_epoch = params['epochs_per_saving']
+        summaryStep = params['summary_step']
 
     train_elf.run_summary( )
     maxSteps  = params[ 'max_steps' ]
     logFreq   = params[ 'log_frequency' ]
     traceStep = params[ 'trace_step' ]
-    saveStep =  params['save_step']
-    validateStep = params['validate_step']
-    summaryStep = params['summary_step']
 
     while train_elf.last_step < maxSteps :
         train_elf.before_run()
@@ -504,7 +497,7 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
             loss_label= 'ABS_DIFF'
             errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32), reduction=tf.losses.Reduction.MEAN)
         errors = tf.expand_dims(errors,axis=0)
-        # error_averaging = hvd.allreduce(errors)
+        error_averaging = hvd.allreduce(errors)
         errors = np.array([sess.run([IO_ops,errors])[-1] for i in range(dset.num_samples // params['batch_size'])])
         # errors = np.array([sess.run([IO_ops,errors])[-1] for i in range(dset.num_samples)])
         # errors = tf.reduce_mean(errors)
@@ -601,8 +594,8 @@ def validate_ckpt(network_config, hyper_params, params, num_batches=None,
         # restore from moving averages
         ema = tf.train.ExponentialMovingAverage(0.9999)
         vars_to_restore = ema.variables_to_restore()
-        saver = tf.train.Saver(var_list=vars_to_restore)
-        # saver = tf.train.Saver()
+        # saver = tf.train.Saver(var_list=vars_to_restore)
+        saver = tf.train.Saver()
 
         # Find models in checkpoint directory
         dirs = np.array(os.listdir(params['checkpt_dir']))

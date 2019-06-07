@@ -10,6 +10,7 @@ import sys
 sys.path.append('../')
 from stemdl import io_utils
 import numpy as np
+import os
 
 #################################
 # templates for network_config  #
@@ -218,6 +219,7 @@ def generate_fc_dense_json(conv_type="conv_2D", input_channels= 64, fc_layers= 4
     deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': kernel, 'features': features,
                              'padding': 'SAME', 'upsample': pool['kernel'][0]})
     if conv_type == 'depth_conv':
+        features = 2
         conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': features,
                             'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout':dropout_prob})
 
@@ -236,14 +238,14 @@ def generate_fc_dense_json(conv_type="conv_2D", input_channels= 64, fc_layers= 4
         conv_layer_base['features'] *= 2
         if conv_type == 'depth_conv':
            conv_layer_base['features'] = features 
-        input_channels *= features
+        # input_channels *= features
         layers_keys.append('pool_%s' % i)
         layers_params.append(pool)
 
     # Decoder path
-
+  
     dense_layers_block = OrderedDict({'type': 'dense_layers_block', 'activation': 'relu',
-                                   'regularize': True, 'n_layers': fc_layers})
+                                   'regularize': True, 'n_layers': fc_layers, 'conv_type':conv_type})
     layers_keys.append('dense_layers_block')
     layers_params.append(dense_layers_block)
 
@@ -253,10 +255,11 @@ def generate_fc_dense_json(conv_type="conv_2D", input_channels= 64, fc_layers= 4
     # layers_params.append(conv_1by1)
     conv_type = 'conv_2D'
     features_2d = int((input_size/2**n_pool)**2)
+    # features_2d = features
     conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': features_2d,
                             'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout':dropout_prob})
-    num_upsamples = int(output_size/int(np.sqrt(input_channels)))
-    for i in range(num_upsamples -1):
+    num_upsamples = int(np.log2(int(output_size/int(np.sqrt(input_channels))))) 
+    for i in range(num_upsamples):
         deconv_layer = deepcopy(deconv_layer_base)
         deconv_layer['features'] = features_2d  
         layers_keys.append('deconv_%s' % i )
@@ -280,6 +283,55 @@ def generate_fc_dense_json(conv_type="conv_2D", input_channels= 64, fc_layers= 4
         io_utils.write_json_network_config(name, layers_keys, layers_params)
     return OrderedDict(zip(layers_keys,layers_params)) 
 
+def generate_freq2space_json(out_dir= 'json_files', conv_type="conv_2D", input_channels= 64, fc_layers= 4, input_size = 256, init_features=2048, kernel=[5,5], n_layers_per_path=3,
+                        output_channels=1, output_size=128, dropout_prob=None, save=True, model='freq2space', batch_norm=True):
+    
+    # if type(n_layers) == int:
+    #     n_layers = n_layers * (2 * n_pool + 1)
+
+    pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
+    conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': None,
+                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout':dropout_prob})
+    deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': kernel, 'features': None,
+                             'padding': 'SAME', 'upsample': pool['kernel'][0]})
+    
+    layers_params = []
+    layers_keys = []
+
+    # depth to space
+    freq2space_block = OrderedDict({'type': 'freq2space', 'activation': 'relu', 'dropout': dropout_prob, 
+                                    'init_features':init_features, 'batch_norm': batch_norm})
+    layers_keys.append('freq2space')
+    layers_params.append(freq2space_block)
+
+    # Encoder path
+    rank = 0
+    num_upsamples = int(np.log2(int(output_size/int(np.sqrt(input_channels)))))  
+    # features = init_features // num_upsamples
+    features = init_features
+    for i in range(num_upsamples):
+        deconv_layer = deepcopy(deconv_layer_base)
+        deconv_layer['features'] = features  
+        layers_keys.append('deconv_%s' % i )
+        layers_params.append(deconv_layer) 
+        for _ in range(n_layers_per_path):
+            conv_layer = deepcopy(conv_layer_base)
+            conv_layer['features'] = features 
+            layers_keys.append('conv_%s' % rank)
+            layers_params.append(conv_layer)
+            rank += 1
+        features = features // 2
+
+    # final conv 1x1
+    conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 'features': output_channels,
+                            'activation': 'relu', 'padding': 'VALID', 'batch_norm': False})
+    layers_keys.append('CONV_FIN')
+    layers_params.append(conv_1by1)
+
+    if save:
+        name ='network_'+ model + '_%s_%s_%s.json' %(str(init_features), str(n_layers_per_path), conv_type) 
+        io_utils.write_json_network_config(os.path.join(out_dir,name), layers_keys, layers_params)
+    return OrderedDict(zip(layers_keys,layers_params)) 
 
 def generate_coordconv_json(features=64, kernel=[1,1], n_layers=4,
                         output_channels=1, dropout_prob=None, save=True, model='coordconv'):
