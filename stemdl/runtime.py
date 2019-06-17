@@ -207,8 +207,8 @@ def train(network_config, hyper_params, params):
 
         # Build model, forward propagate, and calculate loss
         scope = 'model'
-        summary = False
-        if params['debug']:
+        summary = True
+        if params['debug'] is not None:
             summary=True
         print_rank('Starting up queue of images+labels: %s,  %s ' % (format(images.get_shape()),
                                                                 format(labels.get_shape())))

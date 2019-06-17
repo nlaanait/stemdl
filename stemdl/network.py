@@ -1423,7 +1423,8 @@ class FCNet(ConvNet):
                     self.print_verbose('    input: %s' %format(out.get_shape().as_list())) 
                     out, _ = self._freq_to_space(input=out, params=layer_params) 
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
-                    if self.summary: self._activation_summary(out) 
+                    if self.summary: self._activation_summary(out)
+                    self._activation_summary(out)
 
                 # print layer specs and generate Tensorboard summaries
                 if out is None:
@@ -1500,6 +1501,7 @@ class FCNet(ConvNet):
         return out, None
 
     def _freq_to_space(self, input=None, params=None):
+        # input = self._multi_attention_head(input)
         freq_dim = int(np.sqrt(input.shape[1].value))
         slices = tf.reshape(input, [input.shape[0].value, freq_dim, freq_dim, -1])
         slices = tf.transpose(slices, perm=[0, 3, 1, 2])
@@ -1524,7 +1526,31 @@ class FCNet(ConvNet):
         out = tf.nn.dropout(out, rate=tf.constant(rate, dtype=out.dtype))
         return out, None
 
-    
+    def _multi_attention_head(self, input=None):
+        from tensor2tensor.layers import common_image_attention as cia
+        from tensor2tensor.layers import common_hparams
+        from tensor2tensor.layers import common_layers
+        out = tf.transpose(input, perm=[0, 2, 3, 1])
+
+        hparams= common_hparams.basic_params1()
+        hparams.add_hparam("num_heads", 1)
+        hparams.add_hparam("pos", "none")
+        hparams.add_hparam("attention_key_channels", 256)
+        hparams.add_hparam("attention_value_channels", 256)
+        hparams.add_hparam("query_shape",(1, out.shape[-1].value))
+        hparams.add_hparam("memory_flange", (4,4))
+
+        hparams.set_hparam("hidden_size", out.shape[-1].value)
+        hparams.set_hparam("num_heads", 1)
+        with tf.variable_scope('multihead_attention', reuse=self.reuse) as scope:
+            out = cia.local_attention_2d(common_layers.layer_preprocess(out, hparams), 
+                        hparams, attention_type="local_attention_2d")
+        out = tf.transpose(out, perm = [0, 3, 1, 2])
+        return out
+
+
+
+
     # def _dense_layers_block_multi_head_loop(self, input=None, params=None):
     #     conv_1by1_base = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
     #                             'features': 1,
