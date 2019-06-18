@@ -1361,6 +1361,13 @@ class FCNet(ConvNet):
                         out = self._batch_norm(input=out)
                     else:
                         out = self._add_bias(input=out, params=layer_params)
+                        # dropout
+                    if self.operation == 'train' and layer_params.get('dropout', None) is not None:
+                        rate = layer_params['dropout']
+                    else:
+                        rate = 0
+                    out = tf.nn.dropout(out, rate=tf.constant(rate, dtype=out.dtype))
+                    out_shape = out.get_shape().as_list()
                     out = self._activate(input=out, name=scope.name, params=layer_params)
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
                     if self.summary: self._activation_summary(out)
@@ -1429,6 +1436,7 @@ class FCNet(ConvNet):
                 # print layer specs and generate Tensorboard summaries
                 if out is None:
                     raise NotImplementedError('Layer type: ' + layer_params['type'] + 'is not implemented!')
+                
                 out_shape = out.get_shape().as_list()
                 self._print_layer_specs(layer_params, scope, in_shape, out_shape)
             self.scopes.append(scope)

@@ -169,9 +169,9 @@ class DatasetTFRecords(object):
         :return: 2d tensor
         """
 
-        alpha = tf.random_uniform([1], minval=self.params['noise_min'], maxval=self.params['noise_max'])
-        noise = tf.random_uniform(image.shape, dtype=tf.float32)
-        trans_image = (1 - alpha[0]) * image + alpha[0] * noise
+        alpha = tf.random_uniform([1], minval=self.params['noise_min'], maxval=self.params['noise_max'], dtype=image.dtype)
+        noise = tf.random_uniform(image.shape, dtype=image.dtype)
+        trans_image = (1 - alpha[0]) * image / tf.reduce_max(image, keepdims=True) + alpha[0] * noise
         return trans_image
 
 
@@ -513,6 +513,9 @@ class DatasetLMDB(DatasetTFRecords):
                 images, labels = [],[]
                 for _ in range(self.params['batch_size']):
                     image, label = iterator.get_next()
+                    image = tf.reshape(image, self.data_specs['image_shape'])
+                    if self.params[self.mode + '_distort']:
+                        image = self.add_noise_image(image)
                     images.append(tf.reshape(image, self.data_specs['image_shape']))
                     labels.append(tf.reshape(label, self.data_specs['label_shape']))
             elif self.mode == 'eval':
@@ -521,9 +524,13 @@ class DatasetLMDB(DatasetTFRecords):
                 ds = ds.map(self.wrapped_decode)
                 iterator = ds.make_one_shot_iterator()
                 images, labels = [],[]
+                if self.params[self.mode + '_distort']:
+                    print('images will be distorted')
                 for _ in range(self.params['batch_size']):
                     image, label = iterator.get_next()
                     image = tf.reshape(image, self.data_specs['image_shape'])
+                    if self.params[self.mode + '_distort']:
+                        image = self.add_noise_image(image)
                     images.append(image)
                     labels.append(tf.reshape(label, self.data_specs['label_shape']))
 
