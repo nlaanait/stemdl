@@ -284,7 +284,7 @@ def generate_fc_dense_json(conv_type="conv_2D", input_channels= 64, fc_layers= 4
     return OrderedDict(zip(layers_keys,layers_params)) 
 
 def generate_freq2space_json(out_dir= 'json_files', conv_type="conv_2D", input_channels= 64, fc_layers= 4, input_size = 256, init_features=2048, kernel=[5,5], n_layers_per_path=3,
-                        output_channels=1, output_size=128, dropout_prob=None, save=True, model='freq2space', batch_norm=True):
+                        output_channels=1, output_size=128, dropout_prob=0.25, save=True, model='freq2space', batch_norm=True, attention=True):
     
     # if type(n_layers) == int:
     #     n_layers = n_layers * (2 * n_pool + 1)
@@ -292,8 +292,8 @@ def generate_freq2space_json(out_dir= 'json_files', conv_type="conv_2D", input_c
     pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
     conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': None,
                             'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout':dropout_prob})
-    deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': kernel, 'features': None,
-                             'padding': 'SAME', 'upsample': pool['kernel'][0]})
+    deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [1,1], 'features': None,
+                             'padding': 'VALID', 'upsample': pool['kernel'][0]})
     
     layers_params = []
     layers_keys = []
@@ -301,7 +301,10 @@ def generate_freq2space_json(out_dir= 'json_files', conv_type="conv_2D", input_c
     # depth to space
     freq2space_block = OrderedDict({'type': 'freq2space', 'activation': 'relu', 'dropout': dropout_prob, 
                                     'init_features':init_features, 'batch_norm': batch_norm})
-    layers_keys.append('freq2space')
+    if attention:
+        layers_keys.append('freq2space_attention')
+    else:
+        layers_keys.append('freq2space')
     layers_params.append(freq2space_block)
 
     # Encoder path
@@ -328,6 +331,8 @@ def generate_freq2space_json(out_dir= 'json_files', conv_type="conv_2D", input_c
     layers_keys.append('CONV_FIN')
     layers_params.append(conv_1by1)
 
+    if attention:
+        model += "_attention"
     if save:
         name ='network_'+ model + '_%s_%s_%s.json' %(str(init_features), str(n_layers_per_path), conv_type) 
         io_utils.write_json_network_config(os.path.join(out_dir,name), layers_keys, layers_params)
