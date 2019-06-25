@@ -533,16 +533,20 @@ class DatasetLMDB(DatasetTFRecords):
                         image = self.add_noise_image(image)
                     images.append(image)
                     labels.append(tf.reshape(label, self.data_specs['label_shape']))
-
-            images = tf.parallel_stack(images)
-            labels = tf.parallel_stack(labels)
+            if tf.executing_eagerly():
+                images = tf.stack(images)
+                labels = tf.stack(labels)
+            else:
+                images = tf.parallel_stack(images)
+                labels = tf.parallel_stack(labels)
             # reshape them to the expected shape:
             labels_newshape = [self.params['batch_size']] + self.data_specs['label_shape']
             images_newshape = [self.params['batch_size']] + self.data_specs['image_shape']
             labels = tf.reshape(labels, labels_newshape)
             images = tf.reshape(images, images_newshape)
-         
-            #labels= self.label_minmaxscaling(labels, 0.0, 1.0, scale_range=[0., 10.0])
+
+            labels -= tf.reduce_min(labels, keepdims=True) 
+            # abels= self.label_minmaxscaling(labels, 0.0, 1.0, scale_range=[0., 10.0])
         # images = self.image_scaling(images)
         # Display the training images in the Tensorboard visualizer.
         #if self.debug: 
