@@ -594,8 +594,8 @@ def validate_ckpt(network_config, hyper_params, params, num_batches=None,
         # restore from moving averages
         ema = tf.train.ExponentialMovingAverage(0.9999)
         vars_to_restore = ema.variables_to_restore()
-        # saver = tf.train.Saver(var_list=vars_to_restore)
-        saver = tf.train.Saver()
+        saver = tf.train.Saver(var_list=vars_to_restore)
+        # saver = tf.train.Saver()
 
         # Find models in checkpoint directory
         dirs = np.array(os.listdir(params['checkpt_dir']))
