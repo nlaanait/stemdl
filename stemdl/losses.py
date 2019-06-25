@@ -57,6 +57,10 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
         #mask[snapshot, snapshot] = 0.0 
         #mask = np.expand_dims(np.expand_dims(mask, axis=0), axis=0)
         #weight = tf.constant(mask)
+        # if labels.shape != n_net.model_output:
+        #     labels = tf.transpose(labels, perm=[0, 2, 3, 1])
+        #     labels = tf.image.resize(labels, n_net.model_output.shape.as_list()[-2:], method=tf.image.ResizeMethod.BILINEAR)
+        #     labels = tf.transpose(labels, perm=[0, 3, 1, 2])
         weight=None
         _ = calculate_loss_regressor(n_net.model_output, labels, params, hyper_params, weight=weight)
     if hyper_params['network_type'] == 'fft_inverter':
