@@ -482,7 +482,6 @@ class DatasetLMDB(DatasetTFRecords):
         #if self.debug:
         #    print_rank('time to read and convert to tensor: %2.2f' % (time.time()-t))
         return image, label
-
             
     def generator(self):
         for record in cycle(self.records):
@@ -560,6 +559,166 @@ class DatasetLMDB(DatasetTFRecords):
         image_batch = tf.sqrt(image_batch)
         return image_batch
 
+
+# class DatasetLMDB(DatasetTFRecords):
+#     def __init__(self, *args, **kwargs):
+#         super(DatasetLMDB, self).__init__(*args, **kwargs)
+#         self.mode = self.params['mode']
+#         lmdb_dir = self.params['data_dir']
+#         lmdb_dir = os.path.join(lmdb_dir, 'batch_%d' %  int(hvd.rank()))
+#         lmdb_path = [os.path.join(lmdb_dir, p) for p in os.listdir(lmdb_dir)]
+#         self.env = [lmdb.open(path, create=False, readahead=False, readonly=True, writemap=False, lock=False) for path in lmdb_path]
+#         self.num_samples = [(env.stat()['entries'] - 6)//2 for env in self.env] ## TODO: remove hard-coded # of headers by storing #samples key, val
+#         self.first_record = 0
+#         self.records = [np.arange(self.first_record, num_sample) for num_sample in self.num_samples]
+#         _ = [np.random.shuffle(rec) for rec in self.records]
+#         input_shape, output_shape, input_dtype, output_dtype, output_name, input_name = [], [], [], [], [], []
+#         for env in self.env:
+#             with env.begin(write=False) as txn:
+#                 input_shape.append(np.frombuffer(txn.get(b"input_shape"), dtype='int64'))
+#                 output_shape.append(np.frombuffer(txn.get(b"output_shape"), dtype='int64'))
+#                 input_dtype.append(np.dtype(txn.get(b"input_dtype").decode("ascii")))
+#                 output_dtype.append(np.dtype(txn.get(b"output_dtype").decode("ascii")))
+#                 output_name.append(txn.get(b"output_name").decode("ascii"))
+#                 input_name.append(txn.get(b"input_name").decode("ascii"))
+            
+#         self.data_specs={'label_shape': list(output_shape), 'image_shape': list(input_shape), 
+#             'label_dtype':output_dtype, 'image_dtype': input_dtype, 'label_key':output_name, 'image_key': input_name}
+#         self.image_keys, self.label_keys = [], []
+#         for (env_idx, _) in enumerate(self.env):
+#             self.image_keys.append([bytes(self.data_specs['image_key'][env_idx]+str(idx), "ascii") for idx in self.records[env_idx]]) 
+#             self.label_keys.append([bytes(self.data_specs['label_key'][env_idx]+str(idx), "ascii") for idx in self.records[env_idx]])
+      
+#         if self.debug:
+#             # print(self.data_specs)
+#             # print(self.image_keys)
+#             print('rank=%d' % (hvd.rank()))
+#             for env_idx, _ in enumerate(self.env):
+#                 print('lmdb=%s, num_samples=%d' %(lmdb_path[env_idx], self.num_samples[env_idx]))
+
+#     def decode_image_label(self, idx):
+#         """
+#         idx: index of sample
+#         Returns: image, label tensors read from lmdb environment
+#         """
+#         idx = idx[0]        
+#         t = time.time()
+#         # randomly pick database 
+#         db_idx = np.random.randint(len(self.env))
+#         if idx >= len(self.image_keys[db_idx]):
+#             db_idx = (db_idx + 1) % 2
+#         # pick database based on rank num
+#         db_idx = 0
+#         if hvd.rank() in [0,1]:
+#             db_idx = 1
+#         image_key = self.image_keys[db_idx][idx]
+#         label_key = self.label_keys[db_idx][idx]
+#             # print("db_idx, len, idx", db_idx, len(self.image_keys[db_idx]), idx)
+#         with self.env[db_idx].begin(write=False, buffers=True) as txn:
+#             image_bytes = txn.get(image_key)
+#             label_bytes = txn.get(label_key)
+#         label = np.frombuffer(label_bytes, dtype=self.data_specs['label_dtype'][db_idx])
+#         image = np.frombuffer(image_bytes, dtype=self.data_specs['image_dtype'][db_idx])
+#         #TODO: modify to calculate largest size from self.data_specs['image_shape']
+#         # if image.size != int(256**3):
+#         #     image = np.pad(image, (0, 256**3 - image.size), mode='constant')
+
+#         # if self.debug: 
+#         #    print_rank('rank=%d, read image %s %s and label %s %s from lmdb' %(hvd.rank(),format(image.shape), 
+#         #    format(image.dtype), format(label.shape), format(label.dtype)))
+#         # if self.debug:
+#         #    print_rank('time to read and convert to tensor: %2.2f' % (time.time()-t))
+#         return image, label
+            
+#     def generator(self):
+#         #TODO: modify generator since self.records is a list. for now hack...
+#         db_idx = 0
+#         if hvd.rank() in [0,1]:
+#             db_idx = 1
+#         for record in cycle(self.records[db_idx]):
+#             yield (record)
+
+#     def wrapped_decode(self, idx):
+#         #TODO: note that if 'image_dtype' and/or 'label_dtype' are different for different dbs in self.env the tf.py_func call will break.
+#         return tf.py_func(self.decode_image_label, [idx], 
+#                          [tf.as_dtype(self.data_specs['image_dtype'][0]),tf.as_dtype(self.data_specs['label_dtype'][0])])
+
+
+#     def minibatch(self):
+#         """
+#         Returns minibatch of images and labels from TF records file.
+#         """
+#         with tf.name_scope('pipeline'):
+#             ds = tf.data.Dataset.from_generator(
+#                 self.generator, 
+#                 (tf.int64),
+#                 (tf.TensorShape([]))
+#                 )
+#             if self.mode == 'train':
+#                 max_num_records = self.params['num_epochs'] * self.params['NUM_EXAMPLES_PER_EPOCH']
+#                 ds = ds.take(max_num_records)
+#                 ds = ds.prefetch(min(1, np.min(self.num_samples)))
+#                 ds = ds.batch(self.params['batch_size'], drop_remainder=True)
+#                 #ds = ds.map(self.wrapped_decode, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+#                 ds = ds.map(self.wrapped_decode)
+#                 iterator = ds.make_one_shot_iterator()
+#                 images, labels = [],[]
+#                 db_idx = 0
+#                 if hvd.rank() in [0,1]:
+#                     db_idx = 1
+#                 image_shape = self.data_specs['image_shape'][db_idx]
+#                 label_shape = self.data_specs['label_shape'][db_idx]
+#                 for _ in range(self.params['batch_size']):
+#                     image, label = iterator.get_next()
+#                     #TODO: modify to calculate largest size from self.data_specs['image_shape'] 
+#                     image = tf.reshape(image, image_shape)
+#                     if self.params[self.mode + '_distort']:
+#                         image = self.add_noise_image(image)
+#                     #TODO: modify to calculate largest size from self.data_specs['image_shape'] 
+#                     images.append(image)
+#                     labels.append(tf.reshape(label, label_shape))
+#             elif self.mode == 'eval':
+#                 # self.params['batch_size'] = 1
+#                 ds = ds.batch(self.params['batch_size'], drop_remainder=True)
+#                 ds = ds.map(self.wrapped_decode)
+#                 iterator = ds.make_one_shot_iterator()
+#                 images, labels = [],[]
+#                 if self.params[self.mode + '_distort']:
+#                     print('images will be distorted')
+#                 for _ in range(self.params['batch_size']):
+#                     image, label = iterator.get_next()
+#                     image = tf.reshape(image, self.data_specs['image_shape'])
+#                     if self.params[self.mode + '_distort']:
+#                         image = self.add_noise_image(image)
+#                     images.append(image)
+#                     labels.append(tf.reshape(label, self.data_specs['label_shape']))
+#             if tf.executing_eagerly():
+#                 images = tf.stack(images)
+#                 labels = tf.stack(labels)
+#             else:
+#                 images = tf.parallel_stack(images)
+#                 labels = tf.parallel_stack(labels)
+#             # reshape them to the expected shape:
+#             # labels_newshape = [self.params['batch_size']] + self.data_specs['label_shape'][-1]
+#             # images_newshape = [self.params['batch_size']] + self.data_specs['image_shape'][-1]
+#             # labels = tf.reshape(labels, labels_newshape)
+#             # images = tf.reshape(images, images_newshape)
+
+#             labels -= tf.reduce_min(labels, keepdims=True) 
+#             # abels= self.label_minmaxscaling(labels, 0.0, 1.0, scale_range=[0., 10.0])
+#         # images = self.image_scaling(images)
+#         # Display the training images in the Tensorboard visualizer.
+#         #if self.debug: 
+#         #    tf.summary.image("potential", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
+#         #    tf.summary.image("images", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4)
+#         return images, labels
+
+#     @staticmethod
+#     def image_scaling(image_batch):
+#         image_batch -= tf.reduce_min(image_batch, axis=[2,3], keepdims=True)
+#         image_batch = tf.sqrt(image_batch)
+#         return image_batch
+
 ### common datasets ### 
 spacegroup = {'energy': {'dtype':'float64', 'shape':[1]},
                       'thickness': {'dtype':'float64', 'shape':[1]},
@@ -574,6 +733,7 @@ spacegroup = {'energy': {'dtype':'float64', 'shape':[1]},
                        # image
                       'image_raw': {'dtype': 'float16', 'shape':[512,512,1]},
                       'preprocess': True}
+
 reconstruction_2d = {'material': {'dtype':'str', 'shape':[1]},
                       'space_group': {'dtype': 'int64', 'shape':[1]},
                       'abc': {'dtype':'float64', 'shape':[3]},
@@ -583,6 +743,7 @@ reconstruction_2d = {'material': {'dtype':'str', 'shape':[1]},
                       'cbed': {'dtype': 'float16', 'shape':[1024,512,512]},
                       '2d_potential': {'dtype': 'float16', 'shape':[1,512,512]},
                       'preprocess': False}
+
 abf_oxides_regression = {'label':{'dtype': 'float64', 'shape':[3]},
             # 'rotation_pattern':{'dtype': 'int64', 'shape':[27]},
             # images
@@ -591,6 +752,7 @@ abf_oxides_regression = {'label':{'dtype': 'float64', 'shape':[3]},
             'preprocess': True, 'CROP_HEIGHT': 85, 'CROP_WIDTH': 120,
             'RESIZE_WIDTH': 120, 'RESIZE_HEIGHT': 85},
             'preprocess': True}
+
 abf_oxides_classification = {'label':{'dtype': 'int64', 'shape':[27]},
             # 'rotation_pattern':{'dtype': 'int64', 'shape':[27]},
             # images
