@@ -204,7 +204,6 @@ def generate_fcnet_json(conv_type="conv_2D", input_channels= 64, features=64, ke
         name ='network_'+ model + '_%s_%s_%s.json' %(str(features), str(n_layers_per_path * n_pool), conv_type) 
         io_utils.write_json_network_config(name, layers_keys, layers_params)
     return OrderedDict(zip(layers_keys,layers_params)) 
-        
 
 def generate_fc_dense_json(conv_type="conv_2D", input_channels= 64, fc_layers= 4, input_size = 256, features=64, kernel=[5,5], n_pool=5, n_layers_per_path=2,
                         output_channels=1, output_size=128, dropout_prob=None, save=True, model='fc_dense'):
@@ -292,9 +291,14 @@ def generate_freq2space_json(out_dir= 'json_files', conv_type="conv_2D", input_c
     pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
     conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': None,
                             'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout':dropout_prob})
-    deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [1,1], 'features': None,
-                             'padding': 'VALID', 'upsample': pool['kernel'][0]})
-    
+    deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [3,3], 'features': None,
+                             'padding': 'SAME', 'upsample': pool['kernel'][0]})
+    conv_cvae = OrderedDict({'type': 'conv_2D', 'stride': [2, 2], 'kernel': [4, 4], 
+                                'features': 16,
+                                'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout': 0.0})
+    fc_cvae = OrderedDict({'type': 'fully_connected','weights': 512,'bias': 512, 'activation': 'relu',
+                                'regularize': True})
+    cvae_model = OrderedDict({'n_conv_layers': 4, 'n_fc_layers':2,'fc_params': fc_cvae, 'conv_params':conv_cvae}) 
     layers_params = []
     layers_keys = []
 
@@ -306,7 +310,8 @@ def generate_freq2space_json(out_dir= 'json_files', conv_type="conv_2D", input_c
         layers_keys.append('freq2space_attention')
     elif CVAE:
         layers_keys.append('freq2space_CVAE')
-        freq2space_block['type'] = 'freq2space_CVAE' 
+        freq2space_block['type'] = 'freq2space_CVAE'
+        freq2space_block['cvae_params'] = cvae_model
     else:
         layers_keys.append('freq2space')
     layers_params.append(freq2space_block)
@@ -341,7 +346,8 @@ def generate_freq2space_json(out_dir= 'json_files', conv_type="conv_2D", input_c
         model += '_CVAE'
 
     if save:
-        name ='network_'+ model + '_%s_%s_%s.json' %(str(init_features), str(n_layers_per_path), conv_type) 
+        name ='network_'+ model + '_%s_%s_%s_%s_%s.json' %(str(init_features), str(n_layers_per_path), str(cvae_model['n_fc_layers']),
+                str(fc_cvae['weights']), conv_type) 
         io_utils.write_json_network_config(os.path.join(out_dir,name), layers_keys, layers_params)
     return OrderedDict(zip(layers_keys,layers_params)) 
 
