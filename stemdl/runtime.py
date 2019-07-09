@@ -281,7 +281,7 @@ def train(network_config, hyper_params, params):
     # Gather all training related ops into a single one.
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     increment_op = tf.assign_add(global_step, 1)
-    ema = tf.train.ExponentialMovingAverage(decay=0.75, num_updates=global_step)
+    ema = tf.train.ExponentialMovingAverage(decay=0.999, num_updates=global_step)
     all_ops = tf.group(*([train_opt] + update_ops + IO_ops + [increment_op]))
 
     with tf.control_dependencies([all_ops]):
@@ -400,6 +400,7 @@ def train(network_config, hyper_params, params):
             validate(network_config, hyper_params, params, sess, dset)
             validateStep += params['validate_step']
             #next_validation_epoch += params['epochs_per_validation']
+
 
 def train_inverter(network_config, hyper_params, params):
     """
@@ -557,7 +558,7 @@ def train_inverter(network_config, hyper_params, params):
     # Gather all training related ops into a single one.
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     increment_op = tf.assign_add(global_step, 1)
-    ema = tf.train.ExponentialMovingAverage(decay=0.75, num_updates=global_step)
+    ema = tf.train.ExponentialMovingAverage(decay=0.99, num_updates=global_step)
     all_ops = tf.group(*([train_opt] + update_ops + IO_ops + [increment_op]))
     all_ops_2 = tf.group(*([train_opt] + update_ops + IO_ops_2 + [increment_op]))
 

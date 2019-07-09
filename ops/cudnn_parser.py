@@ -67,6 +67,9 @@ def extract_conv_ops(filepath, line_bounds, steps, times, debug=False):
     dims = []
     num_line = 0
     with open(filepath, 'r') as f:
+        for _ in range(line_lb):
+            f.readline()
+            num_line += 1
         lines = f.__iter__()
         l = lines.readline()
         num_line += 1
@@ -192,13 +195,15 @@ def get_lines_bounds(times, logfile):
         for i,line in enumerate(f):
             if pattern.search(line):
                 time_list = re.findall('\d+',line)
-                assert len(time_list) == 11, print('Time format is not as expected. Results may be wrong.')
-                hour,minute,sec,millsec = time_list[3:7]
-                total_time = int(hour) * 3600  
-                total_time += int(minute) * 60
-                total_time += int(sec)
-                total_time += int(millsec) * 10 ** (-len(millsec))
-                cudnn_times.append(total_time)
+                if len(time_list) == 11:
+                    # assert len(time_list) == 11, print('Time format is not as expected in Line %d: Found %s, Expected: len(Time)=11. Results may be wrong.'
+                    # % (i, format(time_list)))
+                    hour,minute,sec,millsec = time_list[3:7]
+                    total_time = int(hour) * 3600  
+                    total_time += int(minute) * 60
+                    total_time += int(sec)
+                    total_time += int(millsec) * 10 ** (-len(millsec))
+                    cudnn_times.append(total_time)
                 if len(cudnn_times) > 1:
                     total_time -= cudnn_times[0]  # assume that first printed step lines up with cudnn start of trace
                     if total_time >= times[0] and total_time <= times[1]: 
