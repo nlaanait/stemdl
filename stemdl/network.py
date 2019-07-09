@@ -40,7 +40,8 @@ class ConvNet(object):
         self.global_step = 0
         self.hyper_params = hyper_params
         self.network = network
-        self.images = self.image_scaling(images)
+        self.images = images
+        self.images = self.image_scaling(self.images)
         if self.params['IMAGE_FP16']: #and self.images.dtype is not tf.float16 and operation == 'train':
             self.images = tf.cast(self.images, tf.float16)
         else:
@@ -634,7 +635,7 @@ class ConvNet(object):
         #input_reshape = tf.reshape(input,[self.params['batch_size'], -1])
         input_shape  = input.shape.as_list()
         if len(input_shape) > 2:
-            input_reshape = tf.reshape(input,[input_shape[0] , input_shape[1] * input_shape[2] * input_shape[3]])
+            input_reshape = tf.reshape(input,[self.params['batch_size'], -1])
         else:
             input_reshape = input 
         dim_input = input_reshape.shape[1].value
@@ -1383,7 +1384,8 @@ class FCNet(ConvNet):
                         rate = layer_params['dropout']
                     else:
                         rate = 0
-                    out = tf.nn.dropout(out, rate=tf.constant(rate, dtype=out.dtype))
+                    out = tf.keras.layers.SpatialDropout2D(rate, data_format='channels_first')(inputs=out, training= self.operation == 'train')
+                    # out = tf.nn.dropout(out, rate=tf.constant(rate, dtype=out.dtype))
                     out_shape = out.get_shape().as_list()
                     out = self._activate(input=out, name=scope.name, params=layer_params)
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
@@ -1431,9 +1433,11 @@ class FCNet(ConvNet):
                     out, _ = self._deconv(input=out, params=layer_params)
                     # new_shape = out.shape.as_list()[-2:]
                     # out = tf.transpose(out, perm=[0, 2, 3, 1])
-                    # out = tf.image.resize(out, [new_shape[0] * 2, new_shape[1] * 2], method=tf.image.ResizeMethod.BILINEAR)
+                    # # out = tf.cast(out, tf.float32)
+                    # out = tf.image.resize(out, [new_shape[0] * 2, new_shape[1] * 2], 
+                    #             method=tf.image.ResizeMethod.BILINEAR, align_corners=True)
                     # if self.params['IMAGE_FP16']:
-                    #     out = tf.saturate_cast(out, tf.float16)
+                    #     out = tf.cast(out, tf.float16)
                     # out = tf.transpose(out, perm=[0, 3, 1, 2])
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
 
@@ -1480,7 +1484,6 @@ class FCNet(ConvNet):
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
                     if self.summary: 
                         self._activation_summary(out)
-                        self._activation_summary(out)
                         self._activation_image_summary(out)
 
 
@@ -1493,7 +1496,7 @@ class FCNet(ConvNet):
             self.scopes.append(scope)
         # final 1x1 conv
         with tf.variable_scope('CONV_FIN', reuse=self.reuse) as scope:
-            conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 'padding': 'VALID', 'features': 1})
+            conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [3, 3], 'padding': 'SAME', 'features': 1})
             self.print_verbose(">>> Adding CONV_FIN layer: ")
             self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
             out, _ = self._conv(input=out, params=conv_1by1) 
@@ -1501,6 +1504,9 @@ class FCNet(ConvNet):
             out_shape = out.get_shape().as_list()
             self._print_layer_specs(layer_params, scope, in_shape, out_shape)
             self.scopes.append(scope) 
+            if self.summary: 
+                self._activation_summary(out)
+                self._activation_image_summary(out)
 
         if self.labels.shape != out.shape:
             out = tf.transpose(out, perm = [0, 2, 3, 1])
@@ -1696,38 +1702,49 @@ class FCNet(ConvNet):
         print('attention output:', out.get_shape().as_list())
         return out
 
-    def _reduce_slices(self, inputs, params=None):
+    def _cvae_slices(self, inputs, params=None):
         new_shape = [inputs.shape.as_list()[0], inputs.shape.as_list()[1], -1, 
                      inputs.shape.as_list()[-2], inputs.shape.as_list()[-1]] 
         tensor_slices = tf.reshape(inputs, new_shape)
         tensor_slices = tf.transpose(tensor_slices, perm=[1, 0, 2, 3, 4])
-        conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [3, 3], 
-                                'features': 16,
-                                'activation': 'relu', 'padding': 'VALID', 'batch_norm': True, 'dropout': 0.0})
-        pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
-        fully_connected = OrderedDict({'type': 'fully_connected','weights': 256,'bias': 256, 'activation': 'relu',
-                                   'regularize': True})
+        conv_1by1 = params['conv_params']
+        fully_connected = params['fc_params']
+        num_conv = params['n_conv_layers']
+        num_fc = params['n_fc_layers']
+        # conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [2, 2], 'kernel': [4, 4], 
+        #                         'features': 16,
+        #                         'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout': 0.0})
+        # pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
+        # fully_connected = OrderedDict({'type': 'fully_connected','weights': 1024,'bias': 1024, 'activation': 'relu',
+        #                            'regularize': True})
         self.print_verbose("\t>>> Adding CVAE: " )
-        self.print_verbose('\t\t    input: %s' %format(inputs.get_shape().as_list())) 
+        self.print_verbose('\t\t    input: %s' %format(inputs.get_shape().as_list()))
+        # pre_ops = deepcopy(self.ops)
         def CVAE(tens):
             #TODO, turn this into a full denoising VAE
-            for i in range(4):
+            for i in range(num_conv):
                 with tf.variable_scope('CVAE_block_%d' % i , reuse=self.reuse) as scope:
                     tens , _ = self._conv(input=tens, params=conv_1by1)
-                    tens = self._pool(input=tens, params=pool)
-            out = tf.transpose(tens, perm=[0, 2, 3, 1])
-            out = tf.image.resize_images(out, [16,16], method=tf.image.ResizeMethod.BILINEAR)
-            if self.params['IMAGE_FP16']:
-                out = tf.cast(out, tf.float16)
-            out = tf.transpose(out, perm=[0, 3, 1, 2])
-            with tf.variable_scope('CVAE_fc' , reuse=self.reuse) as _ :
-                # out = self._multi_attention_head(inputs=out, params=params)
-                out = self._linear(input=out, params=fully_connected)
-                out = self._activate(input=out, params=fully_connected)
-            out = tf.reshape(out, [new_shape[0], -1])
-            return out
+                    # tens = self._pool(input=tens, params=pool)
+                    tens = self._activate(input=tens, params=conv_1by1)
+            if tens.shape[-2:] != [32, 32]:
+                tens = tf.transpose(tens, perm=[0, 2, 3, 1])
+                tens = tf.image.resize(tens, [32, 32], method=tf.image.ResizeMethod.BILINEAR)
+                if self.params['IMAGE_FP16']:
+                    tens = tf.saturate_cast(tens, tf.float16)
+                tens = tf.transpose(tens, perm=[0, 3, 1, 2])
+            # self.print_rank('shape inside CVAE', tens.get_shape())
+            for i in range(num_fc):
+                with tf.variable_scope('CVAE_fc_%d' %i, reuse=self.reuse) as _ :
+                    tens = self._linear(input=tens, params=fully_connected)
+                    tens = self._activate(input=tens, params=fully_connected)
+            # tens = tf.reshape(tens, [new_shape[0], -1])
+            return tens
 
-        out = tf.map_fn(CVAE, tensor_slices, back_prop=True, swap_memory=False)
+        # post_ops = deepcopy(self.ops)
+        # self.print_rank("post pre, cvae ops: ", pre_ops - post_ops)
+        out = tf.map_fn(CVAE, tensor_slices, back_prop=True, swap_memory=True, parallel_iterations=256)
+        # self.print_rank('output of CVAE', out.get_shape())
         out = tf.transpose(out, perm= [1, 2, 0])
         out = tf.reshape(out, [new_shape[0], -1, int(math.sqrt(new_shape[1])), int(math.sqrt(new_shape[1]))])
         if out.shape[-2:] != [16, 16]:
@@ -1833,9 +1850,9 @@ class FCNet(ConvNet):
         conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
                                 'features': params['init_features'],
                                 'activation': params['activation'], 
-                                'padding': 'SAME', 
+                                'padding': 'VALID', 
                                 'batch_norm': params['batch_norm'], 'dropout':params['dropout']})
-        out = self._reduce_slices(input, params=params)
+        out = self._cvae_slices(input, params=params['cvae_params'])
         if attention:
             out = self._multi_attention_head(inputs=input, params=params)
         out, _ = self._conv(input=out, params=conv_1by1) 
