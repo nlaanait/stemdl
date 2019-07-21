@@ -6,6 +6,7 @@ misc: ResNet subclass added by Suhas Somnath
 """
 
 from collections import OrderedDict, deque
+from itertools import chain
 import re
 import math
 from copy import deepcopy
@@ -1246,10 +1247,10 @@ class FCDenseNet(ConvNet):
         Transition up block : transposed deconvolution.
         Also add skip connection from skip hub to current output
         """
-        strength = self.skip_strength()
+        # strength = self.skip_strength()
         out, _ = self._deconv(input, layer_params['deconv'], scope)
-        block_connect = tf.scalar_mul(strength, block_connect)
-        out = tf.concat([out,block_connect], axis=1)
+        if block_connect is not None:
+            out = tf.concat([out,block_connect], axis=1)
         return out
 
     def _transition_down(self, input, layer_params, scope):
@@ -1325,30 +1326,6 @@ class FCDenseNet(ConvNet):
                 input = tf.concat([input, layer], axis=1)
         block_features = tf.concat(block_features, axis=1)
         return input, block_features
-
-    def _freq_to_space(self, input=None, params=None):
-        freq_dim = int(np.sqrt(input.shape[1].value))
-        slices = tf.reshape(input, [input.shape[0].value, freq_dim, freq_dim, -1])
-        slices = tf.transpose(slices, perm=[0, 3, 1, 2])
-        conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
-                                'features': 2048,
-                                'activation': 'relu', 'padding': 'VALID', 'batch_norm': True, 'dropout': 0.25})
-        fully_connected = OrderedDict({'type': 'fully_connected','weights': None,'bias': None, 'activation': 'relu',
-                                   'regularize': True})
-        with tf.variable_scope('freq_to_space', reuse=self.reuse) as scope:
-            out, _ = self._conv(input=slices, params=conv_1by1) 
-            do_bn = conv_1by1.get('batch_norm', False)
-            if do_bn:
-                out = self._batch_norm(input=out)
-            else:
-                out = self._add_bias(input=out, params=conv_1by1)
-            out = self._activate(input=out, name=scope.name, params=conv_1by1)
-            if self.operation == 'train' and conv_1by1['dropout'] is not None:
-                rate = conv_1by1['dropout']
-            else:
-                rate = 0
-            out = tf.nn.dropout(out, rate=tf.constant(rate, dtype=out.dtype))
-        return out, None
 
 
 class FCNet(ConvNet):
@@ -1485,7 +1462,6 @@ class FCNet(ConvNet):
                     if self.summary: 
                         self._activation_summary(out)
                         self._activation_image_summary(out)
-
 
                 # print layer specs and generate Tensorboard summaries
                 if out is None:
@@ -2061,3 +2037,554 @@ class FCNet(ConvNet):
         self.ops += this_ops
 
         return kernel
+
+
+class YNet(FCDenseNet, FCNet):
+    """
+    An inverter model
+    """
+    def __init__(self, *args, **kwargs):
+        super(YNet, self).__init__(*args, **kwargs)
+        self.all_scopes = {"encoder": None, "decoder": None, "inverter": None}
+        self.all_ops = {"encoder": 0., "decoder": 0., "inverter": 0.}
+        self.all_weights = {"encoder": 0., "decoder": 0., "inverter": 0.}
+        self.all_mem = {"encoder": 0., "decoder": 0., "inverter": 0.}
+        self.skip_connection_list = []
+        self.skip_hub = -1
+        self.model_output = {"encoder": None, "decoder": None, "inverter": None}
+        self.network = dict([(key, itm) for key,itm in self.network.items()])
+
+    def get_all_ops(self, subnet=None):
+        if subnet is None:
+            return 3 * np.sum([op for _, op in self.all_ops.items()])
+        else:
+            return 3 * self.all_ops[subnet]
+
+    def update_all_attrs(self, subnet='encoder'):
+        self.all_ops[subnet] = self.ops
+        self.ops = 0
+        self.all_weights[subnet] = self.num_weights
+        self.num_weights = 0
+        self.all_mem[subnet] = self.mem 
+        self.mem = 0
+        self.all_scopes[subnet] = self.scopes
+        # self.scopes = []
+
+    # def build_encoder(self):
+    #     """
+    #     Here we build the model.
+    #     :param summaries: bool, flag to print out summaries.
+    #     """
+    #     self.scopes = []
+    #     self.print_rank('Building Neural Net ...')
+    #     self.print_rank('input: ---, dim: %s memory: %s MB' %(format(self.images.get_shape().as_list()), format(self.mem/1024)))
+    #     self.print_rank('***** Encoder Branch ******')
+    #     network = self.network['encoder']
+
+    #     # Initiate the remaining layers
+    #     for layer_num, (layer_name, layer_params) in enumerate(list(network.items())):
+    #         if layer_num == 0:
+    #             out = self.images
+    #         else:
+    #             out = out
+    #         with tf.variable_scope('encoder'+'_'+layer_name, reuse=self.reuse) as scope:
+    #             in_shape = out.get_shape().as_list()
+             
+    #             if layer_params['type'] == 'conv_2D':
+    #                 self.print_verbose(">>> Adding Conv Layer: %s" % layer_name)
+    #                 self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+    #                 out, _ = self._conv(input=out, params=layer_params)
+    #                 do_bn = layer_params.get('batch_norm', False)
+    #                 if do_bn:
+    #                     out = self._batch_norm(input=out)
+    #                 else:
+    #                     out = self._add_bias(input=out, params=layer_params)
+    #                     # dropout
+    #                 if self.operation == 'train' and layer_params.get('dropout', None) is not None:
+    #                     rate = layer_params['dropout']
+    #                 else:
+    #                     rate = 0
+    #                 out = tf.keras.layers.SpatialDropout2D(rate, data_format='channels_first')(inputs=out, training= self.operation == 'train')
+    #                 # out = tf.nn.dropout(out, rate=tf.constant(rate, dtype=out.dtype))
+    #                 out_shape = out.get_shape().as_list()
+    #                 out = self._activate(input=out, name=scope.name, params=layer_params)
+    #                 self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+    #                 if self.summary: 
+    #                     self._activation_summary(out)
+    #                     self._activation_image_summary(out)
+
+    #             if layer_params['type'] == 'depth_conv':
+    #                 self.print_verbose(">>> Adding depthwise Conv Layer: %s" % layer_name)
+    #                 self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+    #                 out, _ = self._depth_conv(input=out, params=layer_params)
+    #                 do_bn = layer_params.get('batch_norm', False)
+    #                 if do_bn:
+    #                     out = self._batch_norm(input=out)
+    #                 else:
+    #                     out = self._add_bias(input=out, params=layer_params)
+    #                 out = self._activate(input=out, name=scope.name, params=layer_params)
+    #                 self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+    #                 if self.summary: 
+    #                     self._activation_summary(out)
+    #                     self._activation_image_summary(out)
+
+    #             if layer_params['type'] == 'coord_conv':
+    #                 self.print_verbose(">>> Adding Coord Conv Layer: %s" % layer_name)
+    #                 self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+    #                 out, _ = self._coord_conv(input=out, params=layer_params)
+    #                 do_bn = layer_params.get('batch_norm', False)
+    #                 if do_bn:
+    #                     out = self._batch_norm(input=out)
+    #                 else:
+    #                     out = self._add_bias(input=out, params=layer_params)
+    #                 out = self._activate(input=out, name=scope.name, params=layer_params)
+    #                 self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+    #                 if self.summary: self._activation_summary(out)
+
+    #             if layer_params['type'] == 'pooling':
+    #                 self.print_verbose(">>> Adding Pooling Layer: %s" % layer_name)
+    #                 self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+    #                 out = self._pool(input=out, name=scope.name, params=layer_params)
+    #                 self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+
+    #             if layer_params['type'] == 'deconv_2D':
+    #                 self.print_verbose(">>> Adding de-Conv Layer: %s" % layer_name)
+    #                 self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+    #                 out, _ = self._deconv(input=out, params=layer_params)
+    #                 self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+    #                 if self.summary: 
+    #                     self._activation_summary(out) 
+    #                     self._activation_image_summary(out)
+
+    #             if layer_params['type'] == 'dense_layers_block':
+    #                 self.print_verbose(">>> Adding Dense Layers Block: %s" % layer_name)
+    #                 self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+    #                 if layer_params['conv_type'] == 'conv_2D':
+    #                     # out, _ = self._dense_layers_block_multi_head_loop(input=out, params=layer_params)
+    #                     out, _ = self._freq_to_space(input=out, params=layer_params)
+    #                     self.print_verbose(">>> Using Single head" )
+    #                 else:
+    #                     out, _ = self._dense_layers_block_multi_head_loop(input=out, params=layer_params)
+    #                     # out, _ = self._dense_layers_block_multi_head(input=out, params=layer_params)
+    #                     self.print_verbose(">>> Using Multi head" )
+    #                 self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+    #                 if self.summary: self._activation_summary(out) 
+         
+    #             if layer_params['type'] == 'dense_block_down':
+    #                 self.print_verbose(">>> Adding Dense Block Down: %s" % layer_name)
+    #                 self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+    #                 out, _ = self._dense_block(out, layer_params, scope)
+    #                 self.skip_connection_list.append(out)
+    #                 self.skip_hub += 1
+    #                 self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+
+    #             if layer_params['type'] == 'transition_down':
+    #                 self.print_verbose(">>> Adding Transition Down: %s" % layer_name)
+    #                 self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+    #                 out = self._transition_down(out, layer_params, scope)
+    #                 self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+
+    #             if layer_params['type'] == 'dense_block_bottleneck':
+    #                 self.print_verbose(">>> Adding Dense Block Bottleneck: %s" % layer_name)
+    #                 self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+    #                 out, self.block_features = self._dense_block(out, layer_params, scope)
+    #                 self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+    #          # print layer specs and generate Tensorboard summaries
+    #             if out is None:
+    #                 raise NotImplementedError('Layer type: ' + layer_params['type'] + 'is not implemented!')
+
+    #             out_shape = out.get_shape().as_list()
+    #             self._print_layer_specs(layer_params, scope, in_shape, out_shape)
+    #             self.scopes.append(scope)
+
+    #             # if self.summary: 
+    #             #     self._activation_summary(out)
+    #             #     self._activation_image_summary(out)
+
+    #     # Book-keeping...
+    #     self.print_rank('Total # of blocks: %d,  weights: %2.1e, memory: %s MB, ops: %3.2e \n' % (len(network),
+    #                                                                                     self.num_weights,
+    #                                                                                     format(self.mem / 1024),
+    #                                                                                     self.get_ops()))
+    #     self.model_output['encoder'] = out 
+    #     self.update_all_attrs(subnet='encoder')
+
+    def build_encoder(self):
+        """
+        Here we build the model.
+        :param summaries: bool, flag to print out summaries.
+        """
+        self.scopes = []
+        self.print_rank('Building Neural Net ...')
+        self.print_rank('input: ---, dim: %s memory: %s MB' %(format(self.images.get_shape().as_list()), format(self.mem/1024)))
+        self.print_rank('***** Encoder Branch ******')
+        network = self.network['encoder']
+
+        def Encode(tens):
+            # Initiate the remaining layers
+            for layer_num, (layer_name, layer_params) in enumerate(list(network.items())):
+                if layer_num == 0:
+                    out = tens
+                else:
+                    out = out
+                with tf.variable_scope('encoder'+'_'+layer_name, reuse=self.reuse) as scope:
+                    in_shape = out.get_shape().as_list()
+                
+                    if layer_params['type'] == 'conv_2D':
+                        self.print_verbose(">>> Adding Conv Layer: %s" % layer_name)
+                        self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                        out, _ = self._conv(input=out, params=layer_params)
+                        do_bn = layer_params.get('batch_norm', False)
+                        if do_bn:
+                            out = self._batch_norm(input=out)
+                        else:
+                            out = self._add_bias(input=out, params=layer_params)
+                            # dropout
+                        if self.operation == 'train' and layer_params.get('dropout', None) is not None:
+                            rate = layer_params['dropout']
+                        else:
+                            rate = 0
+                        out = tf.keras.layers.SpatialDropout2D(rate, data_format='channels_first')(inputs=out, training= self.operation == 'train')
+                        # out = tf.nn.dropout(out, rate=tf.constant(rate, dtype=out.dtype))
+                        out_shape = out.get_shape().as_list()
+                        out = self._activate(input=out, name=scope.name, params=layer_params)
+                        self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                        if self.summary: 
+                            self._activation_summary(out)
+                            self._activation_image_summary(out)
+
+                    if layer_params['type'] == 'depth_conv':
+                        self.print_verbose(">>> Adding depthwise Conv Layer: %s" % layer_name)
+                        self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                        out, _ = self._depth_conv(input=out, params=layer_params)
+                        do_bn = layer_params.get('batch_norm', False)
+                        if do_bn:
+                            out = self._batch_norm(input=out)
+                        else:
+                            out = self._add_bias(input=out, params=layer_params)
+                        out = self._activate(input=out, name=scope.name, params=layer_params)
+                        self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                        if self.summary: 
+                            self._activation_summary(out)
+                            self._activation_image_summary(out)
+
+                    if layer_params['type'] == 'coord_conv':
+                        self.print_verbose(">>> Adding Coord Conv Layer: %s" % layer_name)
+                        self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                        out, _ = self._coord_conv(input=out, params=layer_params)
+                        do_bn = layer_params.get('batch_norm', False)
+                        if do_bn:
+                            out = self._batch_norm(input=out)
+                        else:
+                            out = self._add_bias(input=out, params=layer_params)
+                        out = self._activate(input=out, name=scope.name, params=layer_params)
+                        self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                        if self.summary: self._activation_summary(out)
+
+                    if layer_params['type'] == 'pooling':
+                        self.print_verbose(">>> Adding Pooling Layer: %s" % layer_name)
+                        self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                        out = self._pool(input=out, name=scope.name, params=layer_params)
+                        self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+
+                    if layer_params['type'] == 'deconv_2D':
+                        self.print_verbose(">>> Adding de-Conv Layer: %s" % layer_name)
+                        self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                        out, _ = self._deconv(input=out, params=layer_params)
+                        self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                        if self.summary: 
+                            self._activation_summary(out) 
+                            self._activation_image_summary(out)
+
+                    if layer_params['type'] == 'dense_layers_block':
+                        self.print_verbose(">>> Adding Dense Layers Block: %s" % layer_name)
+                        self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                        if layer_params['conv_type'] == 'conv_2D':
+                            # out, _ = self._dense_layers_block_multi_head_loop(input=out, params=layer_params)
+                            out, _ = self._freq_to_space(input=out, params=layer_params)
+                            self.print_verbose(">>> Using Single head" )
+                        else:
+                            out, _ = self._dense_layers_block_multi_head_loop(input=out, params=layer_params)
+                            # out, _ = self._dense_layers_block_multi_head(input=out, params=layer_params)
+                            self.print_verbose(">>> Using Multi head" )
+                        self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                        if self.summary: self._activation_summary(out) 
+            
+                    if layer_params['type'] == 'dense_block_down':
+                        self.print_verbose(">>> Adding Dense Block Down: %s" % layer_name)
+                        self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                        out, _ = self._dense_block(out, layer_params, scope)
+                        self.skip_connection_list.append(out)
+                        self.skip_hub += 1
+                        self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+
+                    if layer_params['type'] == 'transition_down':
+                        self.print_verbose(">>> Adding Transition Down: %s" % layer_name)
+                        self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                        out = self._transition_down(out, layer_params, scope)
+                        self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+
+                    if layer_params['type'] == 'dense_block_bottleneck':
+                        self.print_verbose(">>> Adding Dense Block Bottleneck: %s" % layer_name)
+                        self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                        out, self.block_features = self._dense_block(out, layer_params, scope)
+                        self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+
+                    # if layer_params['type'] == 'fully_connected_block':
+                    #     self.print_verbose(">>> Adding Dense Block Bottleneck: %s" % layer_name)
+                    #     self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    #     out = self._fully_connected_block(out, layer_params, scope)
+                    #     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+
+                # print layer specs and generate Tensorboard summaries
+                    if out is None:
+                        raise NotImplementedError('Layer type: ' + layer_params['type'] + 'is not implemented!')
+
+                    out_shape = out.get_shape().as_list()
+                    self._print_layer_specs(layer_params, scope, in_shape, out_shape)
+                    self.scopes.append(scope)
+
+                    # if self.summary: 
+                    #     self._activation_summary(out)
+                    #     self._activation_image_summary(out)
+
+            # Book-keeping...
+            self.print_rank('Total # of blocks: %d,  weights: %2.1e, memory: %s MB, ops: %3.2e \n' % (len(network),
+                                                                                            self.num_weights,
+                                                                                            format(self.mem / 1024),
+                                                                                            self.get_ops()))
+            return out
+
+        # # Prepare input
+        # inputs = self.images
+        # new_shape = [inputs.shape.as_list()[0], inputs.shape.as_list()[1], -1, 
+        #              inputs.shape.as_list()[-2], inputs.shape.as_list()[-1]] 
+        # tensor_slices = tf.reshape(inputs, new_shape)
+        # tensor_slices = tf.transpose(tensor_slices, perm=[1, 0, 2, 3, 4])
+
+        # # Apply encoder
+        # out = tf.map_fn(Encode, tensor_slices, back_prop=True, swap_memory=True, parallel_iterations=16)
+        # self.print_rank('output of Encoder', out.get_shape())
+        # out = tf.transpose(out, perm= [1, 2, 0])
+        inputs = self.images
+        new_shape = [inputs.shape.as_list()[0], inputs.shape.as_list()[1], -1, 
+                     inputs.shape.as_list()[-2], inputs.shape.as_list()[-1]]
+        re_shape = [inputs.shape.as_list()[0] * inputs.shape.as_list()[1], 1, 
+                     inputs.shape.as_list()[-2], inputs.shape.as_list()[-1]]  
+        inputs = tf.reshape(self.images, re_shape)
+        out = Encode(inputs)
+        out = tf.reshape(out, [self.params['batch_size'], new_shape[1], -1])
+        # out = tf.transpose(out, perm=[1,0,2])
+        self.print_rank('output of Encoder- before fc block ', out.get_shape()) 
+        
+        out = self.fully_connected_block(out, self.network['encoder']['fully_connected_block'], 'encoder')
+       
+        self.print_rank('output of Encoder- after fc block ', out.get_shape()) 
+        # out = tf.transpose(out, perm=[0, 2, 1])
+        # dim = int(math.sqrt(self.images.shape.as_list()[1]))
+        # out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
+        self.print_rank('output of Encoder', out.get_shape())
+        self.model_output['encoder'] = out 
+        self.update_all_attrs(subnet='encoder')
+
+    def fully_connected_block(self, inputs, layer_params, scope_name):
+        fc_params = OrderedDict({'type': 'fully_connected','weights': 1024,'bias': 1024, 'activation': layer_params['activation'],
+                                   'regularize': True})
+        num_fc = layer_params['n_fc_layers']
+        out = inputs
+        for i in range(num_fc):
+            with tf.variable_scope('%s_fc_%d' %(scope_name, i), reuse=self.reuse) as _ :
+                lin_initializer = tf.uniform_unit_scaling_initializer
+                if isinstance(lin_initializer, tf.uniform_unit_scaling_initializer):
+                    if fc_params['type'] == 'fully_connected':
+                        if fc_params['activation'] == 'tanh':
+                            lin_initializer.factor = 1.15
+                        elif fc_params['activation'] == 'relu':
+                            lin_initializer.factor = 1.43
+                    elif fc_params['type'] == 'linear_output':
+                        lin_initializer.factor = 1.0
+                elif isinstance(lin_initializer, tf.random_normal_initializer):
+                    init_val = max(np.sqrt(2.0 / fc_params['weights']), 0.01)
+                    lin_initializer.mean = 0.0
+                    lin_initializer.stddev = init_val
+                weights_shape = [1] + [out.shape.as_list()[-1]] + [fc_params['weights']]
+                bias_shape = [fc_params['bias']]
+                weights = self._cpu_variable_init('weights', shape=weights_shape, initializer=lin_initializer,
+                                                regularize=fc_params['regularize'])
+                bias = self._cpu_variable_init('bias', bias_shape, initializer=tf.zeros_initializer)
+                weights_mat = tf.tile(weights, [self.params['batch_size'], 1, 1])
+                # bias_mat = tf.tile(bias, [self.params['batch_size'], 1])
+                out = tf.matmul(out, weights_mat)
+                out = out + bias
+                out = self._activate(input=out, params=fc_params) 
+        return out
+
+    def _build_branch(self, subnet='decoder', inputs=None):
+        self.scopes = []
+        self.print_rank('***** %s Branch ******' % subnet)
+        network = self.network[subnet]
+        # out = self.model_output['encoder']
+        # if inputs is not None:
+        #     out = inputs
+        # out = self.model_output['encoder'] if inputs is None else inputs
+        local_skip_hub = self.skip_hub
+        block_features = self.model_output['encoder'] if inputs is None else inputs
+        out = self.model_output['encoder'] if inputs is None else inputs
+
+        for layer_num, (layer_name, layer_params) in enumerate(list(network.items())):
+            with tf.variable_scope(subnet+'_'+layer_name, reuse=self.reuse) as scope:
+                in_shape = out.get_shape().as_list()
+             
+                if layer_params['type'] == 'conv_2D':
+                    self.print_verbose(">>> Adding Conv Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out, _ = self._conv(input=out, params=layer_params)
+                    do_bn = layer_params.get('batch_norm', False)
+                    if do_bn:
+                        out = self._batch_norm(input=out)
+                    else:
+                        out = self._add_bias(input=out, params=layer_params)
+                        # dropout
+                    if self.operation == 'train' and layer_params.get('dropout', None) is not None:
+                        rate = layer_params['dropout']
+                    else:
+                        rate = 0
+                    out = tf.keras.layers.SpatialDropout2D(rate, data_format='channels_first')(inputs=out, training= self.operation == 'train')
+                    # out = tf.nn.dropout(out, rate=tf.constant(rate, dtype=out.dtype))
+                    out_shape = out.get_shape().as_list()
+                    out = self._activate(input=out, name=scope.name, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: 
+                        self._activation_summary(out)
+                        self._activation_image_summary(out)
+
+                if layer_params['type'] == 'depth_conv':
+                    self.print_verbose(">>> Adding depthwise Conv Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out, _ = self._depth_conv(input=out, params=layer_params)
+                    do_bn = layer_params.get('batch_norm', False)
+                    if do_bn:
+                        out = self._batch_norm(input=out)
+                    else:
+                        out = self._add_bias(input=out, params=layer_params)
+                    out = self._activate(input=out, name=scope.name, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: 
+                        self._activation_summary(out)
+                        self._activation_image_summary(out)
+
+                if layer_params['type'] == 'coord_conv':
+                    self.print_verbose(">>> Adding Coord Conv Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out, _ = self._coord_conv(input=out, params=layer_params)
+                    do_bn = layer_params.get('batch_norm', False)
+                    if do_bn:
+                        out = self._batch_norm(input=out)
+                    else:
+                        out = self._add_bias(input=out, params=layer_params)
+                    out = self._activate(input=out, name=scope.name, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: self._activation_summary(out)
+
+                if layer_params['type'] == 'pooling':
+                    self.print_verbose(">>> Adding Pooling Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out = self._pool(input=out, name=scope.name, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+
+                if layer_params['type'] == 'deconv_2D':
+                    self.print_verbose(">>> Adding de-Conv Layer: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out, _ = self._deconv(input=out, params=layer_params)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: 
+                        self._activation_summary(out) 
+                        self._activation_image_summary(out)
+
+                if layer_params['type'] == 'dense_layers_block':
+                    self.print_verbose(">>> Adding Dense Layers Block: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    if layer_params['conv_type'] == 'conv_2D':
+                        # out, _ = self._dense_layers_block_multi_head_loop(input=out, params=layer_params)
+                        out, _ = self._freq_to_space(input=out, params=layer_params)
+                        self.print_verbose(">>> Using Single head" )
+                    else:
+                        out, _ = self._dense_layers_block_multi_head_loop(input=out, params=layer_params)
+                        # out, _ = self._dense_layers_block_multi_head(input=out, params=layer_params)
+                        self.print_verbose(">>> Using Multi head" )
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: self._activation_summary(out) 
+         
+                if layer_params['type'] == 'dense_block_up':
+                    self.print_verbose(">>> Adding Dense Block Up: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    out, block_features = self._dense_block(out, layer_params, scope)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+
+                if layer_params['type'] == 'transition_up':
+                    self.print_verbose(">>> Adding Transition Up: %s" % layer_name)
+                    self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+                    # out = self._transition_up(self.block_features, self.skip_connection_list[local_skip_hub], layer_params, scope)
+                    out = self._transition_up(block_features, None, layer_params, scope)
+                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    local_skip_hub -= 1
+
+                # print layer specs and generate Tensorboard summaries
+                if out is None:
+                    raise NotImplementedError('Layer type: ' + layer_params['type'] + 'is not implemented!')
+
+                out_shape = out.get_shape().as_list()
+                self._print_layer_specs(layer_params, scope, in_shape, out_shape)
+                self.scopes.append(scope)
+                # if self.summary: 
+                #     self._activation_summary(out)
+                #     self._activation_image_summary(out)
+        self.print_rank('Total # of blocks: %d,  weights: %2.1e, memory: %s MB, ops: %3.2e \n' % (len(network),
+                                                                                    self.num_weights,
+                                                                                    format(self.mem / 1024),
+                                                                                    self.get_ops()))
+        self.model_output[subnet] = out
+        self.update_all_attrs(subnet=subnet)
+    
+    def build_decoder(self):
+        out = self.model_output['encoder']
+        out = self.fully_connected_block(out, self.network['encoder']['fully_connected_block'], 'decoder')
+        out = tf.transpose(out, perm=[0, 2, 1])
+        dim = int(math.sqrt(self.images.shape.as_list()[1]))
+        out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
+        # fc_params = OrderedDict({'type': 'fully_connected','weights': 256,'bias': 256, 'activation': 'relu',
+        #                            'regularize': True})
+        # num_fc = self.network['inverter']['freq2space']['n_fc_layers']
+        # num_fc = 1
+        # for i in range(num_fc):
+        #     with tf.variable_scope('decoder_freq2space_fc_%d' %i, reuse=self.reuse) as _ :
+        #         out = self._linear(input=out, params=fc_params)
+        #         out = self._activate(input=out, params=fc_params)
+        # dim = int(math.sqrt(fc_params['weights']))
+        # out = tf.reshape(out, [self.params['batch_size'], 1, dim, dim])
+        self._build_branch(subnet='decoder', inputs=out)
+
+    def build_inverter(self):
+        out = self.model_output['encoder']
+        out = self.fully_connected_block(out, self.network['encoder']['fully_connected_block'], 'inverter')
+        out = tf.transpose(out, perm=[0, 2, 1])
+        dim = int(math.sqrt(self.images.shape.as_list()[1]))
+        out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
+        # fc_params = OrderedDict({'type': 'fully_connected','weights': 256,'bias': 256, 'activation': 'relu',
+        #                            'regularize': True})
+        # num_fc = self.network['inverter']['freq2space']['n_fc_layers']
+        # num_fc =1
+        # for i in range(num_fc):
+        #     with tf.variable_scope('inverter_freq2space_fc_%d' %i, reuse=self.reuse) as _ :
+        #         out = self._linear(input=out, params=fc_params)
+        #         out = self._activate(input=out, params=fc_params)
+        # dim = int(math.sqrt(fc_params['weights']))
+        # out = tf.reshape(out, [self.params['batch_size'], 1, dim, dim])
+        self._build_branch(subnet='inverter', inputs=out)
+
+    def build_model(self):
+        self.build_encoder()
+        self.build_decoder()
+        self.build_inverter()
+        self.scopes = list(chain.from_iterable([scope for _, scope in self.all_scopes.items()]))
+    

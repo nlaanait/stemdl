@@ -345,6 +345,12 @@ def optimize_loss(loss,
             true_fn=accumulate
         )
       else:
+        # for grad, var in grads_and_vars:
+        #   if grad is None:
+        #     print("grad: None, var:%s" % var.name)
+        #   else:
+        #     print("grad: %s, var:%s" % (grad.name, var.name))
+
         grad_updates = apply_gradients(opt,
             post_process_gradients(
                 reduce_gradients(grads_and_vars, on_horovod=True, model=model_scopes, run_params=run_params),
