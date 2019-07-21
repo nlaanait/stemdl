@@ -543,8 +543,9 @@ class DatasetLMDB(DatasetTFRecords):
             images_newshape = [self.params['batch_size']] + self.data_specs['image_shape']
             labels = tf.reshape(labels, labels_newshape)
             images = tf.reshape(images, images_newshape)
-
-            labels -= tf.reduce_min(labels, keepdims=True) 
+            
+            labels = self.image_scaling(labels)
+            # labels -= tf.reduce_min(labels, keepdims=True) 
             # abels= self.label_minmaxscaling(labels, 0.0, 1.0, scale_range=[0., 10.0])
         # images = self.image_scaling(images)
         # Display the training images in the Tensorboard visualizer.
