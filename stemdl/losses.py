@@ -26,7 +26,7 @@ def _add_loss_summaries(total_loss, losses, summaries=False):
     return loss_averages_op
 
 
-def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
+def calc_loss(n_net, scope, hyper_params, params, labels, images=None, summary=False):
     labels_shape = labels.get_shape().as_list()
     layer_params={'bias':labels_shape[-1], 'weights':labels_shape[-1],'regularize':True}
     if hyper_params['network_type'] == 'hybrid':
@@ -72,6 +72,18 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
         n_net.model_output = tf.cast(n_net.model_output, tf.float16)
         n_net.model_output = tf.reduce_mean(n_net.model_output, axis=[1], keepdims=True)
         _ = calculate_loss_regressor(n_net.model_output, labels, params, hyper_params)
+    if hyper_params['network_type'] == 'YNet':
+        weight=None
+        probe = n_net.model_output['decoder']
+        pot = n_net.model_output['inverter']
+        probe_labels = tf.reduce_mean(images, axis=1, keepdims=True)
+        pot_labels = labels
+        # weight=10
+        inverter_loss = calculate_loss_regressor(pot, pot_labels, params, hyper_params, weight=weight)
+        # weight=1
+        decoder_loss = calculate_loss_regressor(probe, probe_labels, params, hyper_params, weight=weight)
+        tf.summary.scalar('Inverter loss (raw)', inverter_loss)
+        tf.summary.scalar('Decoder loss (raw)', decoder_loss)
     if hyper_params['network_type'] == 'classifier':
         if labels.dtype is not tf.int64:
             labels = tf.cast(labels, tf.int64)
@@ -83,9 +95,12 @@ def calc_loss(n_net, scope, hyper_params, params, labels, summary=False):
         output = fully_connected(n_net, layer_params, params['batch_size'],
                             name='linear_stochastic', wd=hyper_params['weight_decay'])
         _ = calculate_loss_regressor(output, stochastic_labels, params, hyper_params, weight=hyper_params['mixing'])
-
+   
     #Assemble all of the losses.
     losses = tf.get_collection(tf.GraphKeys.LOSSES)
+    if hyper_params['network_type'] == 'YNet':
+        losses = [inverter_loss , decoder_loss ]
+    # losses = [inverter_loss]
     regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
     # Calculate the total loss 
     total_loss = tf.add_n(losses + regularization, name='total_loss')

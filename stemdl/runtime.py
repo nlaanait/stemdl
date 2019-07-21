@@ -230,6 +230,9 @@ def train(network_config, hyper_params, params):
             if params['network_class'] == 'fcnet':
                 n_net = network.FCNet(scope, params, hyper_params, network_config, images, labels,
                                         operation='train', summary=summary, verbose=True)
+            if params['network_class'] == 'YNet':
+                n_net = network.YNet(scope, params, hyper_params, network_config, images, labels,
+                                        operation='train', summary=summary, verbose=True)
             
                 
             ###### XLA compilation #########    
@@ -248,11 +251,11 @@ def train(network_config, hyper_params, params):
             n_net.build_model()
 
             # calculate the total loss
-            total_loss, loss_averages_op = losses.calc_loss(n_net, scope, hyper_params, params, labels, summary=summary)
+            total_loss, loss_averages_op = losses.calc_loss(n_net, scope, hyper_params, params, labels, images=images, summary=summary)
 
             #get summaries, except for the one produced by string_input_producer
             if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)
-
+            # print_rank([scope.name for scope in n_net.scopes])
 
         #######################################
         # Apply Gradients and setup train op #
@@ -298,12 +301,20 @@ def train(network_config, hyper_params, params):
     if hvd.rank() == 0:
         summary_writer = tf.summary.FileWriter(params['checkpt_dir'], sess.graph)
         # Add Summary histograms for trainable variables and their gradients
-    if params['debug'] and hyper_params['network_type'] == 'inverter':
-        predic = tf.transpose(n_net.model_output, perm=[0,2,3,1])
-        output_summary = tf.summary.image("outputs", predic, max_outputs=4) 
-        tf.summary.image("targets", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
-        tf.summary.image("inputs", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4)
-    
+    if params['debug']:
+        if hyper_params['network_type'] == 'inverter': 
+            predic = tf.transpose(n_net.model_output, perm=[0,2,3,1])
+            output_summary = tf.summary.image("outputs", predic, max_outputs=4) 
+            tf.summary.image("targets", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
+            tf.summary.image("inputs", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4)
+        # elif hyper_params['network_type'] == 'YNet': 
+        #     # predic_inverter = tf.transpose(n_net.model_output['inverter'], perm=[0,2,3,1])
+        #     # output_summary = tf.summary.image("output_inverter", predic_inverter, max_outputs=4) 
+        #     # predic_decoder = tf.transpose(n_net.model_output['decoder'], perm=[0,2,3,1])s
+        #     # output_summary = tf.summary.image("output_decoder", predic_decoder, max_outputs=4) 
+        #     tf.summary.image("targets", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
+        #     tf.summary.image("inputs", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4) 
+          
     summary_merged = tf.summary.merge_all()
 
      ###############################
