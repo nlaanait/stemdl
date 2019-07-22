@@ -298,22 +298,24 @@ def train(network_config, hyper_params, params):
     # Stats and summaries
     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
     run_metadata = tf.RunMetadata()
-    if hvd.rank() == 0:
-        summary_writer = tf.summary.FileWriter(params['checkpt_dir'], sess.graph)
+    # if hvd.rank() == 0:
+    summary_writer = tf.summary.FileWriter(os.path.join(params['checkpt_dir'], str(hvd.rank())), sess.graph)
         # Add Summary histograms for trainable variables and their gradients
     if params['debug']:
         if hyper_params['network_type'] == 'inverter': 
             predic = tf.transpose(n_net.model_output, perm=[0,2,3,1])
-            output_summary = tf.summary.image("outputs", predic, max_outputs=4) 
+            tf.summary.image("outputs", predic, max_outputs=4) 
             tf.summary.image("targets", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
             tf.summary.image("inputs", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4)
-        # elif hyper_params['network_type'] == 'YNet': 
-        #     # predic_inverter = tf.transpose(n_net.model_output['inverter'], perm=[0,2,3,1])
-        #     # output_summary = tf.summary.image("output_inverter", predic_inverter, max_outputs=4) 
-        #     # predic_decoder = tf.transpose(n_net.model_output['decoder'], perm=[0,2,3,1])s
-        #     # output_summary = tf.summary.image("output_decoder", predic_decoder, max_outputs=4) 
-        #     tf.summary.image("targets", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
-        #     tf.summary.image("inputs", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4) 
+        elif hyper_params['network_type'] == 'YNet': 
+            predic_inverter = tf.transpose(n_net.model_output['inverter'], perm=[0,2,3,1])
+            tf.summary.image("output_inverter", predic_inverter, max_outputs=4) 
+            predic_decoder_RE = tf.transpose(n_net.model_output['decoder']['RE'], perm=[0,2,3,1])
+            predic_decoder_IM = tf.transpose(n_net.model_output['decoder']['IM'], perm=[0,2,3,1])
+            tf.summary.image("output_decoder_RE", predic_decoder_RE, max_outputs=4)
+            tf.summary.image("output_decoder_IM", predic_decoder_IM, max_outputs=4)  
+            tf.summary.image("targets", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
+            tf.summary.image("inputs", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4) 
           
     summary_merged = tf.summary.merge_all()
 
@@ -346,11 +348,12 @@ def train(network_config, hyper_params, params):
         print_rank("Restoring from previous checkpoint @ step=%d" % last_step)
 
     # Train
-    if hvd.rank() == 0:
-        train_elf = TrainHelper(params, saver, summary_writer,  n_net.get_ops(), last_step=last_step, log_freq=params['log_frequency'])
-    else:
-        train_elf = TrainHelper(params, saver, None, n_net.get_ops(), last_step=last_step)
+    # if hvd.rank() == 0:
+    #     train_elf = TrainHelper(params, saver, summary_writer,  n_net.get_ops(), last_step=last_step, log_freq=params['log_frequency'])
+    # else:
+    #     train_elf = TrainHelper(params, saver, None, n_net.get_ops(), last_step=last_step)
 
+    train_elf = TrainHelper(params, saver, summary_writer,  n_net.get_ops(), last_step=last_step, log_freq=params['log_frequency'])
     if params['restart']:
         saveStep = train_elf.last_step + params['save_step']
         validateStep = train_elf.last_step + params['validate_step']
@@ -373,9 +376,10 @@ def train(network_config, hyper_params, params):
         doSumm  = train_elf.last_step > summaryStep 
         doTrace = train_elf.last_step == traceStep and params['gpu_trace']
         if train_elf.last_step == 1 and params['debug']:
-            if hvd.rank() == 0:
-                summary = sess.run([train_op,  summary_merged])[-1]
-                train_elf.write_summaries( summary )
+            pass
+            # if hvd.rank() == 0:
+            summary = sess.run([train_op,  summary_merged])[-1]
+            train_elf.write_summaries( summary )
         if not doLog and not doSave and not doTrace and not doSumm:
             sess.run(train_op)
         elif doLog and not doSave :
@@ -390,9 +394,9 @@ def train(network_config, hyper_params, params):
                 print_rank('Saved Checkpoint.')
             saveStep += params['save_step']
         elif doSumm and params['debug']:
-            if hvd.rank() == 0:
-                summary = sess.run([train_op,  summary_merged])[-1]
-                train_elf.write_summaries( summary )
+            # if hvd.rank() == 0:
+            summary = sess.run([train_op,  summary_merged])[-1]
+            train_elf.write_summaries( summary )
             summaryStep += params['summary_step'] 
         elif doSave :
             #summary = sess.run([train_op,  summary_merged])[-1]

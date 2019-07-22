@@ -389,7 +389,7 @@ def generate_freq2space_json(out_dir= 'json_files', conv_type="conv_2D", input_c
 # Y-net #
 #########
 def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_block=2, kernel=[3,3], conv_type='conv_2D', 
-                        dropout_prob=0, growth_rate=64, output_channels=1, output_size=128):
+                        dropout_prob=0, growth_rate=64, output_channels=1, output_size=128, batch_norm=False):
     if type(n_layers_per_block) == int:
         n_layers_per_block = [n_layers_per_block] * (2 * n_pool + 1)
 
@@ -401,46 +401,61 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
     model_keys = []
     layers_params_list = []
     layers_keys_list = []
-    
-    # Encoder Branch- essentially Transition Down + Bottleneck from FCDenseNet.
-    n_filters = growth_rate
-    # Transition down
-    for i in range(n_pool):
-        # Dense Block
-        conv_layers = []
-        for j in range(n_layers_per_block[i]):
-            conv_layers.append(('conv_%s'%j, layer))
+    conv_cvae = OrderedDict({'type': 'conv_2D', 'stride': [2, 2], 'kernel': [4, 4], 
+                                'features': 16,
+                                'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout': 0.0})
+    fc_cvae = OrderedDict({'type': 'fully_connected','weights': 512,'bias': 512, 'activation': 'relu',
+                                'regularize': True})
+    cvae_model = OrderedDict({'n_conv_layers': 4, 'n_fc_layers':2,'fc_params': fc_cvae, 'conv_params':conv_cvae}) 
+    init_features = 1024
+    freq2space_block = OrderedDict({'type': 'freq2space', 'activation': 'relu', 'dropout': dropout_prob, 
+                                    'init_features':init_features, 'batch_norm': batch_norm})
+    freq2space_block['type'] = 'freq2space_CVAE'
+    freq2space_block['cvae_params'] = cvae_model
+    layers_params_list.append(freq2space_block)
+    layers_keys_list.append('freq2space')
+ 
+    # # Encoder Branch- essentially Transition Down + Bottleneck from FCDenseNet.
+    # n_filters = growth_rate
+    # # Transition down
+    # for i in range(n_pool):
+    #     # Dense Block
+    #     conv_layers = []
+    #     for j in range(n_layers_per_block[i]):
+    #         conv_layers.append(('conv_%s'%j, layer))
 
-        conv_layers = OrderedDict(conv_layers)
-        DB = OrderedDict({'type': 'dense_block_down', 'conv':conv_layers})
-        layers_params_list.append(DB)
-        layers_keys_list.append('DB_'+str(i))
-        n_filters += growth_rate * n_layers_per_block[i]
-        n_filters -= n_filters % 8
-        # Transition Down
-        TD = OrderedDict({'type': "transition_down", 'conv':
-                                {'type': conv_type, 'stride': [1, 1], 'kernel': [1, 1],
-                                'features': n_filters,
-                                'activation': 'relu', 'padding': 'SAME', 'batch_norm': False, 'dropout':dropout_prob},
-                                'pool':pool})
-        layers_params_list.append(TD)
-        layers_keys_list.append('TD_'+str(i))
+    #     conv_layers = OrderedDict(conv_layers)
+    #     DB = OrderedDict({'type': 'dense_block_down', 'conv':conv_layers})
+    #     layers_params_list.append(DB)
+    #     layers_keys_list.append('DB_'+str(i))
+    #     n_filters += growth_rate * n_layers_per_block[i]
+    #     n_filters -= n_filters % 8
+    #     # Transition Down
+    #     TD = OrderedDict({'type': "transition_down", 'conv':
+    #                             {'type': conv_type, 'stride': [1, 1], 'kernel': [1, 1],
+    #                             'features': n_filters,
+    #                             'activation': 'relu', 'padding': 'SAME', 'batch_norm': False, 'dropout':dropout_prob},
+    #                             'pool':pool})
+    #     layers_params_list.append(TD)
+    #     layers_keys_list.append('TD_'+str(i))
 
-    # Bottleneck
-    conv_layers = []
-    for j in range(n_layers_per_block[n_pool]):
-        conv_layers.append(('conv_%s'%j, layer))
+    # # Bottleneck
+    # conv_layers = []
+    # for j in range(n_layers_per_block[n_pool]):
+    #     conv_layers.append(('conv_%s'%j, layer))
 
-    conv_layers = OrderedDict(conv_layers)
-    DB = OrderedDict({'type': 'dense_block_bottleneck', 'conv':conv_layers})
-    layers_params_list.append(DB)
-    layers_keys_list.append('DB_'+str(i+1))
+    # conv_layers = OrderedDict(conv_layers)
+    # DB = OrderedDict({'type': 'dense_block_bottleneck', 'conv':conv_layers})
+    # layers_params_list.append(DB)
+    # layers_keys_list.append('DB_'+str(i+1))
 
-    # Fully connected block
-    fc_block = OrderedDict({'type': 'fully_connected_block', 'activation': 'relu', 'dropout': dropout_prob, 
-                                    'init_features':64, 'n_fc_layers':2}) 
-    layers_params_list.append(fc_block)
-    layers_keys_list.append('fully_connected_block')
+    # # Fully connected block
+    # fc_block = OrderedDict({'type': 'fully_connected_block', 'activation': 'relu', 'dropout': dropout_prob, 
+    #                                 'init_features':64, 'n_fc_layers':2}) 
+    # layers_params_list.append(fc_block)
+    # layers_keys_list.append('fully_connected_block')
+
+
 
     model_keys.append('encoder')
     model_params.append(OrderedDict(zip(layers_keys_list, layers_params_list)))
@@ -451,9 +466,9 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
     conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': None,
                             'activation': 'relu', 'padding': 'SAME', 'batch_norm': False, 'dropout':dropout_prob})
     deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [3,3], 'features': None, 'padding': 'SAME', 'upsample': pool['kernel'][0]})
-    features = 512
+    features = 1024
     rank = 0
-    for i in range(n_pool+1):
+    for i in range(n_pool):
         deconv_layer = deepcopy(deconv_layer_base)
         deconv_layer['features'] = features  
         layers_keys_list.append('deconv_%s' % i )
@@ -492,10 +507,10 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
     # layers_keys_list.append('DECONV_FIN')
 
     # 1x1 conv
-    conv_1by1 = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': [1, 1], 'features': output_channels,
-                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': False})
-    layers_params_list.append(conv_1by1)
-    layers_keys_list.append('CONV_FIN')
+    # conv_1by1 = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': [1, 1], 'features': output_channels,
+    #                         'activation': 'relu', 'padding': 'SAME', 'batch_norm': False})
+    # layers_params_list.append(conv_1by1)
+    # layers_keys_list.append('CONV_FIN')
     model_keys.append('decoder')
     model_params.append(OrderedDict(zip(layers_keys_list, layers_params_list)))
 
@@ -528,7 +543,7 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
     conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': None,
                             'activation': 'relu', 'padding': 'SAME', 'batch_norm': False, 'dropout':dropout_prob})
     deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [3,3], 'features': None, 'padding': 'SAME', 'upsample': pool['kernel'][0]})
-    features = 512
+    features = 1024
     rank = 0
     for i in range(n_pool):
         deconv_layer = deepcopy(deconv_layer_base)
