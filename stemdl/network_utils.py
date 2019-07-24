@@ -468,7 +468,7 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
     deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [3,3], 'features': None, 'padding': 'SAME', 'upsample': pool['kernel'][0]})
     features = 1024
     rank = 0
-    for i in range(n_pool):
+    for i in range(n_pool+1):
         deconv_layer = deepcopy(deconv_layer_base)
         deconv_layer['features'] = features  
         layers_keys_list.append('deconv_%s' % i )
@@ -545,7 +545,7 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
     deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [3,3], 'features': None, 'padding': 'SAME', 'upsample': pool['kernel'][0]})
     features = 1024
     rank = 0
-    for i in range(n_pool):
+    for i in range(n_pool+1):
         deconv_layer = deepcopy(deconv_layer_base)
         deconv_layer['features'] = features  
         layers_keys_list.append('deconv_%s' % i )

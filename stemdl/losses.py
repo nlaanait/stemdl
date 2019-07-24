@@ -81,12 +81,13 @@ def calc_loss(n_net, scope, hyper_params, params, labels, images=None, summary=F
         # probe_labels = tf.image.resize_bilinear(probe_labels, [128,128])
         # probe_labels = tf.transpose(probe_labels, perm=[0,3,1,2])
         # probe_arr = np.load('probe_amp.npy')
-        probe_arr = np.load('psi_k.npy')
-        probe_arr = np.expand_dims(np.expand_dims(probe_arr, axis=0), axis=0)
-        probe_arr = np.tile(probe_arr, [4,1,1,1])
-        probe_labels_re = tf.constant(np.abs(probe_arr), dtype=tf.float32)
-        probe_labels_im = tf.constant(np.angle(probe_arr), dtype=tf.float32)
-        pot_labels = labels
+        # probe_arr = np.load('psi_k.npy')
+        pot_labels, probe_labels_re, probe_labels_im = [tf.expand_dims(itm, axis=1) for itm in tf.unstack(labels, axis=1)]
+        # probe_arr = np.expand_dims(np.expand_dims(probe_arr, axis=0), axis=0)
+        # probe_arr = np.tile(probe_arr, [4,1,1,1])
+        # probe_labels_re = tf.constant(np.abs(probe_arr), dtype=tf.float32)
+        # probe_labels_im = tf.constant(np.angle(probe_arr), dtype=tf.float32)
+        # pot_labels = labels
         # weight=10
         inverter_loss = calculate_loss_regressor(pot, pot_labels, params, hyper_params, weight=weight)
         # weight=1
