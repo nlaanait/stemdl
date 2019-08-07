@@ -74,21 +74,11 @@ def calc_loss(n_net, scope, hyper_params, params, labels, images=None, summary=F
         _ = calculate_loss_regressor(n_net.model_output, labels, params, hyper_params)
     if hyper_params['network_type'] == 'YNet':
         weight=None
-        probe_im = n_net.model_output['decoder']['IM']
-        probe_re = n_net.model_output['decoder']['RE']
+        probe_im = n_net.model_output['decoder_IM']
+        probe_re = n_net.model_output['decoder_RE']
         pot = n_net.model_output['inverter']
-        # probe_labels = tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1])
-        # probe_labels = tf.image.resize_bilinear(probe_labels, [128,128])
-        # probe_labels = tf.transpose(probe_labels, perm=[0,3,1,2])
-        # probe_arr = np.load('probe_amp.npy')
-        # probe_arr = np.load('psi_k.npy')
         pot_labels, probe_labels_re, probe_labels_im = [tf.expand_dims(itm, axis=1) for itm in tf.unstack(labels, axis=1)]
-        # probe_arr = np.expand_dims(np.expand_dims(probe_arr, axis=0), axis=0)
-        # probe_arr = np.tile(probe_arr, [4,1,1,1])
-        # probe_labels_re = tf.constant(np.abs(probe_arr), dtype=tf.float32)
-        # probe_labels_im = tf.constant(np.angle(probe_arr), dtype=tf.float32)
-        # pot_labels = labels
-        # weight=10
+        # weight=0.10
         inverter_loss = calculate_loss_regressor(pot, pot_labels, params, hyper_params, weight=weight)
         # weight=1
         decoder_loss_im = calculate_loss_regressor(probe_im, probe_labels_im, params, hyper_params, weight=weight)
@@ -111,7 +101,9 @@ def calc_loss(n_net, scope, hyper_params, params, labels, images=None, summary=F
     #Assemble all of the losses.
     losses = tf.get_collection(tf.GraphKeys.LOSSES)
     if hyper_params['network_type'] == 'YNet':
-        losses = [inverter_loss , decoder_loss_im, decoder_loss_re ]
+        # losses = [inverter_loss, decoder_loss_re]
+        losses = [inverter_loss , decoder_loss_re, decoder_loss_im ]
+        # losses = [inverter_loss , decoder_loss_im ]
     # losses = [inverter_loss]
     regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
     # Calculate the total loss 

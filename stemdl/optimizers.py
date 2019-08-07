@@ -180,7 +180,7 @@ def reduce_gradients(grads_and_vars, on_horovod, model=None, run_params=None):
       with tf.name_scope("all_reduce"):
         for idx, (grad, var) in enumerate(grads_and_vars):
           if grad is not None:
-            print("rank: %d, grad: %s, var:%s" %(rank(), grad.name, var.name))
+            # print("rank: %d, grad: %s, var:%s" %(rank(), grad.name, var.name))
             avg_grad = allreduce(grad)
             averaged_grads_and_vars.append((avg_grad, var))
           else:
@@ -454,7 +454,7 @@ def post_process_gradients(grads_and_vars, summaries, lr,
       if len(ind_list) >= 1:
           layer_grads = [grads_and_vars[ind][0] for ind in ind_list]
           layer_vars = [grads_and_vars[ind][1] for ind in ind_list]
-          grad_vec = tf.concat([tf.expand_dims(tf.reshape(grad, [-1]), 0) for grad in layer_grads], 1)
+          grad_vec = tf.concat([tf.expand_dims(tf.reshape(tf.cast(grad, tf.float32), [-1]), 0) for grad in layer_grads], 1)
           var_vec = tf.concat([tf.expand_dims(tf.reshape(var, [-1]), 0) for var in layer_vars], 1)
           var_dtype = layer_vars[0].dtype
           var_nom = tf.norm(tensor=tf.cast(var_vec, tf.float32))
