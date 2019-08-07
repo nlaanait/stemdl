@@ -309,11 +309,11 @@ def train(network_config, hyper_params, params):
             tf.summary.image("inputs", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4)
         elif hyper_params['network_type'] == 'YNet': 
             predic_inverter = tf.transpose(n_net.model_output['inverter'], perm=[0,2,3,1])
-            tf.summary.image("output_inverter", predic_inverter, max_outputs=4) 
-            predic_decoder_RE = tf.transpose(n_net.model_output['decoder']['RE'], perm=[0,2,3,1])
-            predic_decoder_IM = tf.transpose(n_net.model_output['decoder']['IM'], perm=[0,2,3,1])
-            tf.summary.image("output_decoder_RE", predic_decoder_RE, max_outputs=4)
-            tf.summary.image("output_decoder_IM", predic_decoder_IM, max_outputs=4)
+            tf.summary.image("output_inverter", predic_inverter, max_outputs=2) 
+            predic_decoder_RE = tf.transpose(n_net.model_output['decoder_RE'], perm=[0,2,3,1])
+            predic_decoder_IM = tf.transpose(n_net.model_output['decoder_IM'], perm=[0,2,3,1])
+            tf.summary.image("output_decoder_RE", predic_decoder_RE, max_outputs=2)
+            tf.summary.image("output_decoder_IM", predic_decoder_IM, max_outputs=2)
             new_labels = tf.unstack(labels, axis=1)
             for label, tag in zip(new_labels, ['potential', 'probe_RE', 'probe_IM']):
                 label = tf.expand_dims(label, axis=-1)
