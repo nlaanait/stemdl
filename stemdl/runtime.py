@@ -111,18 +111,17 @@ class TrainHelper(object):
 
     def log_stats(self, loss_value, learning_rate):
         self.nanloss(loss_value)
-        if hvd.rank() == 0:
-            t = time.time( )
-            duration = t - self.start_time
-            examples_per_sec = self.params['batch_size'] * hvd.size() / duration
-            self.cumm_time = (time.time() - self.cumm_time)/self.log_freq
-            flops = self.net_ops * examples_per_sec
-            avg_flops = self.net_ops * self.params['batch_size'] * hvd.size() / self.cumm_time
-            format_str = (
-            'time= %.1f, step= %d, epoch= %2.2e, loss= %.2f, lr= %.2e, step_time= %2.2f sec, ranks= %d, examples/sec= %.1f, flops = %3.2e, average_time= %2.2f, average_flops= %3.3e')
-            print_rank(format_str % ( t - self.params[ 'start_time' ],  self.last_step, self.elapsed_epochs,
-                        loss_value, learning_rate, duration, hvd.size(), examples_per_sec, flops, self.cumm_time, avg_flops) )
-            self.cumm_time = time.time()
+        t = time.time( )
+        duration = t - self.start_time
+        examples_per_sec = self.params['batch_size'] * hvd.size() / duration
+        self.cumm_time = (time.time() - self.cumm_time)/self.log_freq
+        flops = self.net_ops * examples_per_sec
+        avg_flops = self.net_ops * self.params['batch_size'] * hvd.size() / self.cumm_time
+        format_str = (
+        'time= %.1f, step= %d, epoch= %2.2e, loss= %.2f, lr= %.2e, step_time= %2.2f sec, ranks= %d, examples/sec= %.1f, flops = %3.2e, average_time= %2.2f, average_flops= %3.3e')
+        print_rank(format_str % ( t - self.params[ 'start_time' ],  self.last_step, self.elapsed_epochs,
+                    loss_value, learning_rate, duration, hvd.size(), examples_per_sec, flops, self.cumm_time, avg_flops) )
+        self.cumm_time = time.time()
 
     @staticmethod
     def nanloss(loss_value):
@@ -358,67 +357,67 @@ def train(network_config, hyper_params, params):
     #     train_elf = TrainHelper(params, saver, None, n_net.get_ops(), last_step=last_step)
 
     train_elf = TrainHelper(params, saver, summary_writer,  n_net.get_ops(), last_step=last_step, log_freq=params['log_frequency'])
-    if params['restart']:
-        saveStep = train_elf.last_step + params['save_step']
-        validateStep = train_elf.last_step + params['validate_step']
-        summaryStep = train_elf.last_step + params['summary_step'] 
-    else:
-        saveStep =  params['save_step']
-        validateStep = params['validate_step']
-        summaryStep = params['summary_step']
+    # if params['restart']:
+    #     saveStep = train_elf.last_step + params['save_step']
+    #     validateStep = train_elf.last_step + params['validate_step']
+    #     summaryStep = train_elf.last_step + params['summary_step'] 
+    # else:
+    saveStep =  params['save_step']
+    validateStep = params['validate_step']
+    summaryStep = params['summary_step']
 
-    train_elf.run_summary( )
+    train_elf.run_summary()
     maxSteps  = params[ 'max_steps' ]
     logFreq   = params[ 'log_frequency' ]
     traceStep = params[ 'trace_step' ]
-
+    maxTime = params.get('max_time', 1e12)
+        
     while train_elf.last_step < maxSteps :
         train_elf.before_run()
-
-        doLog   = train_elf.last_step % logFreq  == 0
-        doSave  = train_elf.last_step >= saveStep 
-        doSumm  = train_elf.last_step > summaryStep 
-        doTrace = train_elf.last_step == traceStep and params['gpu_trace']
+        doLog   = bool(train_elf.last_step % logFreq  == 0)
+        doSave  = bool(train_elf.last_step % saveStep == 0)
+        doSumm  = bool(train_elf.last_step % summaryStep == 0 and params['debug'])
+        doTrace = bool(train_elf.last_step == traceStep and params['gpu_trace'])
+        doValidate = bool(train_elf.last_step % validateStep == 0)
+        doFinish = bool(train_elf.start_time - params['start_time'] > maxTime)
         if train_elf.last_step == 1 and params['debug']:
-            pass
-            # if hvd.rank() == 0:
             summary = sess.run([train_op,  summary_merged])[-1]
             train_elf.write_summaries( summary )
-        if not doLog and not doSave and not doTrace and not doSumm:
+        elif not doLog and not doSave and not doTrace and not doSumm:
             sess.run(train_op)
-        elif doLog and not doSave :
+        elif doLog and not doSave  and not doSumm:
             _, loss_value, lr = sess.run( [ train_op, total_loss, learning_rate ] )
             train_elf.log_stats( loss_value, lr )
-        elif doLog and doSave :
+        elif doLog and doSumm and doSave :
             _, summary, loss_value, lr = sess.run( [ train_op, summary_merged, total_loss, learning_rate ])
             train_elf.log_stats( loss_value, lr )
             train_elf.write_summaries( summary )
             if hvd.rank( ) == 0 :
                 saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
                 print_rank('Saved Checkpoint.')
-            saveStep += params['save_step']
-        elif doSumm and params['debug']:
-            # if hvd.rank() == 0:
+        elif doLog and doSumm :
+            _, summary, loss_value, lr = sess.run( [ train_op, summary_merged, total_loss, learning_rate ])
+            train_elf.log_stats( loss_value, lr )
+            train_elf.write_summaries( summary )
+        elif doSumm:
             summary = sess.run([train_op,  summary_merged])[-1]
             train_elf.write_summaries( summary )
-            summaryStep += params['summary_step'] 
         elif doSave :
-            #summary = sess.run([train_op,  summary_merged])[-1]
-            #train_elf.write_summaries( summary )
             if hvd.rank( ) == 0 :
                 saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
                 print_rank('Saved Checkpoint.')
-            saveStep += params['save_step']
         elif doTrace :
             sess.run(train_op, options=run_options, run_metadata=run_metadata)
             train_elf.save_trace(run_metadata, params[ 'trace_dir' ], params[ 'trace_step' ] )
             train_elf.before_run()
         # Here we do validation:
-        #if train_elf.elapsed_epochs > next_validation_epoch:
-        if train_elf.last_step > validateStep:
+        if doValidate:
             validate(network_config, hyper_params, params, sess, dset)
-            validateStep += params['validate_step']
-            #next_validation_epoch += params['epochs_per_validation']
+        if doFinish:
+            saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
+            print_rank('Saved Final Checkpoint.')
+            return
+
 
 
 def train_inverter(network_config, hyper_params, params):
@@ -754,6 +753,9 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
         if params['network_class'] == 'fcnet':
             n_net = network.FCNet(scope, params, hyper_params, network_config, images, labels,
                                     operation='eval', summary=summary, verbose=True)
+        if params['network_class'] == 'YNet':
+            n_net = network.YNet(scope, params, hyper_params, network_config, images, labels,
+                                        operation='eval', summary=summary, verbose=True)
 
         # Build it and propagate images through it.
         n_net.build_model()
@@ -762,7 +764,7 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
     if hyper_params['network_type'] == 'regressor' or hyper_params['network_type'] == 'classifier':
         labels_shape = labels.get_shape().as_list()
         layer_params={'bias':labels_shape[-1], 'weights':labels_shape[-1],'regularize':False}
-        logits = fully_connected(n_net, layer_params, params['batch_size'],
+        logits = losses.fully_connected(n_net, layer_params, params['batch_size'],
                                 name='linear',reuse=None)
     else:
         pass
@@ -793,6 +795,8 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
         print('not implemented')
     elif hyper_params['network_type'] == 'inverter':
         loss_params = hyper_params['loss_function']
+        if labels.shape.as_list()[1] > 1:
+            labels, _, _ = [tf.expand_dims(itm, axis=1) for itm in tf.unstack(labels, axis=1)]
         if loss_params['type'] == 'MSE_PAIR':
             errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
             loss_label= loss_params['type'] 
@@ -801,14 +805,19 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
             errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32), reduction=tf.losses.Reduction.MEAN)
         errors = tf.expand_dims(errors,axis=0)
         error_averaging = hvd.allreduce(errors)
-        errors = np.array([sess.run([IO_ops,errors])[-1] for i in range(dset.num_samples // params['batch_size'])])
+
+        if num_batches is not None:
+            num_samples = num_batches
+        else:
+            num_samples = dset.num_samples
+        errors = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_samples)])
         # errors = np.array([sess.run([IO_ops,errors])[-1] for i in range(dset.num_samples)])
         # errors = tf.reduce_mean(errors)
         # avg_errors = hvd.allreduce(tf.expand_dims(errors, axis=0))
         # error = sess.run(avg_errors)
         # print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, errors.mean()))
-        print('rank=%d, Validation Reconstruction Error %s: %3.3e' % (hvd.rank(), loss_label, errors.mean()))
-        tf.summary.scalar("Validation_loss_label_%s" %hvd.rank() , tf.constant(errors.mean()))
+        print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, errors.mean()))
+        tf.summary.scalar("Validation_loss_label_%s" % loss_label, tf.constant(errors.mean()))
 
 
 def validate_ckpt(network_config, hyper_params, params, num_batches=None,
@@ -868,6 +877,9 @@ def validate_ckpt(network_config, hyper_params, params, num_batches=None,
                                             labels, operation='eval_ckpt', summary=False, verbose=True)
             if params['network_class'] == 'fcnet':
                 n_net = network.FCNet(scope, params, hyper_params, network_config, images, labels,
+                                        operation='eval_ckpt', summary=False, verbose=True)
+            if params['network_class'] == 'YNet':
+                n_net = network.YNet(scope, params, hyper_params, network_config, images, labels,
                                         operation='eval_ckpt', summary=False, verbose=True)
             # Build it and propagate images through it.
             n_net.build_model()
@@ -961,6 +973,37 @@ def validate_ckpt(network_config, hyper_params, params, num_batches=None,
                     else: 
                         loss_label= 'ABS_DIFF'
                         errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32), reduction=tf.losses.Reduction.MEAN)
+                    errors = tf.expand_dims(errors,axis=0)
+                    error_averaging = hvd.allreduce(errors)
+                    if num_batches is not None:
+                        num_samples = num_batches
+                    else:
+                        num_samples = dset.num_samples
+                    error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_samples)])
+                    print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, error.mean()))
+            elif hyper_params['network_type'] == 'YNet':
+                loss_params = hyper_params['loss_function']
+                model_output = tf.stack([n_net.model_output[subnet] for subnet in ['inverter', 'decoder_RE', 'decoder_IM']], axis=0)
+                if params['output']:
+                    output = tf.cast(model_output, tf.float32)
+                    print('output shape',output.get_shape().as_list()) 
+                    output_dir = os.path.join(os.getcwd(),'outputs')
+                    if num_batches is not None:
+                        num_samples = num_batches
+                    else:
+                        num_samples = dset.num_samples
+                    for idx in range(num_samples):
+                        output_arr, label_arr = sess.run([IO_ops, model_output, labels])[-2:]
+                        #label_arr = sess.run([IO_ops, labels])[-1]
+                        np.save(os.path.join(output_dir,'label_%d_%d_%s.npy' % (idx, hvd.rank(), format(last_step))), label_arr)
+                        np.save(os.path.join(output_dir,'output_%d_%d_%s.npy' % (idx, hvd.rank(), format(last_step))), output_arr)
+                else:
+                    if loss_params['type'] == 'MSE_PAIR':
+                        errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(model_output, tf.float32))
+                        loss_label= loss_params['type'] 
+                    else: 
+                        loss_label= 'ABS_DIFF'
+                        errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(model_output, tf.float32), reduction=tf.losses.Reduction.MEAN)
                     errors = tf.expand_dims(errors,axis=0)
                     error_averaging = hvd.allreduce(errors)
                     if num_batches is not None:

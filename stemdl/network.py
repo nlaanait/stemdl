@@ -18,7 +18,7 @@ from .mp_wrapper import mp_regularizer_wrapper
 worker_name='model'
 tf.logging.set_verbosity(tf.logging.ERROR)
 
-class ConvNet(object):
+class ConvNet:
     """
     Vanilla Convolutional Neural Network (Feed-Forward).
     """
@@ -60,12 +60,10 @@ class ConvNet(object):
         self.verbose = verbose
         self.num_weights = 0
         self.misc_ops = []
-        # self.reuse = tf.AUTO_REUSE
-        self.reuse = None
-        if self.operation == 'eval_run':
-            self.reuse = True
-            self.operation == 'eval'
-        elif self.operation == 'eval_ckpt':
+        self.reuse = tf.AUTO_REUSE
+        # self.reuse = None
+        if self.operation == 'eval_run' or self.operation == 'eval_ckpt':
+            # self.reuse = True
             self.operation == 'eval'
         self.bytesize = 2
         if not self.params['IMAGE_FP16']: self.bytesize = 4
@@ -1159,7 +1157,9 @@ class FCDenseNet(ConvNet):
                     self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out, _ = self._conv(input=out, params=layer_params)
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
-                    if self.summary: self._activation_summary(out)
+                    if self.summary: 
+                        self._activation_summary(out)
+                        self._activation_image_summary(out)
 
                 if layer_params['type'] == 'coord_conv':
                     self.print_verbose(">>> Adding Coord Conv Layer: %s" % layer_name)
@@ -1192,21 +1192,34 @@ class FCDenseNet(ConvNet):
                     self.print_verbose(">>> Adding Dense Block Down: %s" % layer_name)
                     self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out, _ = self._dense_block(out, layer_params, scope)
-                    skip_connection_list.append(out)
+                    out_freq = self._freq2space(inputs=out) 
+                    skip_connection_list.append(out_freq)
                     skip_hub += 1
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: 
+                        self._activation_summary(out_freq)
+                        self._activation_image_summary(out_freq)
 
                 if layer_params['type'] == 'dense_block_bottleneck':
                     self.print_verbose(">>> Adding Dense Block Bottleneck: %s" % layer_name)
                     self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out, block_features = self._dense_block(out, layer_params, scope)
-                    self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    # out = self._freq2space(inputs=out)
+                    block_features = self._freq2space(inputs=block_features)
+                    self.print_verbose('    output: %s' %format(block_features.get_shape().as_list()))
+                    if self.summary: 
+                        self._activation_summary(block_features)
+                        self._activation_image_summary(block_features)
 
                 if layer_params['type'] == 'dense_block_up':
                     self.print_verbose(">>> Adding Dense Block Up: %s" % layer_name)
                     self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out, block_features = self._dense_block(out, layer_params, scope)
+                    # block_features = self._freq2space(inputs=block_features)
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: 
+                        self._activation_summary(out)
+                        self._activation_image_summary(out)
 
                 if layer_params['type'] == 'transition_up':
                     self.print_verbose(">>> Adding Transition Up: %s" % layer_name)
@@ -1214,12 +1227,18 @@ class FCDenseNet(ConvNet):
                     out = self._transition_up(block_features, skip_connection_list[skip_hub], layer_params, scope)
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
                     skip_hub -= 1
+                    if self.summary: 
+                        self._activation_summary(out)
+                        self._activation_image_summary(out)
 
                 if layer_params['type'] == 'transition_down':
                     self.print_verbose(">>> Adding Transition Down: %s" % layer_name)
                     self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out = self._transition_down(out, layer_params, scope)
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+                    if self.summary: 
+                        self._activation_summary(out)
+                        self._activation_image_summary(out)
 
                 # print layer specs and generate Tensorboard summaries
                 if out is None:
@@ -1231,8 +1250,102 @@ class FCDenseNet(ConvNet):
                                                                                         self.num_weights,
                                                                                         format(self.mem / 1024),
                                                                                         self.get_ops()))
+        conv_1by1 = OrderedDict({'type': "conv_2D", 'stride': [1, 1], 'kernel': [3,3], 'features': 1, 
+                                'padding': 'SAME', 'activation': None}) 
+        for i in range(1):
+            with tf.variable_scope('FINAL_conv_1by1_%d' %i, reuse=self.reuse) as _ :
+                if i == 2: conv_1by1['features'] = 1
+                out, _ = self._conv(input=out, params=conv_1by1)
+                # out = self._activate(input=out, params=conv_1by1)
+        if self.summary: 
+            self._activation_image_summary(out)
+        # self.print_rank("final shape", out.shape)
         self.model_output = tf.saturate_cast(out, tf.float32)
+    
+    def _freq2space(self, inputs=None):
+        shape = inputs.shape
+        weights_dim = 512
+        num_fc = 2
+        # if weights_dim < 4096 :
+        fully_connected = OrderedDict({'type': 'fully_connected','weights': weights_dim,'bias': weights_dim, 'activation': 'relu',
+                                'regularize': True})
+        deconv = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [3,3], 'features': 8, 'padding': 'SAME', 'upsample': 2})
+        conv = OrderedDict({'type': "conv_2D", 'stride': [1, 1], 'kernel': [3,3], 'features': inputs.shape.as_list()[1],
+        'padding': 'SAME', 'activation': 'relu', 'dropout':0.5})
+        conv_1by1 = OrderedDict({'type': "conv_2D", 'stride': [1, 1], 'kernel': [3,3], 'features': 1, 'padding': 'SAME', 
+        'activation': 'relu', 'dropout':0.5})
+        with tf.variable_scope('Freq2Space', reuse=tf.AUTO_REUSE) as _ :
+            with tf.variable_scope('conv_1by1', reuse=tf.AUTO_REUSE) as _ :
+                conv_params = deepcopy(conv_1by1)
+                stride = shape.as_list()[-1] // (int(math.sqrt(weights_dim)))
+                conv_params['stride'] = [stride, stride]
+                out, _ = self._conv(input=inputs, params=conv_params)
+                out = tf.reshape(out, [shape[0], -1])
+            for i in range(num_fc):
+                if i > 0:
+                    weights_dim = min(4096, int(shape.as_list()[-2]**2))
+                    fully_connected['weights'] = weights_dim
+                    fully_connected['bias'] = weights_dim
+                with tf.variable_scope('FC_%d' %i, reuse=self.reuse) as _ :
+                    out = self._linear(input=out, params=fully_connected)
+                    out = self._activate(input=out, params=fully_connected)
+            new_dim = int(math.sqrt(weights_dim))
+            out = tf.reshape(out, [shape[0], 1, new_dim, new_dim])
+            # print('shape after fc', out.shape)
+            num_upsamp = int(np.log2(shape.as_list()[-1] / out.shape.as_list()[-1]))
+            conv_1by1_n = deepcopy(conv_1by1)
+            conv_1by1_n['stride'] = [1,1]
+            conv_1by1_n['features'] = 16
+            # self.print_rank("num_upsamp=", num_upsamp)
+            if num_upsamp >= 0:
+                for up in range(num_upsamp):
+                    with tf.variable_scope('deconv_upscale_%d' % up, reuse=self.reuse) as _:
+                        out, _ = self._deconv(input=out, params=deconv)
+                    with tf.variable_scope('conv_upscale_%d' % up, reuse=self.reuse) as _:
+                        out, _ = self._conv(input=out, params=conv_1by1_n)
+                        out = self._batch_norm(input=out)
+                        out = self._activate(input=out, params=conv_1by1_n)
+                        rate = conv_1by1_n.get('dropout', 0) 
+                        out = tf.keras.layers.SpatialDropout2D(rate, data_format='channels_first')(inputs=out, training= self.operation == 'train')
+                    # self.print_rank(" out shape after upscale+conv", out.shape)
+            else:
+                out = tf.transpose(out, perm=[0,2,3,1])
+                out = tf.image.resize_images(out, [shape[2], shape[3]])
+                out = tf.cast(tf.transpose(out, perm=[0,3,1,2]), tf.float16)
 
+            with tf.variable_scope('conv_restore', reuse=tf.AUTO_REUSE) as _ :
+                out, _ = self._conv(input=out, params=conv)
+                out = self._batch_norm(input=out)
+                out = self._activate(input=out, params=conv)
+                rate = conv.get('dropout', 0) 
+                out = tf.keras.layers.SpatialDropout2D(rate, data_format='channels_first')(inputs=out, training= self.operation == 'train')
+        self.print_rank("freq2space: input shape %s, output shape %s" %(format(shape), format(out.shape)))
+        return out
+
+    def _upscale(self, inputs=None, params=None, scale=2):
+        # conv_params = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
+        #                         'features': inputs.shape.as_list()[1],
+        #                         'activation': 'relu', 
+        #                         'padding': 'VALID', 
+        #                         'batch_norm': False, 'dropout':0.0})
+        with tf.variable_scope('upscale', reuse=self.reuse) as _:
+            shape = inputs.shape
+            out = tf.reshape(inputs, [-1, shape[1], shape[2], 1, shape[3], 1])
+            out = tf.tile(out, [1, 1, 1, scale, 1, scale])
+            out = tf.reshape(out, [-1, shape[1], shape[2] * scale, shape[3] * scale])
+            # out, _ = self._conv(input=out, params=conv_params)
+            # out = self._batch_norm(out)
+            return out
+
+    # def _batch_norm(self, input=None):
+    #     # if self.operation == 'train':
+    #     #     training = True
+    #     # else:
+    #     #     training = tf.constant(False, dtype=tf.bool)
+    #     # out = tf.keras.layers.BatchNormalization(axis=1)(inputs=input, training=training)
+    #     # return out
+    #     return input
+ 
     def get_loss(self):
         with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
             self._calculate_loss_regressor()
@@ -1248,6 +1361,10 @@ class FCDenseNet(ConvNet):
         Also add skip connection from skip hub to current output
         """
         # strength = self.skip_strength()
+        # shape = input.shape
+        # out = tf.transpose(input, perm=[0,2,3,1])
+        # out = tf.image.resize_images(out, [shape[2]*2, shape[3]*2])
+        # out = tf.cast(tf.transpose(out, perm=[0,3,1,2]), tf.float16)
         out, _ = self._deconv(input, layer_params['deconv'], scope)
         if block_connect is not None:
             out = tf.concat([out,block_connect], axis=1)
@@ -1269,9 +1386,8 @@ class FCDenseNet(ConvNet):
             out, _ = self._coord_conv(input=out, params=conv_layer_params)
         else:
             out, _ = self._conv(input=out, params=conv_layer_params)
-        keep_prob = layer_params.get('dropout', None)
-        if keep_prob is not None:
-            out = self._dropout(input=out, name=scope.name+ '_dropout')
+        rate = layer_params.get('dropout', 0)
+        out = tf.keras.layers.SpatialDropout2D(rate, data_format='channels_first')(inputs=out, training= self.operation == 'train')
         # Pooling
         pool_layer_params = layer_params['pool']
         out = self._pool(input=out, params=pool_layer_params)
@@ -1295,9 +1411,8 @@ class FCDenseNet(ConvNet):
            out, _ = self._coord_conv(input=out, params=layer_params)
         else:
             out, _ = self._conv(input=out, params=layer_params)
-        keep_prob = layer_params.get('dropout', None)
-        if keep_prob is not None:
-            out = self._dropout(input=out, name=scope.name+ '_dropout')
+        rate = layer_params.get('dropout', 0) 
+        out = tf.keras.layers.SpatialDropout2D(rate, data_format='channels_first')(inputs=out, training= self.operation == 'train')
         in_shape = input.get_shape().as_list()
         out_shape = out.get_shape().as_list()
         self._print_layer_specs(layer_params, scope, in_shape, out_shape)
@@ -1320,6 +1435,7 @@ class FCDenseNet(ConvNet):
             with tf.variable_scope(layer_name, reuse = self.reuse) as scope:
                 # build layer
                 layer = self._db_layer(input, layer_params[layer_name], scope)
+                # layer = self._freq2space(inputs=layer)
                 # append to list of features
                 block_features.append(layer)
                 #stack new layer
@@ -2292,9 +2408,9 @@ class YNet(FCDenseNet, FCNet):
                 #     self._activation_image_summary(out)
 
         # Book-keeping...
-        self.print_rank('Total # of blocks: %d,  weights: %2.1e, memory: %s MB, ops: %3.2e \n' % (len(network),
+        self.print_rank('Total # of blocks: %d,  weights: %2.1e, memory: %2.f MB, ops: %3.3e \n' % (len(network),
                                                                                         self.num_weights,
-                                                                                        format(self.mem / 1024),
+                                                                                        self.mem / 1024,
                                                                                         self.get_ops()))
         self.model_output['encoder'] = out 
         self.update_all_attrs(subnet='encoder')
@@ -2513,6 +2629,7 @@ class YNet(FCDenseNet, FCNet):
                     tens , _ = self._conv(input=tens, params=conv_1by1)
                     # tens = self._pool(input=tens, params=pool)
                     tens = self._activate(input=tens, params=conv_1by1)
+                    tens = self._batch_norm(input=tens)
             # if tens.shape[-2:] != [32, 32]:
             #     tens = tf.transpose(tens, perm=[0, 2, 3, 1])
             #     tens = tf.image.resize(tens, [32, 32], method=tf.image.ResizeMethod.BILINEAR)
@@ -2592,20 +2709,15 @@ class YNet(FCDenseNet, FCNet):
                     self.print_verbose(">>> Adding Conv Layer: %s" % layer_name)
                     self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
                     out, _ = self._conv(input=out, params=layer_params)
+                    out = self._activate(input=out, name=scope.name, params=layer_params)
                     do_bn = layer_params.get('batch_norm', False)
                     if do_bn:
                         out = self._batch_norm(input=out)
                     else:
                         out = self._add_bias(input=out, params=layer_params)
-                        # dropout
-                    if self.operation == 'train' and layer_params.get('dropout', None) is not None:
-                        rate = layer_params['dropout']
-                    else:
-                        rate = 0
+                    rate = layer_params.get('dropout', 0) 
                     out = tf.keras.layers.SpatialDropout2D(rate, data_format='channels_first')(inputs=out, training= self.operation == 'train')
-                    # out = tf.nn.dropout(out, rate=tf.constant(rate, dtype=out.dtype))
                     out_shape = out.get_shape().as_list()
-                    out = self._activate(input=out, name=scope.name, params=layer_params)
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
                     if self.summary: 
                         self._activation_summary(out)
@@ -2708,8 +2820,8 @@ class YNet(FCDenseNet, FCNet):
                                                                                     self.num_weights,
                                                                                     format(self.mem / 1024),
                                                                                     self.get_ops()))
-        if subnet == 'inverter':
-            out = tf.reduce_mean(out, axis=1, keepdims=True)
+        # if subnet == 'inverter':
+        #     out = tf.reduce_mean(out, axis=1, keepdims=True)
         self.model_output[subnet] = out
         self.update_all_attrs(subnet=subnet)
     
@@ -2718,7 +2830,7 @@ class YNet(FCDenseNet, FCNet):
                                 'features': inputs.shape.as_list()[1]//2,
                                 'activation': 'relu', 
                                 'padding': 'VALID', 
-                                'batch_norm': False, 'dropout':0.0})
+                                'batch_norm': True, 'dropout':0.0})
         with tf.variable_scope('upscale', reuse=self.reuse) as _:
             shape = inputs.shape
             out = tf.reshape(inputs, [-1, shape[1], shape[2], 1, shape[3], 1])
@@ -2732,7 +2844,7 @@ class YNet(FCDenseNet, FCNet):
                                 'features': inputs.shape.as_list()[1],
                                 'activation': 'relu', 
                                 'padding': 'VALID', 
-                                'batch_norm': False, 'dropout':0.0})
+                                'batch_norm': True, 'dropout':0.0})
         out = self._batch_norm(input=inputs)
         out = self._activate(input=out, params=conv_params)
         with tf.variable_scope('residual_conv_1', reuse=self.reuse) as scope:
@@ -2743,45 +2855,6 @@ class YNet(FCDenseNet, FCNet):
             out, _ = self._conv(input=out, params=conv_params)
         out = tf.add(inputs, out)
         return out, None
-
-    def build_decoder_RE(self):
-        out = self.model_output['encoder']
-        conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
-                                'features': 1024,
-                                'activation': 'relu', 
-                                'padding': 'VALID', 
-                                'batch_norm': False, 'dropout':0.0})
-        with tf.variable_scope('decoder_RE_conv_1by1', reuse=self.reuse) as _:
-            out, _ = self._conv(input=out, params=conv_1by1) 
-            do_bn = conv_1by1.get('batch_norm', False)
-            if do_bn:
-                out = self._batch_norm(input=out)
-            else:
-                out = self._add_bias(input=out, params=conv_1by1)
-            out = self._activate(input=out, params=conv_1by1)
-        # fc_params = OrderedDict({'type': 'fully_connected','weights': 256,'bias': 256, 'activation': 'relu',
-        #                            'regularize': True})
-        # num_fc = self.network['inverter']['freq2space']['n_fc_layers']
-        # num_fc = 1
-        # for i in range(num_fc):
-        #     with tf.variable_scope('decoder_freq2space_fc_%d' %i, reuse=self.reuse) as _ :
-        #         out = self._linear(input=out, params=fc_params)
-        #         out = self._activate(input=out, params=fc_params)
-        # dim = int(math.sqrt(fc_params['weights']))
-        # out = tf.reshape(out, [self.params['batch_size'], 1, dim, dim])
-        self._build_branch(subnet='decoder_RE', inputs=out)
-
-        conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 'features': 1,
-                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': False})
-        with tf.variable_scope('decoder_RE_CONV_FIN', reuse=self.reuse) as _:
-            out, _ = self._conv(input=self.model_output['decoder_RE'], params=conv_1by1)
-            do_bn = conv_1by1.get('batch_norm', False)
-            if do_bn:
-                out = self._batch_norm(input=out)
-            else:
-                out = self._add_bias(input=out, params=conv_1by1)
-            out = self._activate(input=out, params=conv_1by1)
-        self.model_output['decoder_RE'] = out
 
     def build_decoder(self, subnet='decoder_IM'):
         scopes_list = []
@@ -2794,12 +2867,12 @@ class YNet(FCDenseNet, FCNet):
                                 'features': 1,
                                 'activation': 'relu', 
                                 'padding': 'VALID', 
-                                'batch_norm': False, 'dropout':0.0})
+                                'batch_norm': True, 'dropout':0.0})
         conv_1by1_1024 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
         'features': 1024,
         'activation': 'relu', 
         'padding': 'VALID', 
-        'batch_norm': False, 'dropout':0.0})
+        'batch_norm': True, 'dropout':0.0})
         if False:
             def fc_map(tens):
                 for i in range(num_fc):
@@ -2818,16 +2891,17 @@ class YNet(FCDenseNet, FCNet):
                 out, _ = self._conv(input=out, params=conv_1by1_1)
                 out = tf.reshape(out, [out_shape[0], out_shape[1], out_shape[3], out_shape[4]])
                 out = tf.transpose(out, perm=[1,0,2,3])
+
                 # scopes_list.append(scope)
                 print('conv1by1_decoder shape', out.shape.as_list())
         with tf.variable_scope('%s_conv_1by1_1024' % subnet, reuse=self.reuse) as scope:
             out, _ = self._conv(input=out, params=conv_1by1_1024) 
+            out = self._activate(input=out, params=conv_1by1_1024)
             do_bn = conv_1by1_1024.get('batch_norm', False)
             if do_bn:
                 out = self._batch_norm(input=out)
             else:
                 out = self._add_bias(input=out, params=conv_1by1_1024)
-            out = self._activate(input=out, params=conv_1by1_1024)
             # scopes_list.append(scope)
 
         self._build_branch(subnet=subnet, inputs=out)
@@ -2869,7 +2943,7 @@ class YNet(FCDenseNet, FCNet):
                                 'features': 1,
                                 'activation': 'relu', 
                                 'padding': 'VALID', 
-                                'batch_norm': False, 'dropout':0.0})
+                                'batch_norm': True, 'dropout':0.0})
             out_shape = out.shape.as_list()
             out = tf.reshape(out, [out_shape[0]*out_shape[1], out_shape[2], out_shape[3], out_shape[4]])
             with tf.variable_scope('%s_conv_1by1_1' % 'inverter', reuse=self.reuse) as scope:
@@ -2882,7 +2956,7 @@ class YNet(FCDenseNet, FCNet):
             'features': 1024,
             'activation': 'relu', 
             'padding': 'VALID', 
-            'batch_norm': False, 'dropout':0.0})
+            'batch_norm': True, 'dropout':0.0})
         with tf.variable_scope('inverter_conv_1by1_1024', reuse=self.reuse) as scope:
             out, _ = self._conv(input=out, params=conv_1by1_1024) 
             do_bn = conv_1by1_1024.get('batch_norm', False)
@@ -2900,10 +2974,10 @@ class YNet(FCDenseNet, FCNet):
         self.build_decoder(subnet='decoder_IM')
         self.build_decoder(subnet='decoder_RE')
         self.build_inverter()
-        # self.scopes = list(chain.from_iterable([scope for _, scope in self.all_scopes.items()]))
+        self.scopes = list(chain.from_iterable([scope for _, scope in self.all_scopes.items()]))
         # self.scopes = None
-        for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
-            self.print_rank("var:%s , dtype:%s" % (var.name, var.dtype))
-        ##TODO: check why one of the GRADIENTS COMES OUT AS INT32 WHEN DOING BATCHNORM
+        # for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
+        #     self.print_rank("var:%s , dtype:%s" % (var.name, var.dtype))
+        # ##TODO: check why one of the GRADIENTS COMES OUT AS INT32 WHEN DOING BATCHNORM
 
     
