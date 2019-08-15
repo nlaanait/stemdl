@@ -61,8 +61,12 @@ def calc_loss(n_net, scope, hyper_params, params, labels, images=None, summary=F
         #     labels = tf.transpose(labels, perm=[0, 2, 3, 1])
         #     labels = tf.image.resize(labels, n_net.model_output.shape.as_list()[-2:], method=tf.image.ResizeMethod.BILINEAR)
         #     labels = tf.transpose(labels, perm=[0, 3, 1, 2])
+        if labels_shape[1] > 1:
+            pot_labels, _, _ = [tf.expand_dims(itm, axis=1) for itm in tf.unstack(labels, axis=1)]
+        else:
+            pot_labels = labels
         weight=None
-        _ = calculate_loss_regressor(n_net.model_output, labels, params, hyper_params, weight=weight)
+        _ = calculate_loss_regressor(n_net.model_output, pot_labels, params, hyper_params, weight=weight)
     if hyper_params['network_type'] == 'fft_inverter':
         n_net.model_output = tf.exp(1.j * tf.cast(n_net.model_output, tf.complex64))
         psi_pos = tf.ones([1,16,512,512], dtype=tf.complex64)
@@ -101,10 +105,8 @@ def calc_loss(n_net, scope, hyper_params, params, labels, images=None, summary=F
     #Assemble all of the losses.
     losses = tf.get_collection(tf.GraphKeys.LOSSES)
     if hyper_params['network_type'] == 'YNet':
-        # losses = [inverter_loss, decoder_loss_re]
         losses = [inverter_loss , decoder_loss_re, decoder_loss_im ]
-        # losses = [inverter_loss , decoder_loss_im ]
-    # losses = [inverter_loss]
+        losses = ynet_adjusted_losses(losses, tf.train.get_or_create_global_step())
     regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
     # Calculate the total loss 
     total_loss = tf.add_n(losses + regularization, name='total_loss')
@@ -204,3 +206,33 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
     if loss_params['type'] == 'LOG':
         cost = tf.losses.log_loss(labels, weights=weight, predictions=net_output, reduction=tf.losses.Reduction.MEAN)
     return cost
+
+
+def ynet_adjusted_losses(losses, global_step):
+    '''
+    Schedule the different loss components based on global training step
+    '''
+    threshold = 0.8
+    max_prefac = 20
+    ema = tf.train.ExponentialMovingAverage(0.99)
+    loss_averages_op = ema.apply(losses)
+
+    with tf.control_dependencies([loss_averages_op]):
+        def ramp():
+            prefac = tf.cast(tf.train.exponential_decay(tf.constant(1.), global_step, 2 * global_step, 
+                            tf.constant(0.5, dtype=tf.float32), staircase=False), tf.float32)
+            prefac = 1 ** 2 * tf.pow(prefac, tf.constant(-1., dtype=tf.float32))
+            prefac = tf.minimum(prefac, tf.cast(max_prefac, tf.float32))
+            return prefac
+    
+        def decay(prefac_current):
+            prefac = tf.train.exponential_decay(prefac_current, global_step, 2 * global_step, tf.constant(0.5, dtype=tf.float32),
+                                            staircase=True)
+            return prefac
+    # inv_loss, dec_re_loss, dec_im_loss = [ema.average(tens.name) for tens in losses]
+    inv_loss, dec_re_loss, dec_im_loss = losses 
+
+    prefac  = tf.cond(inv_loss < threshold, ramp, lambda: decay(ramp()))
+    tf.summary.scalar("prefac_inverter", prefac)
+    losses = [prefac * (inv_loss - threshold), dec_re_loss, dec_im_loss]
+    return losses

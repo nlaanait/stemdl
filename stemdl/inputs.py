@@ -528,9 +528,9 @@ class DatasetLMDB(DatasetTFRecords):
                 for _ in range(self.params['batch_size']):
                     image, label = iterator.get_next()
                     image = tf.reshape(image, self.data_specs['image_shape'])
-                    if self.params[self.mode + '_distort']:
-                        image = self.add_noise_image(image)
-                    images.append(image)
+                    # if self.params[self.mode + '_distort']:
+                        # image = self.add_noise_image(image)
+                    images.append(tf.reshape(image, self.data_specs['image_shape']))
                     labels.append(tf.reshape(label, self.data_specs['label_shape']))
             if tf.executing_eagerly():
                 images = tf.stack(images)
