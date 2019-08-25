@@ -250,7 +250,7 @@ def train(network_config, hyper_params, params):
             n_net.build_model()
 
             # calculate the total loss
-            total_loss, loss_averages_op = losses.calc_loss(n_net, scope, hyper_params, params, labels, images=images, summary=summary)
+            total_loss, loss_averages_op = losses.calc_loss(n_net, scope, hyper_params, params, labels, step=global_step, images=images, summary=summary)
 
             #get summaries, except for the one produced by string_input_producer
             if summary: summaries = tf.get_collection(tf.GraphKeys.SUMMARIES, scope)

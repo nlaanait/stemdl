@@ -255,7 +255,6 @@ class ConvNet:
             'regularize':True}
         with tf.variable_scope('linear_output', reuse=self.reuse) as scope:
             output = self._linear(input=self.model_output, name=scope.name, params=layer_params)
-            print(output.name)
         if self.params['IMAGE_FP16']:
             output = tf.cast(output, tf.float32)
             return output
@@ -288,7 +287,6 @@ class ConvNet:
                 'regularize':True}
             with tf.variable_scope(layer_name, reuse=self.reuse) as scope:
                 out = tf.cast(self._linear(input=self.model_output, name=scope.name, params=layer_params), tf.float32)
-                print(out.name)
             self.print_rank('Output Layer : %s' %format(out.get_shape().as_list()))
             outputs.append(out)
         mixing = self.hyper_params['mixing']
@@ -664,8 +662,6 @@ class ConvNet:
                 lin_initializer.factor = 1.0
         elif isinstance(lin_initializer, tf.random_normal_initializer):
             init_val = max(np.sqrt(2.0 / params['weights']), 0.01)
-            if verbose:
-                print('stddev: %s' % format(init_val))
             lin_initializer.mean = 0.0
             lin_initializer.stddev = init_val
 
@@ -2646,7 +2642,7 @@ class YNet(FCDenseNet, FCNet):
 
         # post_ops = deepcopy(self.ops)
         # self.print_rank("post pre, cvae ops: ", pre_ops - post_ops)
-        out = tf.map_fn(CVAE, tensor_slices, back_prop=True, swap_memory=True, parallel_iterations=256)
+        out = tf.map_fn(CVAE, tensor_slices, back_prop=True)
         # self.print_rank('output of CVAE', out.get_shape())
         # out = tf.transpose(out, perm= [1, 2, 0])
         # dim = int(math.sqrt(self.images.shape.as_list()[1]))
@@ -2873,7 +2869,7 @@ class YNet(FCDenseNet, FCNet):
         'activation': 'relu', 
         'padding': 'VALID', 
         'batch_norm': True, 'dropout':0.0})
-        if False:
+        if True:
             def fc_map(tens):
                 for i in range(num_fc):
                     with tf.variable_scope('%s_fc_%d' %(subnet, i), reuse=self.reuse) as scope :
@@ -2881,7 +2877,7 @@ class YNet(FCDenseNet, FCNet):
                         tens = self._activate(input=tens, params=fully_connected)
                         # scopes_list.append(scope)
                 return tens
-            out = tf.map_fn(fc_map, out, back_prop=True, swap_memory=True, parallel_iterations=256)
+            out = tf.map_fn(fc_map, out, back_prop=True)
             out = tf.transpose(out, perm= [1, 2, 0])
             dim = int(math.sqrt(self.images.shape.as_list()[1]))
             out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
@@ -2893,7 +2889,6 @@ class YNet(FCDenseNet, FCNet):
                 out = tf.transpose(out, perm=[1,0,2,3])
 
                 # scopes_list.append(scope)
-                print('conv1by1_decoder shape', out.shape.as_list())
         with tf.variable_scope('%s_conv_1by1_1024' % subnet, reuse=self.reuse) as scope:
             out, _ = self._conv(input=out, params=conv_1by1_1024) 
             out = self._activate(input=out, params=conv_1by1_1024)
@@ -2951,7 +2946,6 @@ class YNet(FCDenseNet, FCNet):
                 out = tf.reshape(out, [out_shape[0], out_shape[1], out_shape[3], out_shape[4]])
                 out = tf.transpose(out, perm=[1,0,2,3])
                 scopes_list.append(scope)
-                print('conv1by1_inverter shape', out.shape.as_list())
         conv_1by1_1024 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
             'features': 1024,
             'activation': 'relu', 
