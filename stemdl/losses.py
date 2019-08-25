@@ -26,7 +26,7 @@ def _add_loss_summaries(total_loss, losses, summaries=False):
     return loss_averages_op
 
 
-def calc_loss(n_net, scope, hyper_params, params, labels, images=None, summary=False):
+def calc_loss(n_net, scope, hyper_params, params, labels, step=None, images=None, summary=False):
     labels_shape = labels.get_shape().as_list()
     layer_params={'bias':labels_shape[-1], 'weights':labels_shape[-1],'regularize':True}
     if hyper_params['network_type'] == 'hybrid':
@@ -85,6 +85,12 @@ def calc_loss(n_net, scope, hyper_params, params, labels, images=None, summary=F
         # weight=0.10
         inverter_loss = calculate_loss_regressor(pot, pot_labels, params, hyper_params, weight=weight)
         # weight=1
+        # probe_shape = probe_labels_re.shape.as_list()
+        # mask = np.ones(probe_shape, dtype=np.float32)
+        # snapshot = slice(probe_shape[-1]// 4, 3 * probe_shape[-1]//4)
+        # mask[:,:, snapshot, snapshot] = 100.0
+        # #mask = np.expand_dims(np.expand_dims(mask, axis=0), axis=0)
+        # weight = tf.constant(mask)1
         decoder_loss_im = calculate_loss_regressor(probe_im, probe_labels_im, params, hyper_params, weight=weight)
         decoder_loss_re = calculate_loss_regressor(probe_re, probe_labels_re, params, hyper_params, weight=weight)
         tf.summary.scalar('Inverter loss (raw)', inverter_loss)
@@ -106,7 +112,8 @@ def calc_loss(n_net, scope, hyper_params, params, labels, images=None, summary=F
     losses = tf.get_collection(tf.GraphKeys.LOSSES)
     if hyper_params['network_type'] == 'YNet':
         losses = [inverter_loss , decoder_loss_re, decoder_loss_im ]
-        losses = ynet_adjusted_losses(losses, tf.train.get_or_create_global_step())
+        # losses, prefac = ynet_adjusted_losses(losses, step)
+        # tf.summary.scalar("prefac_inverter", prefac)
     regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
     # Calculate the total loss 
     total_loss = tf.add_n(losses + regularization, name='total_loss')
@@ -212,27 +219,27 @@ def ynet_adjusted_losses(losses, global_step):
     '''
     Schedule the different loss components based on global training step
     '''
-    threshold = 0.8
+    threshold = tf.constant(0.25)
     max_prefac = 20
-    ema = tf.train.ExponentialMovingAverage(0.99)
+    ema = tf.train.ExponentialMovingAverage(0.9)
     loss_averages_op = ema.apply(losses)
+    prefac_initial = 2.0
 
     with tf.control_dependencies([loss_averages_op]):
         def ramp():
-            prefac = tf.cast(tf.train.exponential_decay(tf.constant(1.), global_step, 2 * global_step, 
+            prefac = tf.cast(tf.train.exponential_decay(tf.constant(prefac_initial), global_step, 10000, 
                             tf.constant(0.5, dtype=tf.float32), staircase=False), tf.float32)
-            prefac = 1 ** 2 * tf.pow(prefac, tf.constant(-1., dtype=tf.float32))
+            prefac = tf.constant(prefac_initial) ** 2 * tf.pow(prefac, tf.constant(-1., dtype=tf.float32))
             prefac = tf.minimum(prefac, tf.cast(max_prefac, tf.float32))
             return prefac
     
         def decay(prefac_current):
-            prefac = tf.train.exponential_decay(prefac_current, global_step, 2 * global_step, tf.constant(0.5, dtype=tf.float32),
+            prefac = tf.train.exponential_decay(prefac_current, global_step, 1000, tf.constant(0.5, dtype=tf.float32),
                                             staircase=True)
             return prefac
-    # inv_loss, dec_re_loss, dec_im_loss = [ema.average(tens.name) for tens in losses]
-    inv_loss, dec_re_loss, dec_im_loss = losses 
+        inv_loss, dec_re_loss, dec_im_loss = losses 
 
-    prefac  = tf.cond(inv_loss < threshold, ramp, lambda: decay(ramp()))
-    tf.summary.scalar("prefac_inverter", prefac)
-    losses = [prefac * (inv_loss - threshold), dec_re_loss, dec_im_loss]
-    return losses
+        prefac  = tf.cond(inv_loss > threshold, true_fn=ramp, false_fn=lambda: decay(ramp()))
+        tf.summary.scalar("prefac_inverter", prefac)
+        losses = [prefac * (inv_loss - threshold), dec_re_loss, dec_im_loss]
+        return losses, prefac
