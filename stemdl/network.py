@@ -2609,15 +2609,8 @@ class YNet(FCDenseNet, FCNet):
         fully_connected = params['fc_params']
         num_conv = params['n_conv_layers']
         num_fc = params['n_fc_layers']
-        # conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [2, 2], 'kernel': [4, 4], 
-        #                         'features': 16,
-        #                         'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout': 0.0})
-        # pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
-        # fully_connected = OrderedDict({'type': 'fully_connected','weights': 1024,'bias': 1024, 'activation': 'relu',
-        #                            'regularize': True})
         self.print_verbose("\t>>> Adding CVAE: " )
         self.print_verbose('\t\t    input: %s' %format(inputs.get_shape().as_list()))
-        # pre_ops = deepcopy(self.ops)
         def CVAE(tens):
             #TODO, turn this into a full denoising VAE
             for i in range(num_conv):
@@ -2625,28 +2618,20 @@ class YNet(FCDenseNet, FCNet):
                     tens , _ = self._conv(input=tens, params=conv_1by1)
                     # tens = self._pool(input=tens, params=pool)
                     tens = self._activate(input=tens, params=conv_1by1)
-                    tens = self._batch_norm(input=tens)
-            # if tens.shape[-2:] != [32, 32]:
-            #     tens = tf.transpose(tens, perm=[0, 2, 3, 1])
-            #     tens = tf.image.resize(tens, [32, 32], method=tf.image.ResizeMethod.BILINEAR)
-            #     if self.params['IMAGE_FP16']:
-            #         tens = tf.saturate_cast(tens, tf.float16)
-            #     tens = tf.transpose(tens, perm=[0, 3, 1, 2])
-            # self.print_rank('shape inside CVAE', tens.get_shape())
-            # for i in range(num_fc):
-            #     with tf.variable_scope('CVAE_fc_%d' %i, reuse=self.reuse) as _ :
-            #         tens = self._linear(input=tens, params=fully_connected)
-            #         tens = self._activate(input=tens, params=fully_connected)
-            # # tens = tf.reshape(tens, [new_shape[0], -1])
+                    # tens = self._batch_norm(input=tens)
+            for i in range(num_fc):
+                with tf.variable_scope('CVAE_fc_%d' %i, reuse=self.reuse) as _ :
+                    tens = self._linear(input=tens, params=fully_connected)
+                    tens = self._activate(input=tens, params=fully_connected)
             return tens
 
         # post_ops = deepcopy(self.ops)
         # self.print_rank("post pre, cvae ops: ", pre_ops - post_ops)
         out = tf.map_fn(CVAE, tensor_slices, back_prop=True)
-        # self.print_rank('output of CVAE', out.get_shape())
-        # out = tf.transpose(out, perm= [1, 2, 0])
-        # dim = int(math.sqrt(self.images.shape.as_list()[1]))
-        # out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
+        self.print_rank('output of CVAE', out.get_shape())
+        out = tf.transpose(out, perm= [1, 2, 0])
+        dim = int(math.sqrt(self.images.shape.as_list()[1]))
+        out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
         # out = tf.transpose(out, perm=[1,0,2,3])
         self.print_rank('output of Encoder', out.get_shape())
         self.model_output['encoder'] = out 
@@ -2765,10 +2750,10 @@ class YNet(FCDenseNet, FCNet):
                 if layer_params['type'] == 'deconv_2D':
                     self.print_verbose(">>> Adding de-Conv Layer: %s" % layer_name)
                     self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
-                    if subnet == 'inverter':
-                        out = self._upscale(inputs=out, params=layer_params)
-                    else:
-                        out, _ = self._deconv(input=out, params=layer_params)
+                    # if subnet == 'inverter':
+                    #     out = self._upscale(inputs=out, params=layer_params)
+                    # else:
+                    out, _ = self._deconv(input=out, params=layer_params)
                     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
                     if self.summary: 
                         self._activation_summary(out) 
@@ -2869,35 +2854,35 @@ class YNet(FCDenseNet, FCNet):
         'activation': 'relu', 
         'padding': 'VALID', 
         'batch_norm': True, 'dropout':0.0})
-        if True:
-            def fc_map(tens):
-                for i in range(num_fc):
-                    with tf.variable_scope('%s_fc_%d' %(subnet, i), reuse=self.reuse) as scope :
-                        tens = self._linear(input=tens, params=fully_connected)
-                        tens = self._activate(input=tens, params=fully_connected)
-                        # scopes_list.append(scope)
-                return tens
-            out = tf.map_fn(fc_map, out, back_prop=True)
-            out = tf.transpose(out, perm= [1, 2, 0])
-            dim = int(math.sqrt(self.images.shape.as_list()[1]))
-            out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
-        else:
-            out = tf.reshape(out, [out_shape[0]*out_shape[1], out_shape[2], out_shape[3], out_shape[4]])
-            with tf.variable_scope('%s_conv_1by1_1' % subnet, reuse=self.reuse) as scope:
-                out, _ = self._conv(input=out, params=conv_1by1_1)
-                out = tf.reshape(out, [out_shape[0], out_shape[1], out_shape[3], out_shape[4]])
-                out = tf.transpose(out, perm=[1,0,2,3])
+        # if True:
+        #     def fc_map(tens):
+        #         for i in range(num_fc):
+        #             with tf.variable_scope('%s_fc_%d' %(subnet, i), reuse=self.reuse) as scope :
+        #                 tens = self._linear(input=tens, params=fully_connected)
+        #                 tens = self._activate(input=tens, params=fully_connected)
+        #                 # scopes_list.append(scope)
+        #         return tens
+        #     out = tf.map_fn(fc_map, out, back_prop=True)
+        #     out = tf.transpose(out, perm= [1, 2, 0])
+        #     dim = int(math.sqrt(self.images.shape.as_list()[1]))
+        #     out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
+        # else:
+        #     out = tf.reshape(out, [out_shape[0]*out_shape[1], out_shape[2], out_shape[3], out_shape[4]])
+        #     with tf.variable_scope('%s_conv_1by1_1' % subnet, reuse=self.reuse) as scope:
+        #         out, _ = self._conv(input=out, params=conv_1by1_1)
+        #         out = tf.reshape(out, [out_shape[0], out_shape[1], out_shape[3], out_shape[4]])
+        #         out = tf.transpose(out, perm=[1,0,2,3])
 
-                # scopes_list.append(scope)
-        with tf.variable_scope('%s_conv_1by1_1024' % subnet, reuse=self.reuse) as scope:
-            out, _ = self._conv(input=out, params=conv_1by1_1024) 
-            out = self._activate(input=out, params=conv_1by1_1024)
-            do_bn = conv_1by1_1024.get('batch_norm', False)
-            if do_bn:
-                out = self._batch_norm(input=out)
-            else:
-                out = self._add_bias(input=out, params=conv_1by1_1024)
-            # scopes_list.append(scope)
+        #         # scopes_list.append(scope)
+        # with tf.variable_scope('%s_conv_1by1_1024' % subnet, reuse=self.reuse) as scope:
+        #     out, _ = self._conv(input=out, params=conv_1by1_1024) 
+        #     out = self._activate(input=out, params=conv_1by1_1024)
+        #     do_bn = conv_1by1_1024.get('batch_norm', False)
+        #     if do_bn:
+        #         out = self._batch_norm(input=out)
+        #     else:
+        #         out = self._add_bias(input=out, params=conv_1by1_1024)
+        #     # scopes_list.append(scope)
 
         self._build_branch(subnet=subnet, inputs=out)
 
@@ -2921,45 +2906,45 @@ class YNet(FCDenseNet, FCNet):
         fully_connected = params['fc_params']
         num_fc = params['n_fc_layers']
         scopes_list = []
-        if True:
-            def fc_map(tens):
-                for i in range(num_fc):
-                    with tf.variable_scope('Inverter_fc_%d' %i, reuse=self.reuse) as scope :
-                        tens = self._linear(input=tens, params=fully_connected)
-                        tens = self._activate(input=tens, params=fully_connected)
-                        # scopes_list.append(scope)
-                return tens
-            out = tf.map_fn(fc_map, out, back_prop=True, swap_memory=True, parallel_iterations=256)
-            out = tf.transpose(out, perm= [1, 2, 0])
-            dim = int(math.sqrt(self.images.shape.as_list()[1]))
-            out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
-        else:
-            conv_1by1_1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
-                                'features': 1,
-                                'activation': 'relu', 
-                                'padding': 'VALID', 
-                                'batch_norm': True, 'dropout':0.0})
-            out_shape = out.shape.as_list()
-            out = tf.reshape(out, [out_shape[0]*out_shape[1], out_shape[2], out_shape[3], out_shape[4]])
-            with tf.variable_scope('%s_conv_1by1_1' % 'inverter', reuse=self.reuse) as scope:
-                out, _ = self._conv(input=out, params=conv_1by1_1)
-                out = tf.reshape(out, [out_shape[0], out_shape[1], out_shape[3], out_shape[4]])
-                out = tf.transpose(out, perm=[1,0,2,3])
-                scopes_list.append(scope)
-        conv_1by1_1024 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
-            'features': 1024,
-            'activation': 'relu', 
-            'padding': 'VALID', 
-            'batch_norm': True, 'dropout':0.0})
-        with tf.variable_scope('inverter_conv_1by1_1024', reuse=self.reuse) as scope:
-            out, _ = self._conv(input=out, params=conv_1by1_1024) 
-            do_bn = conv_1by1_1024.get('batch_norm', False)
-            if do_bn:
-                out = self._batch_norm(input=out)
-            else:
-                out = self._add_bias(input=out, params=conv_1by1_1024)
-            out = self._activate(input=out, params=conv_1by1_1024)
-            # scopes_list.append(scope)
+        # if True:
+        #     def fc_map(tens):
+        #         for i in range(num_fc):
+        #             with tf.variable_scope('Inverter_fc_%d' %i, reuse=self.reuse) as scope :
+        #                 tens = self._linear(input=tens, params=fully_connected)
+        #                 tens = self._activate(input=tens, params=fully_connected)
+        #                 # scopes_list.append(scope)
+        #         return tens
+        #     out = tf.map_fn(fc_map, out, back_prop=True, swap_memory=True, parallel_iterations=256)
+        #     out = tf.transpose(out, perm= [1, 2, 0])
+        #     dim = int(math.sqrt(self.images.shape.as_list()[1]))
+        #     out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
+        # else:
+        #     conv_1by1_1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
+        #                         'features': 1,
+        #                         'activation': 'relu', 
+        #                         'padding': 'VALID', 
+        #                         'batch_norm': True, 'dropout':0.0})
+        #     out_shape = out.shape.as_list()
+        #     out = tf.reshape(out, [out_shape[0]*out_shape[1], out_shape[2], out_shape[3], out_shape[4]])
+        #     with tf.variable_scope('%s_conv_1by1_1' % 'inverter', reuse=self.reuse) as scope:
+        #         out, _ = self._conv(input=out, params=conv_1by1_1)
+        #         out = tf.reshape(out, [out_shape[0], out_shape[1], out_shape[3], out_shape[4]])
+        #         out = tf.transpose(out, perm=[1,0,2,3])
+        #         scopes_list.append(scope)
+        # conv_1by1_1024 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
+        #     'features': 1024,
+        #     'activation': 'relu', 
+        #     'padding': 'VALID', 
+        #     'batch_norm': True, 'dropout':0.0})
+        # with tf.variable_scope('inverter_conv_1by1_1024', reuse=self.reuse) as scope:
+        #     out, _ = self._conv(input=out, params=conv_1by1_1024) 
+        #     do_bn = conv_1by1_1024.get('batch_norm', False)
+        #     if do_bn:
+        #         out = self._batch_norm(input=out)
+        #     else:
+        #         out = self._add_bias(input=out, params=conv_1by1_1024)
+        #     out = self._activate(input=out, params=conv_1by1_1024)
+        #     # scopes_list.append(scope)
         self._build_branch(subnet='inverter', inputs=out)
         self.all_scopes['inverter'] += scopes_list
 
