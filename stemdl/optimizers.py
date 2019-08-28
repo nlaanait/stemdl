@@ -127,68 +127,85 @@ def get_regularization_loss(scope=None, name="total_regularization_loss"):
     return tf.constant(0.0)
 
 
+def reduce_gradients(grads_and_vars, on_horovod, model=None, run_params=None):
+  if on_horovod:
+    from horovod.tensorflow import allreduce, size
+    try:
+      from horovod.tensorflow.mpi_ops import register_group
+      if run_params['hvd_group'] is None :
+          layer_indices = get_grads_vars_layer_indices(grads_and_vars, model)
+          averaged_grads_and_vars = []
+          num_groups = len(layer_indices)
+          for idx, layer in enumerate(layer_indices.keys()):
+              ind_list = layer_indices[layer]
+              if len(ind_list) >= 1:
+                  layer_grads = [grads_and_vars[ind][0] for ind in ind_list]
+                  layer_vars = [grads_and_vars[ind][1] for ind in ind_list]
+                  g_id = register_group(len(layer_grads), "%s:%s:%d" % (layer_grads[0].name, layer_grads[-1].name, idx))  
+              if size() > 1:
+                  avg_grads = [allreduce(grad, compression=run_params['hvd_fp16'], group_id = g_id)
+                              if grad is not None else tf.constant(0) for grad in layer_grads ]
+                  averaged_grads_and_vars.append([(avg_grad, var) for avg_grad, var in zip(avg_grads, layer_vars)])
+          print('per layer grouping')        
+          return list(chain.from_iterable(averaged_grads_and_vars))
+      else:
+          num_groups = run_params['hvd_group']
+          num_grads_per_group = (len(grads_and_vars) + num_groups - 1) // num_groups
+          group_ids = [register_group(num_grads_per_group, "%s:%s:%d" % (grads_and_vars[0][0].name, grads_and_vars[-1][0].name, i))
+                  for i in range(len(grads_and_vars) // num_grads_per_group)]
+      
+          if len(grads_and_vars) % num_grads_per_group != 0:
+              group_ids.append(register_group(len(grads_and_vars) % num_grads_per_group, 
+                                          "%s:%s:%d" % (grads_and_vars[0][0].name, grads_and_vars[-1][0].name,
+                                          len(grads_and_vars) // num_grads_per_group + 1)))
+      if size() > 1:
+        averaged_grads_and_vars = []
+        with tf.name_scope("all_reduce"):
+          for idx, (grad, var) in enumerate(grads_and_vars):
+            if grad is not None:
+              avg_grad = allreduce(grad, compression=run_params['hvd_fp16'], group_id=group_ids[idx//num_grads_per_group])
+              averaged_grads_and_vars.append((avg_grad, var))
+            else:
+              averaged_grads_and_vars.append((tf.constant(0), var))
+        return averaged_grads_and_vars
+      else:
+        return grads_and_vars
+    except ImportError:
+      if size() > 1:
+        averaged_grads_and_vars = []
+        with tf.name_scope("all_reduce"):
+          for idx, (grad, var) in enumerate(grads_and_vars):
+            if grad is not None:
+              # print("rank: %d, grad: %s, var:%s" %(rank(), grad.name, var.name))
+              avg_grad = allreduce(grad)
+              averaged_grads_and_vars.append((avg_grad, var))
+            else:
+              print("grad: None, var:%s" %(var.name))
+              averaged_grads_and_vars.append((tf.constant(0), var))
+        return averaged_grads_and_vars
+      else:
+        return grads_and_vars 
+  else:
+    raise NotImplementedError("Horovod is needed to reduce gradients")
+
+
 # def reduce_gradients(grads_and_vars, on_horovod, model=None, run_params=None):
-#   if on_horovod:
-#     from horovod.tensorflow import allreduce, size
-#     from horovod.tensorflow.mpi_ops import register_group
-#     if run_params['hvd_group'] is None :
-#         layer_indices = get_grads_vars_layer_indices(grads_and_vars, model)
-#         averaged_grads_and_vars = []
-#         num_groups = len(layer_indices)
-#         for idx, layer in enumerate(layer_indices.keys()):
-#             ind_list = layer_indices[layer]
-#             if len(ind_list) >= 1:
-#                 layer_grads = [grads_and_vars[ind][0] for ind in ind_list]
-#                 layer_vars = [grads_and_vars[ind][1] for ind in ind_list]
-#                 g_id = register_group(len(layer_grads), "%s:%s:%d" % (layer_grads[0].name, layer_grads[-1].name, idx))  
-#             if size() > 1:
-#                 avg_grads = [allreduce(grad, compression=run_params['hvd_fp16'], group_id = g_id)
-#                             if grad is not None else tf.constant(0) for grad in layer_grads ]
-#                 averaged_grads_and_vars.append([(avg_grad, var) for avg_grad, var in zip(avg_grads, layer_vars)])
-#         print('per layer grouping')        
-#         return list(chain.from_iterable(averaged_grads_and_vars))
-#     else:
-#         num_groups = run_params['hvd_group']
-#         num_grads_per_group = (len(grads_and_vars) + num_groups - 1) // num_groups
-#         group_ids = [register_group(num_grads_per_group, "%s:%s:%d" % (grads_and_vars[0][0].name, grads_and_vars[-1][0].name, i))
-#                 for i in range(len(grads_and_vars) // num_grads_per_group)]
-    
-#         if len(grads_and_vars) % num_grads_per_group != 0:
-#             group_ids.append(register_group(len(grads_and_vars) % num_grads_per_group, 
-#                                         "%s:%s:%d" % (grads_and_vars[0][0].name, grads_and_vars[-1][0].name,
-#                                         len(grads_and_vars) // num_grads_per_group + 1)))
+#    if on_horovod:
+#     from horovod.tensorflow import allreduce, size, rank
 #     if size() > 1:
 #       averaged_grads_and_vars = []
 #       with tf.name_scope("all_reduce"):
 #         for idx, (grad, var) in enumerate(grads_and_vars):
 #           if grad is not None:
-#             avg_grad = allreduce(grad, compression=run_params['hvd_fp16'], group_id=group_ids[idx//num_grads_per_group])
+#             # print("rank: %d, grad: %s, var:%s" %(rank(), grad.name, var.name))
+#             avg_grad = allreduce(grad)
 #             averaged_grads_and_vars.append((avg_grad, var))
 #           else:
+#             print("grad: None, var:%s" %(var.name))
 #             averaged_grads_and_vars.append((tf.constant(0), var))
 #       return averaged_grads_and_vars
 #     else:
 #       return grads_and_vars
-#   else:
-#     raise NotImplementedError("Reduce in tower-mode is not implemented.")
-
-def reduce_gradients(grads_and_vars, on_horovod, model=None, run_params=None):
-   if on_horovod:
-    from horovod.tensorflow import allreduce, size, rank
-    if size() > 1:
-      averaged_grads_and_vars = []
-      with tf.name_scope("all_reduce"):
-        for idx, (grad, var) in enumerate(grads_and_vars):
-          if grad is not None:
-            # print("rank: %d, grad: %s, var:%s" %(rank(), grad.name, var.name))
-            avg_grad = allreduce(grad)
-            averaged_grads_and_vars.append((avg_grad, var))
-          else:
-            print("grad: None, var:%s" %(var.name))
-            averaged_grads_and_vars.append((tf.constant(0), var))
-      return averaged_grads_and_vars
-    else:
-      return grads_and_vars
 
 
 def optimize_loss(loss,
@@ -411,8 +428,8 @@ def post_process_gradients(grads_and_vars, summaries, lr,
     )
 
   # Optionally clip gradients by global norm.
-  # if clip_gradients is not None:
-    # grads_and_vars = _clip_gradients_by_norm(grads_and_vars, clip_gradients)
+  if clip_gradients is not None:
+    grads_and_vars = _clip_gradients_by_norm(grads_and_vars, clip_gradients)
 
   # Add histograms for variables, gradients and gradient norms.
   for gradient, variable in grads_and_vars:
