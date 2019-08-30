@@ -93,6 +93,14 @@ def calc_loss(n_net, scope, hyper_params, params, labels, step=None, images=None
         # weight = tf.constant(mask)1
         decoder_loss_im = calculate_loss_regressor(probe_im, probe_labels_im, params, hyper_params, weight=weight)
         decoder_loss_re = calculate_loss_regressor(probe_re, probe_labels_re, params, hyper_params, weight=weight)
+        # psi_comp = tf.fft2d(tf.cast(probe_re, tf.complex64) * tf.exp( 1.j * tf.cast(probe_im, tf.complex64)))
+        # pot_frac = tf.exp(1.j * tf.cast(pot, tf.complex64))
+        # reg_term = tf.fft2d(psi_comp * pot_frac / np.prod(psi_comp.shape.as_list()))
+        # reg_term = tf.cast(tf.abs(reg_term), tf.float32)
+        # reg_loss = calculate_loss_regressor(reg_term, tf.reduce_mean(images, axis=[1], keepdims=True), 
+        #             params, hyper_params, weight=weight)
+        # tf.summary.image('Regularization', tf.transpose(reg_term, perm=[0,2,3,1]), max_outputs=4)
+        # tf.summary.image('Pot_realspace', tf.transpose(tf.abs(psi_comp), perm=[0,2,3,1]), max_outputs=4)
         tf.summary.scalar('Inverter loss (raw)', inverter_loss)
         tf.summary.scalar('Decoder loss (IM)', decoder_loss_im)
         tf.summary.scalar('Decoder loss (RE)', decoder_loss_re)
@@ -111,7 +119,7 @@ def calc_loss(n_net, scope, hyper_params, params, labels, step=None, images=None
     #Assemble all of the losses.
     losses = tf.get_collection(tf.GraphKeys.LOSSES)
     if hyper_params['network_type'] == 'YNet':
-        losses = [inverter_loss , decoder_loss_re, decoder_loss_im ]
+        losses = [inverter_loss , decoder_loss_re, decoder_loss_im]
         # losses, prefac = ynet_adjusted_losses(losses, step)
         # tf.summary.scalar("prefac_inverter", prefac)
     regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
