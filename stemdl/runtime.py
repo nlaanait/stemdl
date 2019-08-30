@@ -952,6 +952,8 @@ def validate_ckpt(network_config, hyper_params, params, num_batches=None,
             elif hyper_params['network_type'] == 'hybrid':
                 pass
             elif hyper_params['network_type'] == 'inverter':
+                if labels.shape.as_list()[1] > 1:
+                    labels, _, _ = [tf.expand_dims(itm, axis=1) for itm in tf.unstack(labels, axis=1)]
                 loss_params = hyper_params['loss_function']
                 if params['output']:
                     output = tf.cast(n_net.model_output, tf.float32)

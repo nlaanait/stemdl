@@ -2854,18 +2854,18 @@ class YNet(FCDenseNet, FCNet):
         'activation': 'relu', 
         'padding': 'VALID', 
         'batch_norm': True, 'dropout':0.0})
-        # if True:
-        #     def fc_map(tens):
-        #         for i in range(num_fc):
-        #             with tf.variable_scope('%s_fc_%d' %(subnet, i), reuse=self.reuse) as scope :
-        #                 tens = self._linear(input=tens, params=fully_connected)
-        #                 tens = self._activate(input=tens, params=fully_connected)
-        #                 # scopes_list.append(scope)
-        #         return tens
-        #     out = tf.map_fn(fc_map, out, back_prop=True)
-        #     out = tf.transpose(out, perm= [1, 2, 0])
-        #     dim = int(math.sqrt(self.images.shape.as_list()[1]))
-        #     out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
+        if True:
+            def fc_map(tens):
+                for i in range(num_fc):
+                    with tf.variable_scope('%s_fc_%d' %(subnet, i), reuse=self.reuse) as scope :
+                        tens = self._linear(input=tens, params=fully_connected)
+                        tens = self._activate(input=tens, params=fully_connected)
+                        scopes_list.append(scope)
+                return tens
+            out = tf.map_fn(fc_map, out, back_prop=True)
+            out = tf.transpose(out, perm= [1, 2, 0])
+            dim = int(math.sqrt(self.images.shape.as_list()[1]))
+            out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
         # else:
         #     out = tf.reshape(out, [out_shape[0]*out_shape[1], out_shape[2], out_shape[3], out_shape[4]])
         #     with tf.variable_scope('%s_conv_1by1_1' % subnet, reuse=self.reuse) as scope:
@@ -2898,7 +2898,7 @@ class YNet(FCDenseNet, FCNet):
         #     out = self._activate(input=out, params=conv_1by1)
         #     scopes_list.append(scope)
         # self.model_output[subnet] = out
-        # self.all_scopes[subnet] += scopes_list
+        self.all_scopes[subnet] += scopes_list
 
     def build_inverter(self):
         out = self.model_output['encoder']
@@ -2906,18 +2906,18 @@ class YNet(FCDenseNet, FCNet):
         fully_connected = params['fc_params']
         num_fc = params['n_fc_layers']
         scopes_list = []
-        # if True:
-        #     def fc_map(tens):
-        #         for i in range(num_fc):
-        #             with tf.variable_scope('Inverter_fc_%d' %i, reuse=self.reuse) as scope :
-        #                 tens = self._linear(input=tens, params=fully_connected)
-        #                 tens = self._activate(input=tens, params=fully_connected)
-        #                 # scopes_list.append(scope)
-        #         return tens
-        #     out = tf.map_fn(fc_map, out, back_prop=True, swap_memory=True, parallel_iterations=256)
-        #     out = tf.transpose(out, perm= [1, 2, 0])
-        #     dim = int(math.sqrt(self.images.shape.as_list()[1]))
-        #     out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
+        if True:
+            def fc_map(tens):
+                for i in range(num_fc):
+                    with tf.variable_scope('Inverter_fc_%d' %i, reuse=self.reuse) as scope :
+                        tens = self._linear(input=tens, params=fully_connected)
+                        tens = self._activate(input=tens, params=fully_connected)
+                        scopes_list.append(scope)
+                return tens
+            out = tf.map_fn(fc_map, out, back_prop=True, swap_memory=True, parallel_iterations=256)
+            out = tf.transpose(out, perm= [1, 2, 0])
+            dim = int(math.sqrt(self.images.shape.as_list()[1]))
+            out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
         # else:
         #     conv_1by1_1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
         #                         'features': 1,
