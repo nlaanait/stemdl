@@ -122,6 +122,7 @@ def calc_loss(n_net, scope, hyper_params, params, labels, step=None, images=None
         losses = [inverter_loss , decoder_loss_re, decoder_loss_im]
         # losses, prefac = ynet_adjusted_losses(losses, step)
         # tf.summary.scalar("prefac_inverter", prefac)
+        # losses = [inverter_loss]
     regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
     # Calculate the total loss 
     total_loss = tf.add_n(losses + regularization, name='total_loss')
@@ -227,27 +228,27 @@ def ynet_adjusted_losses(losses, global_step):
     '''
     Schedule the different loss components based on global training step
     '''
-    threshold = tf.constant(0.25)
-    max_prefac = 20
+    threshold = tf.constant(0.8)
+    max_prefac = 1 
     ema = tf.train.ExponentialMovingAverage(0.9)
     loss_averages_op = ema.apply(losses)
-    prefac_initial = 2.0
+    prefac_initial = 1e-5 
 
     with tf.control_dependencies([loss_averages_op]):
         def ramp():
-            prefac = tf.cast(tf.train.exponential_decay(tf.constant(prefac_initial), global_step, 10000, 
-                            tf.constant(0.5, dtype=tf.float32), staircase=False), tf.float32)
+            prefac = tf.cast(tf.train.exponential_decay(tf.constant(prefac_initial), global_step, 1000, 
+                            tf.constant(0.1, dtype=tf.float32), staircase=False), tf.float32)
             prefac = tf.constant(prefac_initial) ** 2 * tf.pow(prefac, tf.constant(-1., dtype=tf.float32))
             prefac = tf.minimum(prefac, tf.cast(max_prefac, tf.float32))
             return prefac
     
         def decay(prefac_current):
-            prefac = tf.train.exponential_decay(prefac_current, global_step, 1000, tf.constant(0.5, dtype=tf.float32),
+            prefac = tf.train.exponential_decay(prefac_current, global_step, 1000, tf.constant(0.1, dtype=tf.float32),
                                             staircase=True)
             return prefac
         inv_loss, dec_re_loss, dec_im_loss = losses 
 
-        prefac  = tf.cond(inv_loss > threshold, true_fn=ramp, false_fn=lambda: decay(ramp()))
+        prefac  = tf.cond(inv_loss > threshold, false_fn=ramp, true_fn=lambda: decay(prefac_initial))
         tf.summary.scalar("prefac_inverter", prefac)
-        losses = [prefac * (inv_loss - threshold), dec_re_loss, dec_im_loss]
+        losses = [inv_loss , prefac * dec_re_loss, prefac * dec_im_loss]
         return losses, prefac
