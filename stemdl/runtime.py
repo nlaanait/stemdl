@@ -35,7 +35,6 @@ def tensorflow_version_tuple():
     major, minor, patch = v.split('.')
     return (int(major), int(minor), patch)
 
-
 def float32_variable_storage_getter(getter, name, shape=None, dtype=None,
                                     initializer=None, regularizer=None,
                                     trainable=True,
@@ -48,7 +47,6 @@ def float32_variable_storage_getter(getter, name, shape=None, dtype=None,
     if trainable and dtype != tf.float32:
         variable = tf.cast(variable, dtype)
     return variable
-
 
 class TrainHelper(object):
     def __init__(self, params, saver, writer, net_ops, last_step=0, log_freq=1):
@@ -129,11 +127,9 @@ class TrainHelper(object):
             print_rank('loss is nan... Exiting!')
             sys.exit(0)
 
-
 def print_rank(*args, **kwargs):
     if hvd.rank() == 0:
         print(*args, **kwargs)
-
 
 def train(network_config, hyper_params, params):
     """
@@ -418,8 +414,6 @@ def train(network_config, hyper_params, params):
             print_rank('Saved Final Checkpoint.')
             return
 
-
-
 def train_inverter(network_config, hyper_params, params):
     """
     Train the network for a number of steps using horovod and asynchronous I/O staging ops.
@@ -703,7 +697,6 @@ def train_inverter(network_config, hyper_params, params):
             validateStep += params['validate_step']
             #next_validation_epoch += params['epochs_per_validation']
 
-
 def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
     """
     Runs validation with current weights
@@ -818,7 +811,6 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
         # print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, errors.mean()))
         print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, errors.mean()))
         tf.summary.scalar("Validation_loss_label_%s" % loss_label, tf.constant(errors.mean()))
-
 
 def validate_ckpt(network_config, hyper_params, params, num_batches=None,
                     last_model= False, sleep=-1):
