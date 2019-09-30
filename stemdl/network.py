@@ -2624,10 +2624,10 @@ class YNet(FCDenseNet, FCNet):
         # post_ops = deepcopy(self.ops)
         # self.print_rank("post pre, cvae ops: ", pre_ops - post_ops)
         out = tf.map_fn(CVAE, tensor_slices, back_prop=True)
-        self.print_rank('output of CVAE', out.get_shape())
-        out = tf.transpose(out, perm= [1, 2, 0])
-        dim = int(math.sqrt(self.images.shape.as_list()[1]))
-        out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
+        # self.print_rank('output of CVAE', out.get_shape())
+        # out = tf.transpose(out, perm= [1, 2, 0])
+        # dim = int(math.sqrt(self.images.shape.as_list()[1]))
+        # out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
         # out = tf.transpose(out, perm=[1,0,2,3])
         self.print_rank('output of Encoder', out.get_shape())
         self.model_output['encoder'] = out 
@@ -2840,7 +2840,7 @@ class YNet(FCDenseNet, FCNet):
         out = self._batch_norm(input=out)
         out = self._activate(input=out, params=conv_params)
         with tf.variable_scope('residual_conv_2', reuse=self.reuse) as scope:
-            out, _ = self._conv(input=out, params=conv_params)
+            out, _ = self._conv(input=out, params=params)
         out = tf.add(inputs, out)
         return out, None
 
@@ -2870,7 +2870,6 @@ class YNet(FCDenseNet, FCNet):
 
         with tf.variable_scope('%s_conv_1by1' % subnet, reuse=self.reuse) as scope:
             out, _ = self._conv(input=out, params=conv_1by1) 
-            out = self._activate(input=out, params=conv_1by1)
             do_bn = conv_1by1.get('batch_norm', False)
             if do_bn:
                 out = self._batch_norm(input=out)
@@ -2907,7 +2906,6 @@ class YNet(FCDenseNet, FCNet):
         out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
         with tf.variable_scope('%s_conv_1by1' % 'inverter', reuse=self.reuse) as scope:
             out, _ = self._conv(input=out, params=conv_1by1) 
-            out = self._activate(input=out, params=conv_1by1)
             do_bn = conv_1by1.get('batch_norm', False)
             if do_bn:
                 out = self._batch_norm(input=out)
