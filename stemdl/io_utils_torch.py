@@ -5,37 +5,53 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import os
 
-def numpy_to_lmdb(lmdb_path, data, labels, lmdb_map_size=int(1e12)):
-    env = lmdb.open(lmdb_path, map_size=lmdb_map_size)
+def numpy_to_lmdb(lmdb_path, data, labels, lmdb_map_size=int(50e9)):
+    env = lmdb.open(lmdb_path, map_size=lmdb_map_size, map_async=True, writemap=True, create=True)
     with env.begin(write=True) as txn:
         for (i, datum) , label in zip(enumerate(data), labels):
-            key = bytes('sample_%s'%format(i), "ascii")
-            sample = np.concatenate((datum.flatten(), label.flatten().astype(np.float16)))
-            sample = sample.tostring()
-            txn.put(key, sample)
-        headers = {b"data_dtype": bytes(data.dtype.name, "ascii"),
-                   b"data_shape": np.array(data.shape).tostring()}
+            key = bytes('input_%s'%format(i), "ascii")
+            inputs_shape = datum.shape
+            outputs_shape = label.shape
+            inputs = datum.flatten().tostring()
+            txn.put(key, inputs)
+            key = bytes('output_%s'%format(i), "ascii")
+            outputs = label.flatten().tostring()
+            txn.put(key, outputs)
+        env.sync()
+        headers = { b"input_dtype": bytes(datum.dtype.str, "ascii"),
+                    b"input_shape": np.array(inputs_shape).tostring(),
+                    b"output_shape": np.array(outputs_shape).tostring(),
+                    b"output_dtype": bytes(label.dtype.str, "ascii"),
+                    b"output_name": bytes('output_', "ascii"),
+                    b"input_name": bytes('input_', "ascii")}
         for key, val in headers.items():
             txn.put(key, val)
+        txn.put(b"header_entries", bytes(len(list(headers.items()))))
+        env.sync()
 
 
 class ABFDataSet(Dataset):
     """ ABF data set on lmdb."""
     def __init__(self, lmdb_path, key_base = 'sample', input_transform=None, target_transform=None,
-                                        input_shape=(1,85,120), target_shape=(3,),
                                         debug=True):
         self.debug = debug
         self.lmdb_path = lmdb_path
-        self.db = lmdb.open(self.lmdb_path, readahead=False, readonly=True, writemap=False, lock=False)
-        with self.db.begin(write=False) as txn:
-            self.dtype = np.dtype(txn.get(b"data_dtype"))
-        self.print_debug("read dtype %s from lmdb file %s" %(format(self.dtype),
-                                                            self.lmdb_path))
-        #TODO: add shapes to lmdb headers.
-        #TODO: add dtypes to lmbd headers.
-        self.input_shape = input_shape
-        self.target_shape = target_shape
-        self.key_base = key_base
+        self.env = lmdb.open(self.lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
+        self.num_samples = (self.env.stat()['entries'] - 6)//2 ## TODO: remove hard-coded # of headers by storing #samples key, val
+        self.first_record = 0
+        self.records = np.arange(self.first_record, self.num_samples)
+        with self.env.begin(write=False) as txn:
+            input_shape = np.frombuffer(txn.get(b"input_shape"), dtype='int64')
+            output_shape = np.frombuffer(txn.get(b"output_shape"), dtype='int64')
+            input_dtype = np.dtype(txn.get(b"input_dtype").decode("ascii"))
+            output_dtype = np.dtype(txn.get(b"output_dtype").decode("ascii"))
+            output_name = txn.get(b"output_name").decode("ascii")
+            input_name = txn.get(b"input_name").decode("ascii")
+        self.data_specs={'input_shape': list(input_shape), 'target_shape': list(output_shape), 
+            'target_dtype':output_dtype, 'input_dtype': input_dtype, 'target_key':output_name, 'input_key': input_name}
+        self.input_keys = [bytes(self.data_specs['input_key']+str(idx), "ascii") for idx in self.records]
+        self.target_keys = [bytes(self.data_specs['target_key']+str(idx), "ascii") for idx in self.records]
+        self.print_debug("Opened lmdb file %s, with %d samples" %(self.lmdb_path, self.num_samples))
         self.input_transform = input_transform
         self.target_transform = target_transform
 
@@ -45,38 +61,35 @@ class ABFDataSet(Dataset):
 
     def __len__(self):
         ## TODO: Need to specify how many records are for headers
-        return self.db.stat()['entries'] - 2
+        return self.num_samples
 
     def __getitem__(self, idx):
         # outside_func(idx)
-        with self.db.begin(write=False, buffers=True) as txn:
-            key = bytes('%s_%i' %(self.key_base, idx), "ascii")
-            bytes_buff = txn.get(key)
-            sample = np.frombuffer(bytes_buff, dtype=self.dtype)
-        input_size = np.prod(np.array(self.input_shape))
-        target_size = np.prod(np.array(self.target_shape))
-        input = sample[:input_size].astype('float32')
-        target = sample[-target_size:].astype('float64')
-        self.print_debug('read input %d with size %d' %(idx, input.size))
+        input_key = self.input_keys[idx]
+        target_key = self.target_keys[idx]
+        with self.env.begin(write=False, buffers=True) as txn:
+            input_bytes = txn.get(input_key)
+            target_bytes = txn.get(target_key)
+        inputs = np.frombuffer(input_bytes, dtype=self.data_specs['input_dtype'])
+        inputs = inputs.reshape(self.data_specs['input_shape'])
+        targets = np.frombuffer(target_bytes, dtype=self.data_specs['target_dtype'])
+        targets = targets.reshape(self.data_specs['target_shape'])
+        self.print_debug('read inputs # %d with size %d' %(idx, inputs.size))
         if self.input_transform is not None:
-            input = self.transform_input(input)
+            inputs = self.transform_input(inputs)
         if self.target_transform is not None:
-            target = self.transform_target(target)
-
-        input = input.reshape(self.input_shape)
-        target = target.reshape(self.target_shape)
-
-        return {'input':torch.from_numpy(input), 'target':torch.from_numpy(target)}
+            targets = self.transform_target(targets)
+        return {'input':torch.from_numpy(inputs), 'target':torch.from_numpy(targets)}
 
     @staticmethod
-    def transform_target(target):
-        if target.dtype != 'float64':
-            return target.astype('float64')
+    def transform_target(targets):
+        pass
 
     @staticmethod
-    def transform_input(input):
-        if input.dtype != 'float32':
-            return input.astype('float32')
+    def transform_input(inputs):
+        ## TODO: implement addition of poisson noise, global affine distortions, and crop.
+        # The above transformations, in sequence, are the only ones that should be used.
+        pass
 
     def __repr__(self):
         pass
