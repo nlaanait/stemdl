@@ -1,6 +1,7 @@
 import tensorflow as tf
 from .optimizers import get_regularization_loss
 import numpy as np
+from tensorflow.python.ops import manip_ops
 
 def _add_loss_summaries(total_loss, losses, summaries=False):
     """
