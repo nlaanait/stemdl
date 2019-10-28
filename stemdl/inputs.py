@@ -13,6 +13,9 @@ from tensorflow.python.ops import data_flow_ops
 import horovod.tensorflow as hvd
 import lmdb
 import time
+from nvidia.dali.pipeline import Pipeline
+import nvidia.dali.ops as dali_ops
+import nvidia.dali.plugin.tf as dali_tf
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 
@@ -513,8 +516,9 @@ class DatasetLMDB(DatasetTFRecords):
                 for _ in range(self.params['batch_size']):
                     image, label = iterator.get_next()
                     image = tf.reshape(image, self.data_specs['image_shape'])
-                    if self.params[self.mode + '_distort']:
-                        image = self.add_noise_image(image)
+                    # if self.params[self.mode + '_distort']:
+                        # with tf.device('/gpu:%i' % hvd.local_rank()):
+                            # image = self.add_noise_image(image)
                     images.append(tf.reshape(image, self.data_specs['image_shape']))
                     labels.append(tf.reshape(label, self.data_specs['label_shape']))
             elif self.mode == 'eval':
@@ -543,7 +547,20 @@ class DatasetLMDB(DatasetTFRecords):
             images_newshape = [self.params['batch_size']] + self.data_specs['image_shape']
             labels = tf.reshape(labels, labels_newshape)
             images = tf.reshape(images, images_newshape)
-            
+            # if self.params[self.mode + '_distort']:
+            #     class DaliPipeline(Pipeline):
+            #         def __init__(self, batch_size, num_threads, gpu_id, images=None):
+            #             super(DaliPipeline, self).__init__(batch_size, num_threads, gpu_id)
+            #             self.input = dali_ops.Cast(device='gpu', dtype=tf.float16)(images)
+            #             self.rotate = dali_ops.Rotate(angle=10.0)
+            #         def define_graph(self):
+            #             images = self.rotate(self.input)
+            #             return images
+            #     pipe = DaliPipeline(self.params['batch_size'], 10, hvd.local_rank(), images=images)
+            #     daliop = dali_tf.DALIIterator()
+            #     with tf.device('/gpu:%i' % hvd.local_rank()):
+            #         images = daliop(pipeline=pipe, shapes = images.shape.as_list(), dtypes=[images.dtype])
+                # images = pipe.run()
             labels = self.image_scaling(labels)
             # labels -= tf.reduce_min(labels, keepdims=True) 
             # abels= self.label_minmaxscaling(labels, 0.0, 1.0, scale_range=[0., 10.0])
@@ -552,7 +569,76 @@ class DatasetLMDB(DatasetTFRecords):
         #if self.debug: 
         #    tf.summary.image("potential", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
         #    tf.summary.image("images", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4)
+        if self.params[self.mode + '_distort']:
+            with tf.device('/gpu:%i' % hvd.local_rank()):
+                images = tf.transpose(images, perm=[0,2,3,1])
+                images = self.random_crop_resize(images)
+                images = self.add_noise_image(images)
+                images = tf.transpose(images, perm=[0,3,1,2])
         return images, labels
+
+    def get_glimpses(self, batch_images):
+        """
+        Get bounded glimpses from images
+        :param batch_images: batch of training images
+        :return: batch of glimpses
+        """
+        if self.params['glimpse_mode'] not in ['uniform', 'normal', 'fixed']:
+            """
+            print('No image glimpsing will be performed since mode: "{}" is not'
+                   'among "uniform", "normal", "fixed"'
+                   '.'.format(self.params['glimpse_mode']))
+            """
+            return batch_images
+
+        # set size of glimpses
+        #TODO: change calls to image specs from self.params to self.features
+        y_size, x_size = self.data_specs['image_shape'][-2:]
+        crop_y_size, crop_x_size = y_size * 0.5, x_size * 0.5 
+        size = tf.constant(value=[crop_y_size, crop_x_size],
+                           dtype=tf.int32)
+
+        if self.params['glimpse_mode'] == 'uniform':
+            # generate uniform random window centers for the batch with overlap with input
+            y_low, y_high = int(crop_y_size / 2), int(y_size - crop_y_size // 2)
+            x_low, x_high = int(crop_x_size / 2), int(x_size - crop_x_size // 2)
+            cen_y = tf.random_uniform([self.params['batch_size']], minval=y_low, maxval=y_high)
+            cen_x = tf.random_uniform([self.params['batch_size']], minval=x_low, maxval=x_high)
+            offsets = tf.stack([cen_y, cen_x], axis=1)
+
+        elif self.params['glimpse_mode'] == 'normal':
+            # generate normal random window centers for the batch with overlap with input
+            cen_y = tf.random_normal([self.params['batch_size']], mean=y_size // 2, stddev=self.params['glimpse_normal_off_stdev'])
+            cen_x = tf.random_normal([self.params['batch_size']], mean=x_size // 2, stddev=self.params['glimpse_normal_off_stdev'])
+            offsets = tf.stack([cen_y, cen_x], axis=1)
+
+        elif self.params['glimpse_mode'] == 'fixed':
+            # fixed crop
+            cen_y = np.ones((self.params['batch_size'],), dtype=np.int32) * self.params['glimpse_height_off']
+            cen_x = np.ones((self.params['batch_size'],), dtype=np.int32) * self.params['glimpse_width_off']
+            offsets = np.vstack([cen_y, cen_x]).T
+            offsets = tf.constant(value=offsets, dtype=tf.float32)
+
+        else:
+            # should not come here:
+            return batch_images
+
+        # extract glimpses
+        glimpse_batch = tf.image.extract_glimpse(batch_images, size, offsets, centered=False, normalized=False,
+                                                 uniform_noise=False, name='batch_glimpses')
+        return glimpse_batch
+
+    def random_crop_resize(self, images):
+        x_down = tf.random_uniform([self.params['batch_size']], minval=0., maxval=0.25)
+        x_up = 1 - x_down
+        offset = tf.random_uniform([self.params['batch_size']], minval=0., maxval=0.25) 
+        y_down = x_down + offset
+        y_up = x_up + offset
+        boxes = tf.stack([y_down, x_down, y_up, x_up], axis=1)
+        box_indices = np.arange(0, self.params['batch_size']).astype(np.int)
+        images = tf.image.crop_and_resize(images, boxes, box_ind=box_indices, crop_size=self.data_specs['image_shape'][-2:])
+        return images
+        
 
     @staticmethod
     def image_scaling(image_batch):
