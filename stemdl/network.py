@@ -41,18 +41,21 @@ class ConvNet:
         self.global_step = 0
         self.hyper_params = hyper_params
         self.network = network
+        self.operation = operation
+        if self.operation == 'eval_run' or self.operation == 'eval_ckpt':
+            # self.reuse = True
+            self.operation == 'eval'
         self.images = images
         self.images = self.image_scaling(self.images)
-        if self.params['IMAGE_FP16']: #and self.images.dtype is not tf.float16 and operation == 'train':
-            self.images = tf.cast(self.images, tf.float16)
-        else:
-            self.images = tf.cast(self.images, tf.float32)
-        image_shape = images.get_shape().as_list()
         if self.params['TENSOR_FORMAT'] != 'NCHW' :
             # change from NHWC to NCHW format
             # TODO: add flag to swith between 2 ....
             self.images = tf.transpose(self.images, perm=[0, 3, 1, 2])
-        # self.images = self.get_glimpses(self.images)
+        # self.augment()
+        if self.params['IMAGE_FP16']: #and self.images.dtype is not tf.float16 and operation == 'train':
+            self.images = tf.cast(self.images, tf.float16)
+        else:
+            self.images = tf.cast(self.images, tf.float32)
         self.labels = labels
         self.net_type = self.hyper_params['network_type']
         self.operation = operation
@@ -61,10 +64,6 @@ class ConvNet:
         self.num_weights = 0
         self.misc_ops = []
         self.reuse = tf.AUTO_REUSE
-        # self.reuse = None
-        if self.operation == 'eval_run' or self.operation == 'eval_ckpt':
-            # self.reuse = True
-            self.operation == 'eval'
         self.bytesize = 2
         if not self.params['IMAGE_FP16']: self.bytesize = 4
         self.mem = np.prod(self.images.get_shape().as_list()) * self.bytesize/1024  # (in KB)
@@ -920,56 +919,41 @@ class ConvNet:
     def _weight_decay(self, tensor):
         return tf.multiply(tf.nn.l2_loss(tf.cast(tensor, tf.float32)), self.hyper_params['weight_decay'])
 
-    def get_glimpses(self, batch_images):
+
+    def augment(self):
+        if self.params[self.operation + '_distort']:
+            self.images = tf.transpose(self.images, perm=[0,2,3,1])
+            # images = self.get_glimpses(images)
+            self.images = self.random_crop_resize(self.params['batch_size'], self.images)
+            self.images = self.add_noise_image([self.params['noise_min'], self.params['noise_max']], self.images)
+            self.images = tf.transpose(self.images, perm=[0,3,1,2])
+
+    @staticmethod
+    def add_noise_image(scale,images):
         """
-        Get bounded glimpses from images, corresponding to ~ 2x1 supercell
-        :param batch_images: batch of training images
-        :return: batch of glimpses
+        Adds random noise to the provided image
+
+        :param image: 2D image specified as a tensor
+        :param params: dict, parameters required - noise_min and noise_max
+        :return: 2d tensor
         """
-        if self.params['glimpse_mode'] not in ['uniform', 'normal', 'fixed']:
-            """
-            print('No image glimpsing will be performed since mode: "{}" is not'
-                   'among "uniform", "normal", "fixed"'
-                   '.'.format(self.params['glimpse_mode']))
-            """
-            return batch_images
 
-        # set size of glimpses
-        #TODO: change calls to image specs from self.params to self.features
-        y_size, x_size = self.params['IMAGE_HEIGHT'], self.params['IMAGE_WIDTH']
-        crop_y_size, crop_x_size = self.params['CROP_HEIGHT'], self.params['CROP_WIDTH']
-        size = tf.constant(value=[crop_y_size, crop_x_size],
-                           dtype=tf.int32)
-
-        if self.params['glimpse_mode'] == 'uniform':
-            # generate uniform random window centers for the batch with overlap with input
-            y_low, y_high = int(crop_y_size / 2), int(y_size - crop_y_size // 2)
-            x_low, x_high = int(crop_x_size / 2), int(x_size - crop_x_size // 2)
-            cen_y = tf.random_uniform([self.params['batch_size']], minval=y_low, maxval=y_high)
-            cen_x = tf.random_uniform([self.params['batch_size']], minval=x_low, maxval=x_high)
-            offsets = tf.stack([cen_y, cen_x], axis=1)
-
-        elif self.params['glimpse_mode'] == 'normal':
-            # generate normal random window centers for the batch with overlap with input
-            cen_y = tf.random_normal([self.params['batch_size']], mean=y_size // 2, stddev=self.params['glimpse_normal_off_stdev'])
-            cen_x = tf.random_normal([self.params['batch_size']], mean=x_size // 2, stddev=self.params['glimpse_normal_off_stdev'])
-            offsets = tf.stack([cen_y, cen_x], axis=1)
-
-        elif self.params['glimpse_mode'] == 'fixed':
-            # fixed crop
-            cen_y = np.ones((self.params['batch_size'],), dtype=np.int32) * self.params['glimpse_height_off']
-            cen_x = np.ones((self.params['batch_size'],), dtype=np.int32) * self.params['glimpse_width_off']
-            offsets = np.vstack([cen_y, cen_x]).T
-            offsets = tf.constant(value=offsets, dtype=tf.float32)
-
-        else:
-            # should not come here:
-            return batch_images
-
-        # extract glimpses
-        glimpse_batch = tf.image.extract_glimpse(batch_images, size, offsets, centered=False, normalized=False,
-                                                 uniform_noise=False, name='batch_glimpses')
-        return glimpse_batch
+        alpha = tf.random_uniform([1], minval=scale[0], maxval=scale[1], dtype=images.dtype)
+        noise = tf.random_uniform(images.shape, dtype=images.dtype)
+        trans_image = (1 - alpha[0]) * images / tf.reduce_max(images, keepdims=True) + alpha[0] * noise
+        return trans_image
+        
+    @staticmethod
+    def random_crop_resize(batch_size, images):
+        x_down = tf.random_uniform([batch_size], minval=0., maxval=0.1)
+        x_up = 1 - x_down
+        offset = tf.random_uniform([batch_size], minval=0., maxval=0.1) 
+        y_down = x_down + offset
+        y_up = x_up + offset
+        boxes = tf.stack([y_down, x_down, y_up, x_up], axis=1)
+        box_indices = np.arange(0, batch_size).astype(np.int)
+        images = tf.image.crop_and_resize(images, boxes, box_ind=box_indices, crop_size=images.shape.as_list()[-2:])
+        return images
 
     @staticmethod
     def image_scaling(image_batch):
@@ -2615,10 +2599,10 @@ class YNet(FCDenseNet, FCNet):
                     # tens = self._pool(input=tens, params=pool)
                     tens = self._activate(input=tens, params=conv_1by1)
                     # tens = self._batch_norm(input=tens)
-            for i in range(num_fc):
-                with tf.variable_scope('CVAE_fc_%d' %i, reuse=self.reuse) as _ :
-                    tens = self._linear(input=tens, params=fully_connected)
-                    tens = self._activate(input=tens, params=fully_connected)
+            # for i in range(num_fc):
+            #     with tf.variable_scope('CVAE_fc_%d' %i, reuse=self.reuse) as _ :
+            #         tens = self._linear(input=tens, params=fully_connected)
+            #         tens = self._activate(input=tens, params=fully_connected)
             return tens
 
         # post_ops = deepcopy(self.ops)
@@ -2856,15 +2840,15 @@ class YNet(FCDenseNet, FCNet):
                                 'activation': "relu", 
                                 'padding': 'VALID', 
                                 'batch_norm': True, 'dropout':0})
-        def fc_map(tens):
-            for i in range(num_fc):
-                with tf.variable_scope('%s_fc_%d' %(subnet, i), reuse=self.reuse) as scope :
-                    tens = self._linear(input=tens, params=fully_connected)
-                    tens = self._activate(input=tens, params=fully_connected)
-                    scopes_list.append(scope)
-            return tens
-        out = tf.map_fn(fc_map, out, back_prop=True)
-        out = tf.transpose(out, perm= [1, 2, 0])
+        # def fc_map(tens):
+        #     for i in range(num_fc):
+        #         with tf.variable_scope('%s_fc_%d' %(subnet, i), reuse=self.reuse) as scope :
+        #             tens = self._linear(input=tens, params=fully_connected)
+        #             tens = self._activate(input=tens, params=fully_connected)
+        #             scopes_list.append(scope)
+        #     return tens
+        # out = tf.map_fn(fc_map, out, back_prop=True)
+        # out = tf.transpose(out, perm= [1, 2, 0])
         dim = int(math.sqrt(self.images.shape.as_list()[1]))
         out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
 
