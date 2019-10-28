@@ -191,7 +191,7 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
         global_step = 1
     loss_params = hyper_params['loss_function']
     assert loss_params['type'] == 'Huber' or loss_params['type'] == 'MSE' \
-    or loss_params['type'] == 'LOG' or loss_params['type'] == 'MSE_PAIR' or loss_params['type'] == 'ABS_DIFF' or loss_params['type'] == 'ABS_DIFF_SCALED', "Type of regression loss function must be 'Huber' or 'MSE'"
+    or loss_params['type'] == 'LOG' or loss_params['type'] == 'MSE_PAIR' or loss_params['type'] == 'ABS_DIFF' or loss_params['type'] == 'ABS_DIFF_SCALED' or loss_params['type'] == 'rMSE', "Type of regression loss function must be 'Huber' or 'MSE'"
     if loss_params['type'] == 'Huber':
         # decay the residual cutoff exponentially
         decay_steps = int(params['NUM_EXAMPLES_PER_EPOCH'] / params['batch_size'] \
@@ -220,6 +220,14 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
                                             #reduction=tf.losses.Reduction.SUM)
     if loss_params['type'] == 'MSE_PAIR':
         cost = tf.losses.mean_pairwise_squared_error(labels, net_output, weights=weight)
+    if loss_params['type'] == 'rMSE':
+        labels = tf.cast(labels, tf.float32)
+        l2_true = tf.sqrt(tf.reduce_sum(labels ** 2, axis=[1,2,3]))
+        l2_output = tf.sqrt(tf.reduce_sum(net_output **2, axis = [1,2,3]))
+        cost = tf.reduce_mean(tf.abs(l2_true - l2_output)/l2_true)
+        #cost = tf.reduce_mean(tf.sqrt(tf.reduce_sum((labels - net_output)**2, axis=[1,2,3]))/tf.sqrt(tf.reduce_sum(labels**2, axis=[1,2,3])))
+        cost *= 100
+        tf.add_to_collection(tf.GraphKeys.LOSSES, cost)
     if loss_params['type'] == 'LOG':
         cost = tf.losses.log_loss(labels, weights=weight, predictions=net_output, reduction=tf.losses.Reduction.MEAN)
     return cost

@@ -13,9 +13,9 @@ from tensorflow.python.ops import data_flow_ops
 import horovod.tensorflow as hvd
 import lmdb
 import time
-from nvidia.dali.pipeline import Pipeline
-import nvidia.dali.ops as dali_ops
-import nvidia.dali.plugin.tf as dali_tf
+#from nvidia.dali.pipeline import Pipeline
+#import nvidia.dali.ops as dali_ops
+#import nvidia.dali.plugin.tf as dali_tf
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 

@@ -2233,7 +2233,8 @@ class YNet(FCDenseNet, FCNet):
         self.network = dict([(key, itm) for key,itm in self.network.items()])
 
     def _batch_norm(self, input=None):
-        out = tf.keras.layers.BatchNormalization(axis=1)(inputs=input, training= self.operation == 'train')
+        #out = tf.keras.layers.BatchNormalization(axis=1)(inputs=input, training= self.operation == 'train')
+        out = super(YNet, self)._batch_norm(input=input)
         return out
 
     def get_all_ops(self, subnet=None):
