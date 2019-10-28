@@ -19,7 +19,7 @@ import tensorflow as tf
 from collections import OrderedDict
 import horovod.tensorflow as hvd
 from tensorflow.python.client import timeline
-from tensorflow.contrib.compiler import xla
+#from tensorflow.contrib.compiler import xla
 
 # stemdl
 from . import network
@@ -152,8 +152,8 @@ def train(network_config, hyper_params, params):
     config.gpu_options.force_gpu_compatible = True
     config.intra_op_parallelism_threads = 6 
     config.inter_op_parallelism_threads = max(1, cpu_count()//6)
-    config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
-    jit_scope = tf.contrib.compiler.jit.experimental_jit_scope
+    #config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
+    #jit_scope = tf.contrib.compiler.jit.experimental_jit_scope
     # JIT causes gcc errors on dgx-dl and is built without on Summit.
     sess = tf.Session(config=config)
 
@@ -786,12 +786,37 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
     elif hyper_params['network_type'] == 'hybrid':
         #TODO: implement evaluation call for hybrid network
         print('not implemented')
+    elif hyper_params['network_type'] == 'YNet':
+        loss_params = hyper_params['loss_function']
+        model_output = tf.concat([n_net.model_output[subnet] for subnet in ['inverter', 'decoder_RE', 'decoder_IM']], axis=1)
+        if loss_params['type'] == 'MSE_PAIR':
+            errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(model_output, tf.float32))
+            loss_label= loss_params['type'] 
+        else: 
+            loss_label= 'ABS_DIFF'
+            errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(model_output, tf.float32), reduction=tf.losses.Reduction.MEAN)
+        errors = tf.expand_dims(errors,axis=0)
+        error_averaging = hvd.allreduce(errors)
+        if num_batches is not None:
+            num_samples = num_batches
+        else:
+            num_samples = dset.num_samples
+        #error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(4)])
+        error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_samples//params['batch_size'])])
+        print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, error.mean()))
     elif hyper_params['network_type'] == 'inverter':
         loss_params = hyper_params['loss_function']
         if labels.shape.as_list()[1] > 1:
             labels, _, _ = [tf.expand_dims(itm, axis=1) for itm in tf.unstack(labels, axis=1)]
         if loss_params['type'] == 'MSE_PAIR':
             errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32))
+            loss_label= loss_params['type'] 
+        elif loss_params['type'] == 'rMSE':
+            labels = tf.cast(labels, tf.float32)
+            l2_true = tf.sqrt(tf.reduce_sum(labels ** 2, axis=[1,2,3]))
+            l2_output = tf.sqrt(tf.reduce_sum(n_net.model_output **2, axis = [1,2,3]))
+            errors = tf.reduce_mean(tf.abs(l2_true - l2_output)/l2_true)
+            errors *= 100
             loss_label= loss_params['type'] 
         else: 
             loss_label= 'ABS_DIFF'
@@ -803,7 +828,7 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
             num_samples = num_batches
         else:
             num_samples = dset.num_samples
-        errors = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_samples)])
+        errors = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_samples//params['batch_size'])])
         # errors = np.array([sess.run([IO_ops,errors])[-1] for i in range(dset.num_samples)])
         # errors = tf.reduce_mean(errors)
         # avg_errors = hvd.allreduce(tf.expand_dims(errors, axis=0))
@@ -917,6 +942,12 @@ def validate_ckpt(network_config, hyper_params, params, num_batches=None,
             ckpt_paths = [ckpt_paths[-1]]
             model_steps = [model_steps[-1]]
 
+        if params['output']:
+            output_dir = os.path.join(os.getcwd(), 'outputs_%s' % params['checkpt_dir'].split('/')[-1])
+            if not os.path.exists(output_dir):
+                tf.gfile.MakeDirs(output_dir)
+                
+
         # Validate Models
         for ckpt, last_step in zip(ckpt_paths, model_steps):
             #
@@ -950,7 +981,6 @@ def validate_ckpt(network_config, hyper_params, params, num_batches=None,
                 if params['output']:
                     output = tf.cast(n_net.model_output, tf.float32)
                     print('output shape',output.get_shape().as_list()) 
-                    output_dir = os.path.join(os.getcwd(),'outputs')
                     if num_batches is not None:
                         num_samples = num_batches
                     else:
@@ -977,11 +1007,10 @@ def validate_ckpt(network_config, hyper_params, params, num_batches=None,
                     print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, error.mean()))
             elif hyper_params['network_type'] == 'YNet':
                 loss_params = hyper_params['loss_function']
-                model_output = tf.stack([n_net.model_output[subnet] for subnet in ['inverter', 'decoder_RE', 'decoder_IM']], axis=0)
+                model_output = tf.concat([n_net.model_output[subnet] for subnet in ['inverter', 'decoder_RE', 'decoder_IM']], axis=1)
                 if params['output']:
                     output = tf.cast(model_output, tf.float32)
                     print('output shape',output.get_shape().as_list()) 
-                    output_dir = os.path.join(os.getcwd(),'outputs')
                     if num_batches is not None:
                         num_samples = num_batches
                     else:
@@ -998,14 +1027,17 @@ def validate_ckpt(network_config, hyper_params, params, num_batches=None,
                     else: 
                         loss_label= 'ABS_DIFF'
                         errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(model_output, tf.float32), reduction=tf.losses.Reduction.MEAN)
-                    errors = tf.expand_dims(errors,axis=0)
-                    error_averaging = hvd.allreduce(errors)
+                    #errors = tf.expand_dims(errors,axis=0)
+                    #error_averaging = hvd.allreduce(errors)
+                    error_averaging = errors
                     if num_batches is not None:
                         num_samples = num_batches
                     else:
                         num_samples = dset.num_samples
+                    #error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(4)])
                     error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_samples)])
-                    print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, error.mean()))
+                    print('Rank=%d, Validation Reconstruction Error %s: %3.3e' % (hvd.rank(),loss_label, error.mean()))
+                    #print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, error.mean()))
             if sleep < 0:
                 break
             else:
