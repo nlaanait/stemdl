@@ -10,9 +10,9 @@ import horovod.tensorflow as hvd
 # JSON utility functions
 
 
-def print_rank(self, *args, **kwargs):
+def print_rank(*args, **kwargs):
     if hvd.rank() == 0 :
-        print_rank(*args, **kwargs)
+        print(*args, **kwargs)
 
 def write_json_network_config(file, layer_keys, layer_params):
     """
