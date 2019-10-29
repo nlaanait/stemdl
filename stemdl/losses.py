@@ -83,25 +83,18 @@ def calc_loss(n_net, scope, hyper_params, params, labels, step=None, images=None
         probe_re = n_net.model_output['decoder_RE']
         pot = n_net.model_output['inverter']
         pot_labels, probe_labels_re, probe_labels_im = [tf.expand_dims(itm, axis=1) for itm in tf.unstack(labels, axis=1)]
-        # weight=0.10
         inverter_loss = calculate_loss_regressor(pot, pot_labels, params, hyper_params, weight=weight)
-        # weight=1
-        # probe_shape = probe_labels_re.shape.as_list()
-        # mask = np.ones(probe_shape, dtype=np.float32)
-        # snapshot = slice(probe_shape[-1]// 4, 3 * probe_shape[-1]//4)
-        # mask[:,:, snapshot, snapshot] = 100.0
-        # #mask = np.expand_dims(np.expand_dims(mask, axis=0), axis=0)
-        # weight = tf.constant(mask)1
         decoder_loss_im = calculate_loss_regressor(probe_im, probe_labels_im, params, hyper_params, weight=weight)
         decoder_loss_re = calculate_loss_regressor(probe_re, probe_labels_re, params, hyper_params, weight=weight)
-        # psi_comp = tf.fft2d(tf.cast(probe_re, tf.complex64) * tf.exp( 1.j * tf.cast(probe_im, tf.complex64)))
-        # pot_frac = tf.exp(1.j * tf.cast(pot, tf.complex64))
-        # reg_term = tf.fft2d(psi_comp * pot_frac / np.prod(psi_comp.shape.as_list()))
-        # reg_term = tf.cast(tf.abs(reg_term), tf.float32)
-        # reg_loss = calculate_loss_regressor(reg_term, tf.reduce_mean(images, axis=[1], keepdims=True), 
-        #             params, hyper_params, weight=weight)
-        # tf.summary.image('Regularization', tf.transpose(reg_term, perm=[0,2,3,1]), max_outputs=4)
-        # tf.summary.image('Pot_realspace', tf.transpose(tf.abs(psi_comp), perm=[0,2,3,1]), max_outputs=4)
+        psi_comp = fftshift(tf.fft2d(tf.cast(probe_re, tf.complex64) * tf.exp( 1.j * tf.cast(probe_im, tf.complex64))))
+        pot_frac = tf.exp(1.j * tf.cast(pot, tf.complex64))
+        reg_term = fftshift(tf.fft2d(psi_comp * pot_frac / np.prod(psi_comp.shape.as_list())))
+        reg_term = tf.cast(tf.abs(reg_term), tf.float32)
+        reg_loss = calculate_loss_regressor(reg_term, tf.reduce_mean(images, axis=[1], keepdims=True), 
+                    params, hyper_params, weight=weight)
+        tf.summary.image('Regularization', tf.transpose(reg_term, perm=[0,2,3,1]), max_outputs=1)
+        tf.summary.image('Pot_realspace', tf.transpose(tf.abs(psi_comp), perm=[0,2,3,1]), max_outputs=1)
+        tf.summary.scalar('Regularization loss (raw)', reg_loss)
         tf.summary.scalar('Inverter loss (raw)', inverter_loss)
         tf.summary.scalar('Decoder loss (IM)', decoder_loss_im)
         tf.summary.scalar('Decoder loss (RE)', decoder_loss_re)
@@ -120,7 +113,7 @@ def calc_loss(n_net, scope, hyper_params, params, labels, step=None, images=None
     #Assemble all of the losses.
     losses = tf.get_collection(tf.GraphKeys.LOSSES)
     if hyper_params['network_type'] == 'YNet':
-        losses = [inverter_loss , decoder_loss_re, decoder_loss_im]
+        losses = [inverter_loss , decoder_loss_re, decoder_loss_im, reg_loss]
         # losses, prefac = ynet_adjusted_losses(losses, step)
         # tf.summary.scalar("prefac_inverter", prefac)
         # losses = [inverter_loss]
@@ -261,3 +254,9 @@ def ynet_adjusted_losses(losses, global_step):
         tf.summary.scalar("prefac_inverter", prefac)
         losses = [inv_loss , prefac * dec_re_loss, prefac * dec_im_loss]
         return losses, prefac
+
+def fftshift(tensor, tens_format='NCHW'):
+    dims = [2,3] if tens_format == 'NCHW' else [1,2]
+    shift = [int((tensor.shape[dim]) // 2) for dim in dims]
+    shift_tensor = manip_ops.roll(tensor, shift, dims)
+    return shift_tensor

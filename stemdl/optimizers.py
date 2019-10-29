@@ -18,11 +18,12 @@
 # The following changes were made:
 # LARC support to "optimize_loss" function
 
+# This file was copy-pasted from openseq2seq repo on 03/10/2019 
+# The following changes were made:
+# Layer-wise adaptive scaling via sorting of variable scopes 
+# Layer-wise assignment of gradient reduction ops registered into horovod LARC 
 
-#from __future__ import absolute_import
-#from __future__ import division
-#from __future__ import print_function
-#from __future__ import unicode_literals
+
 
 import sys
 import collections
@@ -32,9 +33,7 @@ import re
 import tensorflow as tf
 from tensorflow.python.ops import control_flow_ops
 
-#from open_seq2seq.utils.utils import mask_nans, check_params
 from .automatic_loss_scaler import AutomaticLossScaler
-from .mp_wrapper import MixedPrecisionOptimizerWrapper
 
 def mask_nans(x):
   x_zeros = tf.zeros_like(x)
@@ -128,6 +127,20 @@ def get_regularization_loss(scope=None, name="total_regularization_loss"):
 
 
 def reduce_gradients(grads_and_vars, on_horovod, model=None, run_params=None):
+  """reduce_gradients [summary]
+  
+  Args:
+      grads_and_vars ([type]): [description]
+      on_horovod ([type]): [description]
+      model ([type], optional): [description]. Defaults to None.
+      run_params ([type], optional): [description]. Defaults to None.
+  
+  Raises:
+      NotImplementedError: [description]
+  
+  Returns:
+      [type]: [description]
+  """
   if on_horovod:
     from horovod.tensorflow import allreduce, size
     try:
@@ -187,26 +200,6 @@ def reduce_gradients(grads_and_vars, on_horovod, model=None, run_params=None):
         return grads_and_vars 
   else:
     raise NotImplementedError("Horovod is needed to reduce gradients")
-
-
-# def reduce_gradients(grads_and_vars, on_horovod, model=None, run_params=None):
-#    if on_horovod:
-#     from horovod.tensorflow import allreduce, size, rank
-#     if size() > 1:
-#       averaged_grads_and_vars = []
-#       with tf.name_scope("all_reduce"):
-#         for idx, (grad, var) in enumerate(grads_and_vars):
-#           if grad is not None:
-#             # print("rank: %d, grad: %s, var:%s" %(rank(), grad.name, var.name))
-#             avg_grad = allreduce(grad)
-#             averaged_grads_and_vars.append((avg_grad, var))
-#           else:
-#             print("grad: None, var:%s" %(var.name))
-#             averaged_grads_and_vars.append((tf.constant(0), var))
-#       return averaged_grads_and_vars
-#     else:
-#       return grads_and_vars
-
 
 def optimize_loss(loss,
                   optimizer,
