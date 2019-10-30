@@ -38,7 +38,13 @@ See __scripts__ folder for the following:
 #### Hardware Requirements:  
 1. CUDA compatible GPU >=1
 
-
+#### Install ####:
+Project not yet on Pypi. For now:
+```python
+git clone
+cd stemdl
+pip install .
+```
  
 
 
