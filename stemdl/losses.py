@@ -86,16 +86,11 @@ def calc_loss(n_net, scope, hyper_params, params, labels, step=None, images=None
         inverter_loss = calculate_loss_regressor(pot, pot_labels, params, hyper_params, weight=weight)
         decoder_loss_im = calculate_loss_regressor(probe_im, probe_labels_im, params, hyper_params, weight=weight)
         decoder_loss_re = calculate_loss_regressor(probe_re, probe_labels_re, params, hyper_params, weight=weight)
-        psi_comp = fftshift(tf.fft2d(tf.cast(probe_re, tf.complex64) * tf.exp( 1.j * tf.cast(probe_im, tf.complex64))))
-        pot_frac = tf.exp(1.j * tf.cast(pot, tf.complex64))
-        reg_term = fftshift(tf.fft2d(psi_comp * pot_frac / np.prod(psi_comp.shape.as_list())))
-        reg_term = tf.cast(tf.abs(reg_term), tf.float32)
-        reg_loss = calculate_loss_regressor(reg_term, tf.reduce_mean(images, axis=[1], keepdims=True), 
+        psi_out_mod = thin_object(probe_re, probe_im, pot)
+        reg_loss = 10 * calculate_loss_regressor(psi_out_mod, tf.reduce_mean(images, axis=[1], keepdims=True), 
                     params, hyper_params, weight=weight)
-        tf.summary.image('Regularization', tf.transpose(reg_term, perm=[0,2,3,1]), max_outputs=1)
-        tf.summary.image('Pot_realspace', tf.transpose(tf.abs(psi_comp), perm=[0,2,3,1]), max_outputs=1)
-        tf.summary.scalar('Regularization loss (raw)', reg_loss)
-        tf.summary.scalar('Inverter loss (raw)', inverter_loss)
+        tf.summary.scalar(' loss ', reg_loss)
+        tf.summary.scalar('Inverter loss ', inverter_loss)
         tf.summary.scalar('Decoder loss (IM)', decoder_loss_im)
         tf.summary.scalar('Decoder loss (RE)', decoder_loss_re)
     if hyper_params['network_type'] == 'classifier':
@@ -260,3 +255,16 @@ def fftshift(tensor, tens_format='NCHW'):
     shift = [int((tensor.shape[dim]) // 2) for dim in dims]
     shift_tensor = manip_ops.roll(tensor, shift, dims)
     return shift_tensor
+
+def thin_object(psi_k_re, psi_k_im, potential):
+    mask = np.zeros(psi_k_re.shape.as_list(), dtype=np.float32)
+    center = slice(mask.shape[-1]//5, 4 * mask.shape[-1]//5) 
+    mask[:,:,center,center] = 1.
+    mask = tf.constant(mask, dtype=tf.complex64)
+    psi_x = fftshift(tf.ifft2d(mask * tf.cast(psi_k_re, tf.complex64) * tf.exp( 1.j * tf.cast(psi_k_im, tf.complex64))))
+    pot_frac = tf.exp(1.j * tf.cast(potential, tf.complex64))
+    psi_out = tf.fft2d(mask * psi_x * pot_frac / np.prod(psi_x.shape.as_list()))
+    psi_out_mod = tf.cast(tf.abs(psi_out), tf.float32) ** 2
+    tf.summary.image('Psi_k_out', tf.transpose(psi_out_mod, perm=[0,2,3,1]), max_outputs=1)
+    tf.summary.image('Psi_x_in', tf.transpose(tf.abs(psi_x)**0.25, perm=[0,2,3,1]), max_outputs=1)
+    return psi_out_mod 
