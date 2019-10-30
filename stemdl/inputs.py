@@ -442,7 +442,6 @@ class DatasetLMDB(DatasetTFRecords):
         super(DatasetLMDB, self).__init__(*args, **kwargs)
         self.mode = self.params['mode']
         lmdb_dir = self.params['data_dir']
-        lmdb_files = os.listdir(lmdb_dir)
         lmdb_path = os.path.join(lmdb_dir, 'batch_%s_%d.db' %  (self.mode, int(hvd.rank())))
         self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
         self.num_samples = (self.env.stat()['entries'] - 6)//2 ## TODO: remove hard-coded # of headers by storing #samples key, val
@@ -629,9 +628,9 @@ class DatasetLMDB(DatasetTFRecords):
         return glimpse_batch
 
     def random_crop_resize(self, images):
-        x_down = tf.random_uniform([self.params['batch_size']], minval=0., maxval=0.25)
+        x_down = tf.random_uniform([self.params['batch_size']], minval=0., maxval=0.1)
         x_up = 1 - x_down
-        offset = tf.random_uniform([self.params['batch_size']], minval=0., maxval=0.25) 
+        offset = tf.random_uniform([self.params['batch_size']], minval=0., maxval=0.1) 
         y_down = x_down + offset
         y_up = x_up + offset
         boxes = tf.stack([y_down, x_down, y_up, x_up], axis=1)
@@ -639,7 +638,6 @@ class DatasetLMDB(DatasetTFRecords):
         images = tf.image.crop_and_resize(images, boxes, box_ind=box_indices, crop_size=self.data_specs['image_shape'][-2:])
         return images
         
-
     @staticmethod
     def image_scaling(image_batch):
         image_batch -= tf.reduce_min(image_batch, axis=[2,3], keepdims=True)
