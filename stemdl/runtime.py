@@ -820,7 +820,7 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
             loss_label= 'ABS_DIFF'
             errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(n_net.model_output, tf.float32), reduction=tf.losses.Reduction.MEAN)
         errors = tf.expand_dims(errors,axis=0)
-        error_averaging = hvd.allreduce(errors)
+        error_averaging = hvd.allreduce(errors, average=True)
 
         if num_batches is not None:
             num_samples = num_batches
