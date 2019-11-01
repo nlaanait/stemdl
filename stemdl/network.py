@@ -13,7 +13,6 @@ from copy import deepcopy
 import tensorflow as tf
 import numpy as np
 import horovod.tensorflow as hvd
-from .mp_wrapper import mp_regularizer_wrapper
 
 worker_name='model'
 tf.logging.set_verbosity(tf.logging.ERROR)
@@ -76,8 +75,6 @@ class ConvNet:
             self.hyper_params["batch_norm"] = {"epsilon": 1E-5, "decay": 0.995}
         self.model_output = None
         self.scopes = []
-
-        # self.initializer = self._get_initializer(hyper_params.get('initializer', None))
 
     def print_rank(self, *args, **kwargs):
         if hvd.rank() == 0 and self.operation == 'train':
@@ -170,7 +167,6 @@ class ConvNet:
         """
         pass
 
-    # @staticmethod
     def _get_initializer(self, params):
         """
         Returns an Initializer object for initializing weights
@@ -240,7 +236,6 @@ class ConvNet:
         # default = Xavier:
         # self.print_verbose('Using default Xavier instead')
         return tf.contrib.layers.xavier_initializer()
-
 
     def get_loss(self):
         # with tf.variable_scope(self.scope, reuse=self.reuse) as scope:
@@ -2836,10 +2831,10 @@ class YNet(FCDenseNet, FCNet):
         params = self.network['encoder']['freq2space']
         fully_connected = params['cvae_params']['fc_params']
         num_fc = params['cvae_params']['n_fc_layers']
-        conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
+        conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [3, 3], 
                                 'features': params['init_features'],
                                 'activation': "relu", 
-                                'padding': 'VALID', 
+                                'padding': 'SAME', 
                                 'batch_norm': True, 'dropout':0})
         # def fc_map(tens):
         #     for i in range(num_fc):
@@ -2873,10 +2868,10 @@ class YNet(FCDenseNet, FCNet):
         params = self.network['encoder']['freq2space']
         fully_connected = params['cvae_params']['fc_params']
         num_fc = params['cvae_params']['n_fc_layers']
-        conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 
+        conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [3, 3], 
                                 'features': params['init_features'],
                                 'activation': "relu", 
-                                'padding': 'VALID', 
+                                'padding': 'SAME', 
                                 'batch_norm': True, 'dropout':0})
         def fc_map(tens):
             for i in range(num_fc):

@@ -410,8 +410,6 @@ def train(network_config, hyper_params, params):
         if doValidate:
             validate(network_config, hyper_params, params, sess, dset)
         if doFinish:
-            saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
-            print_rank('Saved Final Checkpoint.')
             return
 
 def train_inverter(network_config, hyper_params, params):

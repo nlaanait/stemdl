@@ -628,9 +628,9 @@ class DatasetLMDB(DatasetTFRecords):
         return glimpse_batch
 
     def random_crop_resize(self, images):
-        x_down = tf.random_uniform([self.params['batch_size']], minval=0., maxval=0.1)
+        x_down = tf.random_uniform([self.params['batch_size']], minval=0., maxval=0.05)
         x_up = 1 - x_down
-        offset = tf.random_uniform([self.params['batch_size']], minval=0., maxval=0.1) 
+        offset = tf.random_uniform([self.params['batch_size']], minval=0., maxval=0.05) 
         y_down = x_down + offset
         y_up = x_up + offset
         boxes = tf.stack([y_down, x_down, y_up, x_up], axis=1)

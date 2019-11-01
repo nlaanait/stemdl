@@ -421,7 +421,7 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
     layers_keys_list = []
     conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': None,
                             'activation': 'relu', 'padding': 'SAME', 'batch_norm': batch_norm, 'dropout':dropout_prob})
-    deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [3,3], 'features': None, 
+    deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [4,4], 'features': None, 
                         'padding': 'SAME', 'upsample': pool['kernel'][0]})
     features = 1024
     rank = 0
@@ -481,7 +481,7 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
 
     conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': None,
                             'activation': 'relu', 'padding': 'SAME', 'batch_norm': batch_norm, 'dropout':dropout_prob})
-    deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [3,3], 'features': None, 
+    deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [4,4], 'features': None, 
                         'padding': 'SAME', 'upsample': pool['kernel'][0]})
     features = 1024
     rank = 0
