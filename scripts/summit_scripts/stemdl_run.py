@@ -24,6 +24,7 @@ from stemdl import runtime
 from stemdl import io_utils
 
 tf.logging.set_verbosity(tf.logging.ERROR)
+tf.config.optimizer.set_jit(False)
 
 def add_bool_argument(cmdline, shortname, longname=None, default=False, help=None):
     if longname is None:
@@ -95,6 +96,8 @@ def main():
                          help="""number of horovod message groups""")
     cmdline.add_argument( '--grad_ckpt', default=None, type=str,
                          help="""gradient-checkpointing:collection,memory,speed""")
+    cmdline.add_argument( '--max_time', default=None, type=str,
+                         help="""maximum time to run training loop""")
     add_bool_argument( cmdline, '--fp16', default=None,
                          help="""Train with half-precision.""")
     add_bool_argument( cmdline, '--fp32', default=None,
@@ -124,7 +127,8 @@ def main():
        params = io_utils.get_dict_from_json('input_flags.json')
        params[ 'input_flags' ] = 'input_flags.json'
     params['no_jit'] = True 
-    params[ 'start_time' ] = time.time( )
+    params[ 'start_time' ] = float(os.environ["LSF_JOB_TIMESTAMP_VALUE"])
+    #params[ 'start_time' ] = 0 
     params[ 'cmdline' ] = 'unknown'
     params['accumulate_step'] = FLAGS.accumulate_step
     if FLAGS.batch_size is not None :
@@ -158,13 +162,14 @@ def main():
     if FLAGS.filetype is not None:
         params['filetype'] = FLAGS.filetype
     if FLAGS.debug is not None:
-        params['debug'] = FLAGS.debug
+        params['debug'] = True 
     else: 
         params['debug'] = False
     params['save_step'] = FLAGS.save_steps 
     params['validate_step']= FLAGS.validate_steps 
     params['summary_step']= FLAGS.summary_steps 
     params['hvd_group'] = FLAGS.hvd_group
+    params['max_time'] = float(FLAGS.max_time) * 60 - 300 # convert from min and give 300s to copy file from bb 
     if FLAGS.hvd_fp16 is not None:
         params['hvd_fp16'] = hvd.Compression.fp16
     else: 
@@ -178,11 +183,6 @@ def main():
     checkpt_dir = params[ 'checkpt_dir' ]
     # Also need a directory within the checkpoint dir for event files coming from eval
     eval_dir = os.path.join( checkpt_dir, '_eval' )
-    #if hvd.rank() == 0:
-        #print('ENVIRONMENT VARIABLES: %s' %format(os.environ))
-    #    print( 'Creating checkpoint directory %s' % checkpt_dir )
-    #tf.gfile.MakeDirs( checkpt_dir )
-    #tf.gfile.MakeDirs( eval_dir )
 
     if params[ 'gpu_trace' ] :
         if tf.gfile.Exists( params[ 'trace_dir' ] ) :
@@ -204,8 +204,14 @@ def main():
        hyper_params[ 'scaling' ] = FLAGS.scaling
     if FLAGS.bn_decay is not None :
        hyper_params[ 'batch_norm' ][ 'decay' ] = FLAGS.bn_decay
-    hyper_params['num_steps_in_warm_up'] = FLAGS.warm_steps 
-    hyper_params['num_steps_per_warm_up'] = FLAGS.warm_steps/10 
+    if FLAGS.warm_steps >= 1:
+       hyper_params['warm_up'] = True
+       hyper_params['num_steps_in_warm_up'] = FLAGS.warm_steps 
+       hyper_params['num_steps_per_warm_up'] = FLAGS.warm_steps
+    else: 
+       hyper_params['warm_up'] = False 
+       hyper_params['num_steps_in_warm_up'] = 1 
+       hyper_params['num_steps_per_warm_up'] = 1 
     hyper_params['num_steps_per_decay'] = FLAGS.decay_steps 
     #cap max warm-up learning rate by ilr
     hyper_params["warm_up_max_learning_rate"] = min(1, hyper_params['initial_learning_rate'] * hvd.size())
@@ -230,13 +236,13 @@ def main():
         runtime.train(network_config, hyper_params, params)
     elif params['mode'] == 'eval':
         params[ 'IMAGE_FP16' ] = False
-        params['output'] = True
-        params['debug'] = True 
+        params['output'] = True if params['debug'] else False
         runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, sleep=-1, num_batches=None)
         
     # copy checkpoints from nvme
-    if FLAGS.nvme is not None:
+    if FLAGS.nvme is not None and params['mode'] == 'train':
         if hvd.rank() == 0:
+            time.sleep(10) # sleep to give time for storage to flush
             print('copying files from bb...')
             nvme_staging(params['data_dir'],params)
     

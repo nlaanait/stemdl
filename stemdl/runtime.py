@@ -415,6 +415,9 @@ def train(network_config, hyper_params, params, gpu_id=None):
             tf.keras.backend.clear_session()
             sess.close()
             return val_results, loss_results
+    # Do a validation before exiting
+    val = validate(network_config, hyper_params, params, sess, dset)
+    val_results.append((train_elf.last_step,val))
     tf.reset_default_graph()
     tf.keras.backend.clear_session()
     sess.close()
