@@ -4,7 +4,6 @@ Created on 10/15/17.
 """
 import logging
 logging.getLogger('tensorflow').setLevel(logging.ERROR)
-#logging.getLogger('tensorflow').disabled = True
 import tensorflow as tf
 import numpy as np
 import argparse
@@ -12,8 +11,19 @@ import json
 import time
 import sys
 import os
+import copy
 import subprocess, shlex
 import shutil
+import contextlib
+import itertools
+import random
+from mpi4py import MPI
+
+global world_rank
+world_comm = MPI.COMM_WORLD
+world_size = world_comm.Get_size()
+world_rank = world_comm.Get_rank()
+
 try:
    import horovod.tensorflow as hvd
 except:
@@ -24,6 +34,53 @@ from stemdl import runtime
 from stemdl import io_utils
 
 tf.logging.set_verbosity(tf.logging.ERROR)
+
+def print_results(group_id, *args, **kwargs):
+    print_f = open('search_%d.log' % group_id, 'a')
+    with contextlib.redirect_stdout(print_f):
+        print(*args, **kwargs)
+
+def get_search_params(hyper_params, search_dic=dict()):
+    lr = 10**(np.round(-np.linspace(2,5,num=4), decimals=2))
+    initial = ['truncated_normal', 'glorot_uniform', 'variance_scaling', 
+                'random_normal', 'random_uniform', 'xavier', 'he', 'uniform_unit_scaling']
+    warm_up_steps = 10** np.round(np.linspace(1,4, num=5), decimals=1)
+    warm_up_steps = warm_up_steps.astype(np.int)
+    decay_steps = 10** np.round(np.linspace(3, 5, num=2), decimals=1)
+    decay_steps = decay_steps.astype(np.int)
+    weight_decay = 10 ** np.round(-np.linspace(3, 5, num=3), decimals=1)
+    iterator = itertools.product(lr, initial, weight_decay, warm_up_steps, decay_steps)
+    param_keys = ['initial_learning_rate' , 'initializer', 'weight_decay', 
+                  'num_steps_in_warm_up', 'num_steps_per_decay']
+    return iterator, param_keys
+
+def get_group_search_params(iterator_list, group_id, num_comms=None):
+    if num_comms is None:
+        return
+    chunk_size = len(iterator_list) // num_comms
+    partitions = []
+    for i in range(num_comms):
+        part = slice(i * chunk_size, None) if i == num_comms-1 \
+            else slice(i * chunk_size, (i+1) * chunk_size)
+        partitions.append(part)
+    group_partition = partitions[group_id]
+    group_iterator = iterator_list[group_partition]
+    random.shuffle(group_iterator) 
+    return group_iterator 
+
+def set_hyper_params(hyper_params, search_params, keys=[]):
+    new_hyper_params = copy.deepcopy(hyper_params)
+    for new_param, key in zip(search_params, keys):
+        new_hyper_params[key] = new_param
+        if key == 'initial_learning_rate':
+            new_hyper_params['warm_up_max_learning_rate'] = new_hyper_params['initial_learning_rate'] * hyper_params['warm_up_max_learning_rate']\
+                / hyper_params['initial_learning_rate'] 
+    return hyper_params
+        # try:
+        #     hyper_params[key] = new_param
+        # except KeyError:
+        #     print('Key {} ')
+
 
 def add_bool_argument(cmdline, shortname, longname=None, default=False, help=None):
     if longname is None:
@@ -41,11 +98,8 @@ def add_bool_argument(cmdline, shortname, longname=None, default=False, help=Non
 
 
 def main():
-    tf.set_random_seed( 1234 )
-    np.random.seed( 4321 )
-
-    # initiate horovod
-    hvd.init()
+    # tf.set_random_seed(1234)
+    # np.random.seed(1234)
 
     cmdline = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # Basic options
@@ -97,6 +151,10 @@ def main():
                          help="""gradient-checkpointing:collection,memory,speed""")
     cmdline.add_argument( '--max_time', default=int(1e18), type=int,
                          help="""maximum time to run training loop""")
+    cmdline.add_argument('--gpus_node', default=4, type=int,
+                         help="""number of gpus per node""")
+    cmdline.add_argument('--sub_comms', default=0, type=int,
+                         help="""number of MPI subcommunicators to launch""")
     add_bool_argument( cmdline, '--fp16', default=None,
                          help="""Train with half-precision.""")
     add_bool_argument( cmdline, '--fp32', default=None,
@@ -117,6 +175,18 @@ def main():
             if hvd.rank( ) == 0 :
                print('<ERROR> Unknown command line arg: %s' % bad_arg)
         raise ValueError('Invalid command line arg(s)')
+
+    # define MPI comms and initiate horovod
+    if FLAGS.sub_comms != 0:
+        group_id = world_comm.rank % FLAGS.sub_comms 
+        sub_comm = MPI.COMM_WORLD.Split(color=group_id, key=world_comm.rank)
+        group_rank = sub_comm.Get_rank()
+        group_size = sub_comm.Get_size()
+        hvd.init(comm=sub_comm)
+        gpu_id = world_rank % FLAGS.gpus_node
+    else:
+        hvd.init()
+        gpu_id = None
 
     # Load input flags
     if FLAGS.input_flags is not None :
@@ -179,14 +249,7 @@ def main():
     params.setdefault( 'restart', False )
 
     checkpt_dir = params[ 'checkpt_dir' ]
-    # Also need a directory within the checkpoint dir for event files coming from eval
     eval_dir = os.path.join( checkpt_dir, '_eval' )
-    #if hvd.rank() == 0:
-        #print('ENVIRONMENT VARIABLES: %s' %format(os.environ))
-    #    print( 'Creating checkpoint directory %s' % checkpt_dir )
-    #tf.gfile.MakeDirs( checkpt_dir )
-    #tf.gfile.MakeDirs( eval_dir )
-
     if params[ 'gpu_trace' ] :
         if tf.gfile.Exists( params[ 'trace_dir' ] ) :
             print( 'Timeline directory %s exists' % params[ 'trace_dir' ] )
@@ -216,8 +279,10 @@ def main():
        hyper_params['num_steps_in_warm_up'] = 1 
        hyper_params['num_steps_per_warm_up'] = 1 
     hyper_params['num_steps_per_decay'] = FLAGS.decay_steps 
+
+
     #cap max warm-up learning rate by ilr
-    hyper_params["warm_up_max_learning_rate"] = min(1, hyper_params['initial_learning_rate'] * hvd.size())
+    hyper_params["warm_up_max_learning_rate"] = hyper_params['initial_learning_rate'] * hvd.size()
 
     # print relevant params passed to training 
     if hvd.rank( ) == 0 :
@@ -233,15 +298,31 @@ def main():
        print("### params passed at CLI")
        _input = json.dumps(vars(FLAGS), indent=4)
        print("%s" % _input) 
-  
-    # train or evaluate
-    if params['mode'] == 'train':
-        runtime.train(network_config, hyper_params, params)
-    elif params['mode'] == 'eval':
-        params[ 'IMAGE_FP16' ] = False
-        params['output'] = True
-        params['debug'] = True 
-        runtime.validate_ckpt(network_config, hyper_params, params, last_model=True, sleep=-1, num_batches=None)
+    
+    iterator, params_keys = get_search_params(hyper_params)
+    iterator_list = list(iterator)
+    # broadcast random shuffled search params per group
+    if group_rank == 0:
+        group_iter_list = get_group_search_params(iterator_list, group_id, num_comms=FLAGS.sub_comms)
+    else:
+        group_iter_list = None
+    group_iter_list = sub_comm.bcast(group_iter_list)
+    
+    for search_param in group_iter_list:
+        if params['debug']:
+        # Ensure that ranks within group have the same params
+            sub_comm.Barrier()
+            print_results(group_id, 'group_id= %d, world rank=%d' % (group_id, world_rank), search_param)
+            sub_comm.Barrier()
+            world_comm.Barrier()
+        hyper_params = set_hyper_params(hyper_params, search_param, keys=params_keys)
+        if params['mode'] == 'train':
+            # print_f = open('search_%d.log' % group_id, 'a')
+            # with contextlib.redirect_stdout(print_f):
+            val_results, train_results = runtime.train(network_config, hyper_params, params, gpu_id=gpu_id)
+            if group_rank == 0:
+                # print(group_id, 'Validation:\n', val_results, 'Training:\n', train_results)
+                print_results(group_id, 'Validation:\n', val_results, 'Training:\n', train_results)
         
     # copy checkpoints from nvme
     if FLAGS.nvme is not None:
