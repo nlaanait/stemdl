@@ -20,7 +20,7 @@ cache:
 
 stages:
   - build
-  - test
+  # - test
   - pages
 
 # before_script:
