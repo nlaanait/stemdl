@@ -77,16 +77,17 @@ def calc_loss(n_net, scope, hyper_params, params, labels, step=None, images=None
         n_net.model_output = tf.reduce_mean(n_net.model_output, axis=[1], keepdims=True)
         _ = calculate_loss_regressor(n_net.model_output, labels, params, hyper_params)
     if hyper_params['network_type'] == 'YNet':
-        weight=None
         probe_im = n_net.model_output['decoder_IM']
         probe_re = n_net.model_output['decoder_RE']
         pot = n_net.model_output['inverter']
         pot_labels, probe_labels_re, probe_labels_im = [tf.expand_dims(itm, axis=1) for itm in tf.unstack(labels, axis=1)]
+        weight= np.prod(pot_labels.shape.as_list()[-2:])
+        weight=None 
         inverter_loss = calculate_loss_regressor(pot, pot_labels, params, hyper_params, weight=weight)
         decoder_loss_im = calculate_loss_regressor(probe_im, probe_labels_im, params, hyper_params, weight=weight)
         decoder_loss_re = calculate_loss_regressor(probe_re, probe_labels_re, params, hyper_params, weight=weight)
         psi_out_mod = thin_object(probe_re, probe_im, pot)
-        reg_loss = 10 * calculate_loss_regressor(psi_out_mod, tf.reduce_mean(images, axis=[1], keepdims=True), 
+        reg_loss = calculate_loss_regressor(psi_out_mod, tf.reduce_mean(images, axis=[1], keepdims=True), 
                     params, hyper_params, weight=weight)
         tf.summary.scalar('reg_loss ', reg_loss)
         tf.summary.scalar('Inverter loss ', inverter_loss)
@@ -168,7 +169,6 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
     :param params: dictionary, specifies the objective to use
     :return: cost
     """
-    # weight = 1./ hyper_params.get('scaling', 1)
     if weight is None:
         weight = 1.0
     if global_step is None:
@@ -194,14 +194,10 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
                                     reduction=tf.losses.Reduction.MEAN)
     if loss_params['type'] == 'MSE':
         cost = tf.losses.mean_squared_error(labels, weights=weight, predictions=net_output,
-                                            reduction=tf.losses.Reduction.MEAN)
+                                            reduction=tf.losses.Reduction.SUM)
     if loss_params['type'] == 'ABS_DIFF':
         cost = tf.losses.absolute_difference(labels, weights=weight, predictions=net_output,
                                             reduction=tf.losses.Reduction.MEAN)
-    #if loss_params['type'] == 'ABS_DIFF_SCALED':
-    #    weight= 1./512.
-    #    cost = tf.losses.absolute_difference(labels, weights=weight, predictions=net_output,
-                                            #reduction=tf.losses.Reduction.SUM)
     if loss_params['type'] == 'MSE_PAIR':
         cost = tf.losses.mean_pairwise_squared_error(labels, net_output, weights=weight)
     if loss_params['type'] == 'rMSE':

@@ -116,7 +116,7 @@ class TrainHelper(object):
         flops = self.net_ops * examples_per_sec
         avg_flops = self.net_ops * self.params['batch_size'] * hvd.size() / self.cumm_time
         format_str = (
-        'time= %.1f, step= %d, epoch= %2.2e, loss= %.2f, lr= %.2e, step_time= %2.2f sec, ranks= %d, examples/sec= %.1f, flops = %3.2e, average_time= %2.2f, average_flops= %3.3e')
+        'time= %.1f, step= %d, epoch= %2.2e, loss= %.3e, lr= %.2e, step_time= %2.2f sec, ranks= %d, examples/sec= %.1f, flops = %3.2e, average_time= %2.2f, average_flops= %3.3e')
         print_rank(format_str % ( t - self.params[ 'start_time' ],  self.last_step, self.elapsed_epochs,
                     loss_value, learning_rate, duration, hvd.size(), examples_per_sec, flops, self.cumm_time, avg_flops) )
         self.cumm_time = time.time()
@@ -363,6 +363,7 @@ def train(network_config, hyper_params, params, gpu_id=None):
     val_results = []
     loss_results = []
     loss_value = 1e10
+    val = 1e10
     while train_elf.last_step < maxSteps :
         train_elf.before_run()
         doLog   = bool(train_elf.last_step % logFreq  == 0)
@@ -408,15 +409,15 @@ def train(network_config, hyper_params, params, gpu_id=None):
         if doValidate:
             val = validate(network_config, hyper_params, params, sess, dset)
             val_results.append((train_elf.last_step,val))
-        if doFinish or np.isnan(loss_value):
+        if doFinish: 
             val = validate(network_config, hyper_params, params, sess, dset)
             val_results.append((train_elf.last_step, val))
             tf.reset_default_graph()
             tf.keras.backend.clear_session()
             sess.close()
             return val_results, loss_results
-    # Do a validation before exiting
-    val = validate(network_config, hyper_params, params, sess, dset)
+        if np.isnan(loss_value):
+            break
     val_results.append((train_elf.last_step,val))
     tf.reset_default_graph()
     tf.keras.backend.clear_session()
@@ -521,9 +522,12 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
         if loss_params['type'] == 'MSE_PAIR':
             errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(model_output, tf.float32))
             loss_label= loss_params['type'] 
-        else: 
+        elif loss_params['type'] == 'ABS_DIFF': 
             loss_label= 'ABS_DIFF'
-            errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(model_output, tf.float32), reduction=tf.losses.Reduction.MEAN)
+            errors = tf.losses.absolute_difference(tf.cast(labels, tf.float32), tf.cast(model_output, tf.float32), reduction=tf.losses.Reduction.SUM)
+        elif loss_params['type'] == 'MSE':
+            errors = tf.losses.mean_squared_error(tf.cast(labels, tf.float32), tf.cast(model_output, tf.float32), reduction=tf.losses.Reduction.SUM)
+            loss_label= loss_params['type'] 
         errors = tf.expand_dims(errors,axis=0)
         error_averaging = hvd.allreduce(errors)
         if num_batches is not None:

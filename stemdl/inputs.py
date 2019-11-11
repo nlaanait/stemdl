@@ -13,9 +13,10 @@ from tensorflow.python.ops import data_flow_ops
 import horovod.tensorflow as hvd
 import lmdb
 import time
-#from nvidia.dali.pipeline import Pipeline
-#import nvidia.dali.ops as dali_ops
-#import nvidia.dali.plugin.tf as dali_tf
+from mpi4py import MPI
+
+global world_rank
+world_rank = MPI.COMM_WORLD.Get_rank()
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 
@@ -442,7 +443,8 @@ class DatasetLMDB(DatasetTFRecords):
         super(DatasetLMDB, self).__init__(*args, **kwargs)
         self.mode = self.params['mode']
         lmdb_dir = self.params['data_dir']
-        lmdb_path = os.path.join(lmdb_dir, 'batch_%s_%d.db' %  (self.mode, int(hvd.rank())))
+        #lmdb_path = os.path.join(lmdb_dir, 'batch_%s_%d.db' %  (self.mode, int(hvd.rank())))
+        lmdb_path = os.path.join(lmdb_dir, 'batch_%s_%d.db' %  (self.mode, world_rank))
         self.env = lmdb.open(lmdb_path, create=False, readahead=False, readonly=True, writemap=False, lock=False)
         self.num_samples = (self.env.stat()['entries'] - 6)//2 ## TODO: remove hard-coded # of headers by storing #samples key, val
         self.first_record = 0
@@ -515,13 +517,9 @@ class DatasetLMDB(DatasetTFRecords):
                 for _ in range(self.params['batch_size']):
                     image, label = iterator.get_next()
                     image = tf.reshape(image, self.data_specs['image_shape'])
-                    # if self.params[self.mode + '_distort']:
-                        # with tf.device('/gpu:%i' % hvd.local_rank()):
-                            # image = self.add_noise_image(image)
                     images.append(tf.reshape(image, self.data_specs['image_shape']))
                     labels.append(tf.reshape(label, self.data_specs['label_shape']))
             elif self.mode == 'eval':
-                # self.params['batch_size'] = 1
                 ds = ds.batch(self.params['batch_size'], drop_remainder=True)
                 ds = ds.map(self.wrapped_decode)
                 iterator = ds.make_one_shot_iterator()
@@ -531,8 +529,6 @@ class DatasetLMDB(DatasetTFRecords):
                 for _ in range(self.params['batch_size']):
                     image, label = iterator.get_next()
                     image = tf.reshape(image, self.data_specs['image_shape'])
-                    # if self.params[self.mode + '_distort']:
-                        # image = self.add_noise_image(image)
                     images.append(tf.reshape(image, self.data_specs['image_shape']))
                     labels.append(tf.reshape(label, self.data_specs['label_shape']))
             if tf.executing_eagerly():
@@ -546,28 +542,8 @@ class DatasetLMDB(DatasetTFRecords):
             images_newshape = [self.params['batch_size']] + self.data_specs['image_shape']
             labels = tf.reshape(labels, labels_newshape)
             images = tf.reshape(images, images_newshape)
-            # if self.params[self.mode + '_distort']:
-            #     class DaliPipeline(Pipeline):
-            #         def __init__(self, batch_size, num_threads, gpu_id, images=None):
-            #             super(DaliPipeline, self).__init__(batch_size, num_threads, gpu_id)
-            #             self.input = dali_ops.Cast(device='gpu', dtype=tf.float16)(images)
-            #             self.rotate = dali_ops.Rotate(angle=10.0)
-            #         def define_graph(self):
-            #             images = self.rotate(self.input)
-            #             return images
-            #     pipe = DaliPipeline(self.params['batch_size'], 10, hvd.local_rank(), images=images)
-            #     daliop = dali_tf.DALIIterator()
-            #     with tf.device('/gpu:%i' % hvd.local_rank()):
-            #         images = daliop(pipeline=pipe, shapes = images.shape.as_list(), dtypes=[images.dtype])
-                # images = pipe.run()
             labels = self.image_scaling(labels)
-            # labels -= tf.reduce_min(labels, keepdims=True) 
-            # abels= self.label_minmaxscaling(labels, 0.0, 1.0, scale_range=[0., 10.0])
-        # images = self.image_scaling(images)
-        # Display the training images in the Tensorboard visualizer.
-        #if self.debug: 
-        #    tf.summary.image("potential", tf.transpose(labels, perm=[0,2,3,1]), max_outputs=4)
-        #    tf.summary.image("images", tf.transpose(tf.reduce_mean(images, axis=1, keepdims=True), perm=[0,2,3,1]), max_outputs=4)
+        # data augmentation    
         if self.params[self.mode + '_distort']:
             with tf.device('/gpu:%i' % hvd.local_rank()):
                 images = tf.transpose(images, perm=[0,2,3,1])
