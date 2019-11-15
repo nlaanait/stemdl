@@ -403,7 +403,6 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
     fc_cvae = OrderedDict({'type': 'fully_connected','weights': fc_dim,'bias': fc_dim, 'activation': activation,
                                 'regularize': True})
     cvae_model = OrderedDict({'n_conv_layers': 4, 'n_fc_layers':fc_layers,'fc_params': fc_cvae, 'conv_params':conv_cvae}) 
-    init_features = 1024
     freq2space_block = OrderedDict({'type': 'freq2space', 'activation': activation, 'dropout': dropout_prob, 
                                     'init_features':init_features, 'batch_norm': batch_norm})
     freq2space_block['type'] = 'freq2space_CVAE'
@@ -423,7 +422,7 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
                             'activation': activation, 'padding': 'SAME', 'batch_norm': batch_norm, 'dropout':dropout_prob})
     deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [4,4], 'features': None, 
                         'padding': 'SAME', 'upsample': pool['kernel'][0]})
-    features = 1024
+    features = init_features
     rank = 0
     for i in range(n_pool+1):
         deconv_layer = deepcopy(deconv_layer_base)
@@ -449,7 +448,7 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
     #############################
     layers_params_list = []
     layers_keys_list = []
-    features = 1024
+    features = init_features
     rank = 0
     for i in range(n_pool+1):
         deconv_layer = deepcopy(deconv_layer_base)
@@ -483,7 +482,7 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
                             'activation': activation, 'padding': 'SAME', 'batch_norm': batch_norm, 'dropout':dropout_prob})
     deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [4,4], 'features': None, 
                         'padding': 'SAME', 'upsample': pool['kernel'][0]})
-    features = 1024
+    features = init_features
     rank = 0
     for i in range(n_pool+1):
         deconv_layer = deepcopy(deconv_layer_base)

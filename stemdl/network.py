@@ -611,7 +611,7 @@ class ConvNet:
             input= tf.cast(input, tf.float32)
     #    with tf.variable_scope('layer_normalization', reuse=None) as scope:
     #         output = tf.keras.layers.LayerNormalization(trainable=False)(inputs=input)
-        mean , variance = tf.nn.moments(input, axes=[2,3], keepdims=True)
+        mean , variance = tf.nn.moments(input, axes=[2,3], keep_dims=True)
         output = (input - mean)/ (tf.sqrt(variance) + 1e-7)
         if self.params['IMAGE_FP16']:
             output = tf.cast(output, tf.float16)
@@ -2861,7 +2861,7 @@ class YNet(FCDenseNet, FCNet):
         # out = tf.transpose(out, perm= [1, 2, 0])
         dim = int(math.sqrt(self.images.shape.as_list()[1]))
         out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
-
+        self.print_rank('decoder reshape:', out.shape.as_list())
         with tf.variable_scope('%s_conv_1by1' % subnet, reuse=self.reuse) as scope:
             out, _ = self._conv(input=out, params=conv_1by1) 
             do_bn = conv_1by1.get('batch_norm', False)

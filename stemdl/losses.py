@@ -108,8 +108,8 @@ def calc_loss(n_net, scope, hyper_params, params, labels, step=None, images=None
     #Assemble all of the losses.
     losses = tf.get_collection(tf.GraphKeys.LOSSES)
     if hyper_params['network_type'] == 'YNet':
-        #losses = [inverter_loss , decoder_loss_re, decoder_loss_im, 0.01 * reg_loss]
-        losses = [inverter_loss , decoder_loss_re, decoder_loss_im]
+        losses = [inverter_loss , decoder_loss_re, decoder_loss_im, reg_loss]
+        # losses = [inverter_loss , decoder_loss_re, decoder_loss_im]
         # losses, prefac = ynet_adjusted_losses(losses, step)
         # tf.summary.scalar("prefac_inverter", prefac)
         # losses = [inverter_loss]
