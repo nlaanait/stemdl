@@ -388,7 +388,7 @@ def generate_freq2space_json(out_dir= 'json_files', conv_type="conv_2D", input_c
 #########
 # Y-net #
 #########
-def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_block=2, kernel=[3,3], conv_type='conv_2D', 
+def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_block=2, kernel=[3,3], conv_type='conv_2D',activation='relu', 
                         dropout_prob=0, output_channels=1, output_size=256, fc_dim=256, init_features=1024, batch_norm=True, fc_layers=1):
 
     pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
@@ -399,12 +399,12 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
     layers_keys_list = []
     conv_cvae = OrderedDict({'type': 'conv_2D', 'stride': [2, 2], 'kernel': [4, 4], 
                                 'features': 16,
-                                'activation': 'relu', 'padding': 'SAME', 'batch_norm': batch_norm, 'dropout': 0.0})
-    fc_cvae = OrderedDict({'type': 'fully_connected','weights': fc_dim,'bias': fc_dim, 'activation': 'relu',
+                                'activation': activation, 'padding': 'SAME', 'batch_norm': batch_norm, 'dropout': 0.0})
+    fc_cvae = OrderedDict({'type': 'fully_connected','weights': fc_dim,'bias': fc_dim, 'activation': activation,
                                 'regularize': True})
     cvae_model = OrderedDict({'n_conv_layers': 4, 'n_fc_layers':fc_layers,'fc_params': fc_cvae, 'conv_params':conv_cvae}) 
     init_features = 1024
-    freq2space_block = OrderedDict({'type': 'freq2space', 'activation': 'relu', 'dropout': dropout_prob, 
+    freq2space_block = OrderedDict({'type': 'freq2space', 'activation': activation, 'dropout': dropout_prob, 
                                     'init_features':init_features, 'batch_norm': batch_norm})
     freq2space_block['type'] = 'freq2space_CVAE'
     freq2space_block['cvae_params'] = cvae_model
@@ -420,7 +420,7 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
     layers_params_list = []
     layers_keys_list = []
     conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': None,
-                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': batch_norm, 'dropout':dropout_prob})
+                            'activation': activation, 'padding': 'SAME', 'batch_norm': batch_norm, 'dropout':dropout_prob})
     deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [4,4], 'features': None, 
                         'padding': 'SAME', 'upsample': pool['kernel'][0]})
     features = 1024
@@ -472,7 +472,7 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
     model_params.append(OrderedDict(zip(layers_keys_list, layers_params_list)))
 
     # inverter branch, essentially a freq2space layer then Transition Up
-    freq2space_block = OrderedDict({'type': 'freq2space', 'activation': 'relu', 'dropout': dropout_prob, 
+    freq2space_block = OrderedDict({'type': 'freq2space', 'activation': activation, 'dropout': dropout_prob, 
                                     'init_features':64, 'n_fc_layers':2})
     layers_params_list = []
     layers_keys_list = []
@@ -480,7 +480,7 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
     layers_params_list.append(freq2space_block)
 
     conv_layer_base = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': kernel, 'features': None,
-                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': batch_norm, 'dropout':dropout_prob})
+                            'activation': activation, 'padding': 'SAME', 'batch_norm': batch_norm, 'dropout':dropout_prob})
     deconv_layer_base = OrderedDict({'type': "deconv_2D", 'stride': [2, 2], 'kernel': [4,4], 'features': None, 
                         'padding': 'SAME', 'upsample': pool['kernel'][0]})
     features = 1024
@@ -567,10 +567,10 @@ def generate_fcdensenet_json(random=False, conv_type="conv_2D", growth_rate=64, 
         n_layers_per_block = [n_layers_per_block] * (2 * n_pool + 1)
 
     std_conv = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': DB_conv_kernel, 'features': growth_rate,
-                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': False})
+                            'activation': activation, 'padding': 'SAME', 'batch_norm': False})
     deconv = OrderedDict({'type': ''})
     layer = OrderedDict({'type': conv_type, 'stride': [1, 1], 'kernel': DB_conv_kernel, 'features': growth_rate,
-                            'activation': 'relu', 'padding': 'SAME', 'batch_norm': True, 'dropout':dropout_prob})
+                            'activation': activation, 'padding': 'SAME', 'batch_norm': True, 'dropout':dropout_prob})
     pool = OrderedDict({'type': 'pooling', 'stride': [2, 2], 'kernel': [2, 2], 'pool_type': 'max','padding':'SAME'})
 
 

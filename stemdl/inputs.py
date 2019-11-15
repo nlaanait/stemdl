@@ -175,7 +175,7 @@ class DatasetTFRecords(object):
 
         alpha = tf.random_uniform([1], minval=self.params['noise_min'], maxval=self.params['noise_max'], dtype=image.dtype)
         noise = tf.random_uniform(image.shape, dtype=image.dtype)
-        trans_image = (1 - alpha[0]) * image / tf.reduce_max(image, keepdims=True) + alpha[0] * noise
+        trans_image = (1 - alpha[0]) * image  + alpha[0] * noise
         return trans_image
 
 
@@ -520,6 +520,7 @@ class DatasetLMDB(DatasetTFRecords):
                     images.append(tf.reshape(image, self.data_specs['image_shape']))
                     labels.append(tf.reshape(label, self.data_specs['label_shape']))
             elif self.mode == 'eval':
+                ds = ds.take(self.num_samples)
                 ds = ds.batch(self.params['batch_size'], drop_remainder=True)
                 ds = ds.map(self.wrapped_decode)
                 iterator = ds.make_one_shot_iterator()

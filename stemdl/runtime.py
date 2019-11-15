@@ -281,7 +281,7 @@ def train(network_config, hyper_params, params, gpu_id=None):
     # Gather all training related ops into a single one.
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     increment_op = tf.assign_add(global_step, 1)
-    ema = tf.train.ExponentialMovingAverage(decay=0.999, num_updates=global_step)
+    ema = tf.train.ExponentialMovingAverage(decay=0.9, num_updates=global_step)
     all_ops = tf.group(*([train_opt] + update_ops + IO_ops + [increment_op]))
 
     with tf.control_dependencies([all_ops]):
@@ -407,10 +407,10 @@ def train(network_config, hyper_params, params, gpu_id=None):
             train_elf.before_run()
         # Here we do validation:
         if doValidate:
-            val = validate(network_config, hyper_params, params, sess, dset)
+            val = validate(network_config, hyper_params, params, sess, dset, num_batches=50)
             val_results.append((train_elf.last_step,val))
         if doFinish: 
-            val = validate(network_config, hyper_params, params, sess, dset)
+            val = validate(network_config, hyper_params, params, sess, dset, num_batches=50)
             val_results.append((train_elf.last_step, val))
             tf.reset_default_graph()
             tf.keras.backend.clear_session()
@@ -532,9 +532,8 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
         error_averaging = hvd.allreduce(errors)
         if num_batches is not None:
             num_samples = num_batches
-        else:
+        elif num_batches > dset.num_samples:
             num_samples = dset.num_samples
-        #error = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(4)])
         errors = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_samples//params['batch_size'])])
         result = errors.mean()
         print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, errors.mean()))
@@ -563,11 +562,6 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
         else:
             num_samples = dset.num_samples
         errors = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_samples//params['batch_size'])])
-        # errors = np.array([sess.run([IO_ops,errors])[-1] for i in range(dset.num_samples)])
-        # errors = tf.reduce_mean(errors)
-        # avg_errors = hvd.allreduce(tf.expand_dims(errors, axis=0))
-        # error = sess.run(avg_errors)
-        # print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, errors.mean()))
         result = errors.mean()
         print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, errors.mean()))
         tf.summary.scalar("Validation_loss_label_%s" % loss_label, tf.constant(errors.mean()))

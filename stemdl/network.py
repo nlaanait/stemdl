@@ -604,10 +604,18 @@ class ConvNet:
         is_training = 'train' == self.operation
         # TODO: scaling and centering during normalization need to be hyperparams. Now hardwired.
         param_initializers={
-              'beta': tf.constant_initializer(0.0),
-              'gamma': tf.constant_initializer(0.1),
+              'beta': tf.constant_initializer(0.0, dtype=tf.float16),
+              'gamma': tf.constant_initializer(0.1, dtype=tf.float16),
         }
-        output = tf.contrib.layers.batch_norm(input, decay=decay, scale=True, epsilon=epsilon,zero_debias_moving_mean=False,is_training=is_training,fused=True,data_format='NCHW',renorm=False,param_initializers=param_initializers)
+        if self.params['IMAGE_FP16']:
+            input= tf.cast(input, tf.float32)
+    #    with tf.variable_scope('layer_normalization', reuse=None) as scope:
+    #         output = tf.keras.layers.LayerNormalization(trainable=False)(inputs=input)
+        mean , variance = tf.nn.moments(input, axes=[2,3], keepdims=True)
+        output = (input - mean)/ (tf.sqrt(variance) + 1e-7)
+        if self.params['IMAGE_FP16']:
+            output = tf.cast(output, tf.float16)
+        #output = tf.contrib.layers.batch_norm(input, decay=decay, scale=True, epsilon=epsilon,zero_debias_moving_mean=False,is_training=is_training,fused=True,data_format='NCHW',renorm=False,param_initializers=param_initializers)
         #output = tf.contrib.layers.batch_norm(input, decay=decay, scale=True, epsilon=epsilon,zero_debias_moving_mean=False,is_training=is_training,fused=True,data_format='NCHW',renorm=False)
         # output = input
         # Keep tabs on the number of weights
@@ -698,6 +706,8 @@ class ConvNet:
         if params is not None:
             if params['activation'] == 'tanh':
                 return tf.nn.tanh(input, name=name)
+            elif params['activation'] == 'leaky_relu':
+                return tf.nn.leaky_relu(input, name=name)
             else:
                 return tf.nn.relu(input, name=name)
         else:
@@ -2812,12 +2822,16 @@ class YNet(FCDenseNet, FCNet):
                                 'features': inputs.shape.as_list()[1],
                                 'activation': 'relu', 
                                 'padding': 'VALID', 
-                                'batch_norm': True, 'dropout':0.0})
-        out = self._batch_norm(input=inputs)
+                                'batch_norm': False, 'dropout':0.0})
+        if conv_params['batch_norm']:
+            out = self._batch_norm(input=inputs)
+        else:
+            out = inputs
         out = self._activate(input=out, params=conv_params)
         with tf.variable_scope('residual_conv_1', reuse=self.reuse) as scope:
             out, _ = self._conv(input=out, params=conv_params)
-        out = self._batch_norm(input=out)
+        if conv_params['batch_norm']:
+            out = self._batch_norm(input=out)
         out = self._activate(input=out, params=conv_params)
         with tf.variable_scope('residual_conv_2', reuse=self.reuse) as scope:
             out, _ = self._conv(input=out, params=params)
