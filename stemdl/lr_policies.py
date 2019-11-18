@@ -34,7 +34,7 @@ def decay_warmup(params, hyper_params, global_step):
     # Decay/ramp the learning rate exponentially based on the number of steps.
     def ramp():
         lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step, ramp_steps, LEARNING_RATE_DECAY_FACTOR,
-                                        staircase=False)
+                                        staircase=True)
         lr = INITIAL_LEARNING_RATE ** 2 * tf.pow(lr, tf.constant(-1.))
         lr = tf.minimum(lr,WARM_UP_LEARNING_RATE_MAX)
         return lr
@@ -50,10 +50,18 @@ def decay_warmup(params, hyper_params, global_step):
                                         staircase=True)   
 
         return lr
+    
+    warm_up_slope = hyper_params.get('warm_up_slope', 1.)
+    def constant_ramp():
+        lr = tf.cast(INITIAL_LEARNING_RATE, tf.float32) * (tf.cast(global_step, tf.float32) * warm_up_slope  + 1) 
+        lr = tf.math.minimum(tf.cast(WARM_UP_LEARNING_RATE_MAX, tf.float32), lr)
+        return lr
 
     if hyper_params['warm_up']:
         # LEARNING_RATE = tf.cond(global_step < ramp_up_steps, ramp, lambda: decay(ramp()))
-        LEARNING_RATE = tf.cond(global_step < ramp_up_steps, linear_ramp, lambda: decay(linear_ramp()))
+        #LEARNING_RATE = tf.cond(global_step < ramp_up_steps, linear_ramp, lambda: decay(linear_ramp()))
+        ramp_up_steps = tf.cast(WARM_UP_LEARNING_RATE_MAX/INITIAL_LEARNING_RATE, global_step.dtype) 
+        LEARNING_RATE = tf.cond(global_step < ramp_up_steps, constant_ramp, lambda: decay(constant_ramp()))
     else:
         LEARNING_RATE = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step, decay_steps,
                                         LEARNING_RATE_DECAY_FACTOR, staircase=True) 

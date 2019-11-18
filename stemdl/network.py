@@ -1247,7 +1247,7 @@ class FCDenseNet(ConvNet):
     
     def _freq2space(self, inputs=None):
         shape = inputs.shape
-        weights_dim = 512
+        weights_dim = 256
         num_fc = 2
         # if weights_dim < 4096 :
         fully_connected = OrderedDict({'type': 'fully_connected','weights': weights_dim,'bias': weights_dim, 'activation': 'relu',
@@ -1266,7 +1266,8 @@ class FCDenseNet(ConvNet):
                 out = tf.reshape(out, [shape[0], -1])
             for i in range(num_fc):
                 if i > 0:
-                    weights_dim = min(4096, int(shape.as_list()[-2]**2))
+                    #weights_dim = min(4096, int(shape.as_list()[-2]**2))
+                    weights_dim = min(weights_dim, int(shape.as_list()[-2]**2))
                     fully_connected['weights'] = weights_dim
                     fully_connected['bias'] = weights_dim
                 with tf.variable_scope('FC_%d' %i, reuse=self.reuse) as _ :

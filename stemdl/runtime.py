@@ -410,8 +410,8 @@ def train(network_config, hyper_params, params, gpu_id=None):
             val = validate(network_config, hyper_params, params, sess, dset, num_batches=50)
             val_results.append((train_elf.last_step,val))
         if doFinish: 
-            val = validate(network_config, hyper_params, params, sess, dset, num_batches=50)
-            val_results.append((train_elf.last_step, val))
+            #val = validate(network_config, hyper_params, params, sess, dset, num_batches=50)
+            #val_results.append((train_elf.last_step, val))
             tf.reset_default_graph()
             tf.keras.backend.clear_session()
             sess.close()
@@ -518,9 +518,13 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
         print('not implemented')
     elif hyper_params['network_type'] == 'YNet':
         loss_params = hyper_params['loss_function']
-        model_output = tf.concat([n_net.model_output[subnet] for subnet in ['inverter', 'decoder_RE', 'decoder_IM']], axis=1)
+        #model_output = tf.concat([n_net.model_output[subnet] for subnet in ['inverter', 'decoder_RE', 'decoder_IM']], axis=1)
+        model_output = [n_net.model_output[subnet] for subnet in ['inverter', 'decoder_RE', 'decoder_IM']]
+        labels = [tf.expand_dims(itm, axis=1) for itm in tf.unstack(labels, axis=1)]
         if loss_params['type'] == 'MSE_PAIR':
-            errors = tf.losses.mean_pairwise_squared_error(tf.cast(labels, tf.float32), tf.cast(model_output, tf.float32))
+            errors = [tf.losses.mean_pairwise_squared_error(tf.cast(label, tf.float32), out) 
+                                                for label, out in zip(labels, model_output)]
+            errors = tf.stack(errors)
             loss_label= loss_params['type'] 
         elif loss_params['type'] == 'ABS_DIFF': 
             loss_label= 'ABS_DIFF'
@@ -535,8 +539,8 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
         elif num_batches > dset.num_samples:
             num_samples = dset.num_samples
         errors = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_samples//params['batch_size'])])
-        result = errors.mean()
-        print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, errors.mean()))
+        result = errors.mean(0)
+        print_rank('Validation Reconstruction Error %s: '% loss_label, result)
     elif hyper_params['network_type'] == 'inverter':
         loss_params = hyper_params['loss_function']
         if labels.shape.as_list()[1] > 1:
@@ -563,7 +567,7 @@ def validate(network_config, hyper_params, params, sess, dset, num_batches=10):
             num_samples = dset.num_samples
         errors = np.array([sess.run([IO_ops,error_averaging])[-1] for i in range(num_samples//params['batch_size'])])
         result = errors.mean()
-        print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, errors.mean()))
+        print_rank('Validation Reconstruction Error %s: %3.3e' % (loss_label, result))
         tf.summary.scalar("Validation_loss_label_%s" % loss_label, tf.constant(errors.mean()))
     return result
 
