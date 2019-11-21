@@ -548,7 +548,7 @@ class DatasetLMDB(DatasetTFRecords):
         # data augmentation    
         if self.params[self.mode + '_distort']:
             with tf.device('/gpu:%i' % hvd.local_rank()):
-                if self.params['random_crop']:
+                if self.params.get('random_crop', False):
                     images = tf.transpose(images, perm=[0,2,3,1])
                     images = self.random_crop_resize(images)
                     images = self.add_noise_image(images)
