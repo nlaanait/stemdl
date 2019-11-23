@@ -437,10 +437,10 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
             rank += 1
         features = features // 2
     # 1x1 conv
-    # conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 'features': output_channels,
-    #                         'activation': None, 'padding': 'SAME', 'batch_norm': False}) 
-    # layers_params_list.append(conv_1by1)
-    # layers_keys_list.append('CONV_FIN')
+    conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [3, 3], 'features': output_channels,
+                            'activation': activation, 'padding': 'SAME', 'batch_norm': False}) 
+    layers_params_list.append(conv_1by1)
+    layers_keys_list.append('CONV_FIN')
     model_keys.append('decoder_RE')
     model_params.append(OrderedDict(zip(layers_keys_list, layers_params_list)))
 
@@ -463,10 +463,10 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
             rank += 1
         features = features // 2
     # 1x1 conv
-    # conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 'features': output_channels,
-    #                         'activation': None, 'padding': 'SAME', 'batch_norm': False}) 
-    # layers_params_list.append(conv_1by1)
-    # layers_keys_list.append('CONV_FIN')
+    conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [3, 3], 'features': output_channels,
+                            'activation': activation, 'padding': 'SAME', 'batch_norm': False}) 
+    layers_params_list.append(conv_1by1)
+    layers_keys_list.append('CONV_FIN')
     model_keys.append('decoder_IM')
     model_params.append(OrderedDict(zip(layers_keys_list, layers_params_list)))
 
@@ -498,10 +498,10 @@ def generate_YNet_json(save= True, out_dir='json_files', n_pool=3, n_layers_per_
         features = features // 2
 
     # 1x1 conv
-    # conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [1, 1], 'features': output_channels,
-    #                         'activation': None, 'padding': 'SAME', 'batch_norm': False}) 
-    # layers_params_list.append(conv_1by1)
-    # layers_keys_list.append('CONV_FIN')
+    conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [3, 3], 'features': output_channels,
+                            'activation': activation, 'padding': 'SAME', 'batch_norm': False}) 
+    layers_params_list.append(conv_1by1)
+    layers_keys_list.append('CONV_FIN')
     model_keys.append('inverter')
     model_params.append(OrderedDict(zip(layers_keys_list, layers_params_list))) 
     

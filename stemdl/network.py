@@ -2787,18 +2787,18 @@ class YNet(FCDenseNet, FCNet):
                 #     self._activation_summary(out)
                 #     self._activation_image_summary(out)
         
-        with tf.variable_scope('%s_CONV_FIN' % subnet, reuse=self.reuse) as scope:
-            conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [3, 3], 'padding': 'SAME', 'features': 1})
-            self.print_verbose(">>> Adding CONV_FIN layer: ")
-            self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
-            out, _ = self._conv(input=out, params=conv_1by1) 
-            self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
-            out_shape = out.get_shape().as_list()
-            self._print_layer_specs(layer_params, scope, in_shape, out_shape)
-            self.scopes.append(scope) 
-            if self.summary: 
-                self._activation_summary(out)
-                self._activation_image_summary(out) 
+        # with tf.variable_scope('%s_CONV_FIN' % subnet, reuse=self.reuse) as scope:
+        #     conv_1by1 = OrderedDict({'type': 'conv_2D', 'stride': [1, 1], 'kernel': [3, 3], 'padding': 'SAME', 'features': 1})
+        #     self.print_verbose(">>> Adding CONV_FIN layer: ")
+        #     self.print_verbose('    input: %s' %format(out.get_shape().as_list()))
+        #     out, _ = self._conv(input=out, params=conv_1by1) 
+        #     self.print_verbose('    output: %s' %format(out.get_shape().as_list()))
+        #     out_shape = out.get_shape().as_list()
+        #     self._print_layer_specs(layer_params, scope, in_shape, out_shape)
+        #     self.scopes.append(scope) 
+        #     if self.summary: 
+        #         self._activation_summary(out)
+        #         self._activation_image_summary(out) 
         self.model_output[subnet] = out
         self.update_all_attrs(subnet=subnet)
         self.print_rank('Total # of blocks: %d,  weights: %2.1e, memory: %s MB, ops: %3.2e \n' % (len(network),
