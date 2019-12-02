@@ -13,6 +13,7 @@ import numpy as np
 import math
 from itertools import chain
 from multiprocessing import cpu_count
+from copy import deepcopy
 
 #TF
 import tensorflow as tf
@@ -543,7 +544,13 @@ def train_YNet(network_config, hyper_params, params, gpu_id=None):
             # Build it and propagate images through it.
             n_net.build_model()
 
+            # # Stop gradients 
+            # stop_op = tf.stop_gradient(n_net.model_output['encoder'])
+
             # calculate the total loss
+            # psi_out_true = tf.placeholder(tf.float32, shape=images.shape.as_list(), name="psi_out_true")
+            psi_out_true = images
+            constr_loss = losses.get_YNet_constraint(n_net, hyper_params, params, psi_out_true, weight=10)
             total_loss, _, indv_losses = losses.calc_loss(n_net, scope, hyper_params, params, labels, step=global_step, images=images, summary=summary)
 
             #get summaries, except for the one produced by string_input_producer
@@ -573,9 +580,21 @@ def train_YNet(network_config, hyper_params, params, gpu_id=None):
                                 loss_scaling=hyper_params.get('loss_scaling',1.0), 
                                 skip_update_cond=skip_update_cond,
                                 on_horovod=True, model_scopes=n_net.scopes)  
+        # optimizer for regularization step
+        # var_list = [itm for itm in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if 'CVAE' not in str(itm.name)] 
+        var_list = [itm for itm in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if 'CVAE' not in str(itm.name)] 
+        # var_list = None
+        # print_rank(var_list)
+        opt = tf.train.MomentumOptimizer(1e-5, 0.9)
+        reg_opt = opt.minimize(constr_loss, var_list=var_list)
+    
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+
+    # with tf.control_dependencies([tf.group(*[stop_op, reg_opt, update_ops])]):
+    with tf.control_dependencies([tf.group(*[reg_opt, update_ops])]):
+        reg_train = tf.no_op(name='reg_train')
 
     # Gather all training related ops into a single one.
-    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     increment_op = tf.assign_add(global_step, 1)
     ema = tf.train.ExponentialMovingAverage(decay=0.9, num_updates=global_step)
     all_ops = tf.group(*([train_opt] + update_ops + IO_ops + [increment_op]))
@@ -583,7 +602,7 @@ def train_YNet(network_config, hyper_params, params, gpu_id=None):
     with tf.control_dependencies([all_ops]):
             train_op = ema.apply(tf.trainable_variables()) 
             # train_op = tf.no_op(name='train')
-
+    
     ########################
     # Setting up Summaries #
     ########################
@@ -654,7 +673,10 @@ def train_YNet(network_config, hyper_params, params, gpu_id=None):
     loss_results = []
     loss_value = 1e10
     val = 1e10
+    current_batch = np.zeros(images.shape.as_list(), dtype=np.float32)
+    batch_buffer = []
     while train_elf.last_step < maxSteps :
+        # batch_buffer.append(images.eval(session=sess))
         train_elf.before_run()
         doLog   = bool(train_elf.last_step % logFreq  == 0)
         doSave  = bool(train_elf.last_step % saveStep == 0)
@@ -663,17 +685,17 @@ def train_YNet(network_config, hyper_params, params, gpu_id=None):
         doValidate = bool(train_elf.last_step % validateStep == 0)
         doFinish = bool(train_elf.start_time - params['start_time'] > maxTime)
         if train_elf.last_step == 1 and params['debug']:
-            summary = sess.run([train_op,  summary_merged])[-1]
+            _, summary, current_batch = sess.run([train_op,  summary_merged, images])
             train_elf.write_summaries( summary )
         elif not doLog and not doSave and not doTrace and not doSumm:
-            sess.run(train_op)
+            _, current_batch = sess.run([train_op, images])
         elif doLog and not doSave  and not doSumm:
-            _, lr, loss_value, aux_losses = sess.run( [ train_op, learning_rate, total_loss, indv_losses])
+            _, lr, loss_value, aux_losses, current_batch = sess.run( [ train_op, learning_rate, total_loss, indv_losses, images])
             loss_results.append((train_elf.last_step, loss_value))
             train_elf.log_stats( loss_value, aux_losses, lr)
         elif doLog and doSumm and doSave :
-            _, summary, loss_value, aux_losses, lr = sess.run( [ train_op, summary_merged, total_loss, indv_losses,
-                                                             learning_rate ])
+            _, summary, loss_value, aux_losses, lr, current_batch = sess.run( [ train_op, summary_merged, total_loss, indv_losses,
+                                                             learning_rate, images ])
             loss_results.append((train_elf.last_step, loss_value))
             train_elf.log_stats( loss_value, aux_losses, lr )
             train_elf.write_summaries( summary )
@@ -681,12 +703,12 @@ def train_YNet(network_config, hyper_params, params, gpu_id=None):
                 saver.save(sess, checkpoint_file, global_step=train_elf.last_step)
                 print_rank('Saved Checkpoint.')
         elif doLog and doSumm :
-            _, summary, loss_value, aux_losses, lr = sess.run( [ train_op, summary_merged, total_loss, indv_losses, learning_rate ])
+            _, summary, loss_value, aux_losses, lr, current_batch = sess.run( [ train_op, summary_merged, total_loss, indv_losses, learning_rate, images ])
             loss_results.append((train_elf.last_step, loss_value))
             train_elf.log_stats( loss_value, aux_losses, lr )
             train_elf.write_summaries( summary )
         elif doSumm:
-            summary = sess.run([train_op,  summary_merged])[-1]
+            _, summary, current_batch  = sess.run([train_op,  summary_merged, images])
             train_elf.write_summaries( summary )
         elif doSave :
             if hvd.rank( ) == 0 :
@@ -709,6 +731,27 @@ def train_YNet(network_config, hyper_params, params, gpu_id=None):
             return val_results, loss_results
         if np.isnan(loss_value):
             break
+        # if doLog:
+            # constr_val = sess.run(constr_loss, feed_dict={psi_out_true:current_batch})
+            # print_rank('\t\tstep={}, current constr_loss={:2.3e}'.format(train_elf.last_step, constr_val))
+        # current_batch_list = []
+        batch_buffer.append(current_batch)
+        # print_rank(len(batch_buffer))
+        if bool(train_elf.last_step % 10 == 0 and train_elf.last_step >= 10):
+            for itr, current_batch in enumerate(batch_buffer):
+                # noise = np.random.random(images.shape.as_list()[1:]) 
+                # noise = noise.astype(np.float32)
+                # mix = 0.25
+                # current_batch = (1 - mix) * current_batch + mix * noise[np.newaxis] 
+                _, constr_val = sess.run([reg_train, constr_loss], feed_dict={psi_out_true:current_batch})
+                # if doLog:
+                print_rank('\t\tstep={}, reg iter={}, constr_loss={:2.3e}'.format(train_elf.last_step, itr, constr_val))
+                    # print('\t\trank={}, step={}, reg iter={}, constr_loss={:2.3e}'.format(hvd.rank(), train_elf.last_step, itr, constr_val))
+            del batch_buffer
+            batch_buffer = []
+            # for i in range(len(IO_ops)):
+            #     sess.run(IO_ops[:i + 1])
+            
     val_results.append((train_elf.last_step,val))
     tf.reset_default_graph()
     tf.keras.backend.clear_session()

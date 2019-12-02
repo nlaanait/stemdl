@@ -83,13 +83,13 @@ def calc_loss(n_net, scope, hyper_params, params, labels, step=None, images=None
         pot_labels, probe_labels_re, probe_labels_im = [tf.expand_dims(itm, axis=1) for itm in tf.unstack(labels, axis=1)]
         #weight= np.prod(pot_labels.shape.as_list()[-2:])
         weight=None
-        inv_str = hyper_params.get('inv_strength', 0.1)
-        reg_str = hyper_params.get('reg_strength', 0.1)
+        inv_str = hyper_params.get('inv_strength', 1)
+        reg_str = hyper_params.get('reg_strength', 0.01)
         dec_str = hyper_params.get('dec_strength', 1) 
         inverter_loss = inv_str * calculate_loss_regressor(pot, pot_labels, params, hyper_params, weight=weight)
         decoder_loss_im = dec_str * calculate_loss_regressor(probe_im, probe_labels_im, params, hyper_params, weight=weight)
         decoder_loss_re = dec_str * calculate_loss_regressor(probe_re, probe_labels_re, params, hyper_params, weight=weight)
-        psi_out_mod = thin_object(probe_re, probe_im, pot)
+        psi_out_mod = thin_object(probe_re, probe_im, pot, summarize=False)
         reg_loss = reg_str * calculate_loss_regressor(psi_out_mod, tf.reduce_mean(images, axis=[1], keepdims=True), 
                     params, hyper_params, weight=weight)
         tf.summary.scalar('reg_loss ', reg_loss)
@@ -111,7 +111,6 @@ def calc_loss(n_net, scope, hyper_params, params, labels, step=None, images=None
     #Assemble all of the losses.
     losses = tf.get_collection(tf.GraphKeys.LOSSES)
     if hyper_params['network_type'] == 'YNet':
-        reg_str = hyper_params.get('reg_strength', 0.1)
         losses = [inverter_loss , decoder_loss_re, decoder_loss_im, reg_loss]
         # losses, prefac = ynet_adjusted_losses(losses, step)
     regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
@@ -124,6 +123,16 @@ def calc_loss(n_net, scope, hyper_params, params, labels, step=None, images=None
     if hyper_params['network_type'] == 'YNet':
         return total_loss, loss_averages_op, losses 
     return total_loss, loss_averages_op
+
+def get_YNet_constraint(n_net, hyper_params, params, psi_out_true, weight=1):
+    probe_im = tf.cast(n_net.model_output['decoder_IM'], tf.float32)
+    probe_re = tf.cast(n_net.model_output['decoder_RE'], tf.float32)
+    pot = tf.cast(n_net.model_output['inverter'], tf.float32)
+    psi_out_mod = thin_object(probe_re, probe_im, pot)
+    reg_loss = calculate_loss_regressor(psi_out_mod, tf.reduce_mean(psi_out_true, axis=[1], keepdims=True), 
+                    params, hyper_params, weight=weight)
+    reg_loss = tf.cast(reg_loss, tf.float32)
+    return reg_loss
 
 def fully_connected(n_net, layer_params, batch_size, wd=0, name=None, reuse=None):
     input = tf.cast(tf.reshape(n_net.model_output,[batch_size, -1]), tf.float32)
@@ -198,7 +207,7 @@ def calculate_loss_regressor(net_output, labels, params, hyper_params, weight=No
                                     reduction=tf.losses.Reduction.MEAN)
     if loss_params['type'] == 'MSE':
         cost = tf.losses.mean_squared_error(labels, weights=weight, predictions=net_output,
-                                            reduction=tf.losses.Reduction.SUM)
+                                            reduction=tf.losses.Reduction.MEAN)
     if loss_params['type'] == 'ABS_DIFF':
         cost = tf.losses.absolute_difference(labels, weights=weight, predictions=net_output,
                                             reduction=tf.losses.Reduction.MEAN)
@@ -251,7 +260,7 @@ def fftshift(tensor, tens_format='NCHW'):
     shift_tensor = manip_ops.roll(tensor, shift, dims)
     return shift_tensor
 
-def thin_object(psi_k_re, psi_k_im, potential):
+def thin_object(psi_k_re, psi_k_im, potential, summarize=True):
     # mask = np.zeros(psi_k_re.shape.as_list(), dtype=np.float32)
     # ratio = 0
     # if ratio == 0:
@@ -270,6 +279,7 @@ def thin_object(psi_k_re, psi_k_im, potential):
     psi_out = tf.fft2d(psi_x_stack * pot_frac / np.prod(psi_x.shape.as_list()))
     psi_out_mod = tf.cast(tf.abs(psi_out), tf.float32) ** 2
     psi_out_mod = tf.reduce_mean(psi_out_mod, axis=1, keep_dims=True)
-    tf.summary.image('Psi_k_out', tf.transpose(tf.abs(psi_out_mod)**0.25, perm=[0,2,3,1]), max_outputs=1)
-    tf.summary.image('Psi_x_in', tf.transpose(tf.abs(psi_x)**0.25, perm=[0,2,3,1]), max_outputs=1)
+    if summarize:
+        tf.summary.image('Psi_k_out', tf.transpose(tf.abs(psi_out_mod)**0.25, perm=[0,2,3,1]), max_outputs=1)
+        tf.summary.image('Psi_x_in', tf.transpose(tf.abs(psi_x)**0.25, perm=[0,2,3,1]), max_outputs=1)
     return psi_out_mod 

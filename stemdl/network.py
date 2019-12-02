@@ -708,8 +708,10 @@ class ConvNet:
                 return tf.nn.tanh(input, name=name)
             elif params['activation'] == 'leaky_relu':
                 return tf.nn.leaky_relu(input, name=name)
-            else:
+            elif params['activation'] == 'relu':
                 return tf.nn.relu(input, name=name)
+            elif params['activation'] == 'none':
+                return input
         else:
             return input
 

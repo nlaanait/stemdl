@@ -312,7 +312,7 @@ def optimize_loss(loss,
 
     # Compute gradients.
     grads_and_vars = opt.compute_gradients(
-        loss, colocate_gradients_with_ops=True, var_list=var_list
+        loss, var_list=var_list
     )
 
     if dtype == 'mixed' or dtype == tf.float16:
