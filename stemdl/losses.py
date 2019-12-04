@@ -132,7 +132,10 @@ def get_YNet_constraint(n_net, hyper_params, params, psi_out_true, weight=1):
     reg_loss = calculate_loss_regressor(psi_out_mod, tf.reduce_mean(psi_out_true, axis=[1], keepdims=True), 
                     params, hyper_params, weight=weight)
     reg_loss = tf.cast(reg_loss, tf.float32)
-    return reg_loss
+    regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+    reg_total_loss = tf.add_n([reg_loss] + regularization, name='total_loss')
+    reg_totat_loss = tf.cast(reg_total_loss, tf.float32)
+    return reg_total_loss
 
 def fully_connected(n_net, layer_params, batch_size, wd=0, name=None, reuse=None):
     input = tf.cast(tf.reshape(n_net.model_output,[batch_size, -1]), tf.float32)
