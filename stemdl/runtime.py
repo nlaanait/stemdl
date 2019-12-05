@@ -561,6 +561,7 @@ def train_YNet(network_config, hyper_params, params, gpu_id=None):
         #######################################
         # optimizer for unsupervised step
         var_list = [itm for itm in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) if 'CVAE' in str(itm.name)] 
+        var_list = None
         reg_hyper = deepcopy(hyper_params)
         reg_hyper['initial_learning_rate'] = 1e-1
         def learning_policy_func_reg(step):

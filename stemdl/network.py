@@ -2855,15 +2855,15 @@ class YNet(FCDenseNet, FCNet):
                                 'activation': "relu", 
                                 'padding': 'SAME', 
                                 'batch_norm': True, 'dropout':0})
-        # def fc_map(tens):
-        #     for i in range(num_fc):
-        #         with tf.variable_scope('%s_fc_%d' %(subnet, i), reuse=self.reuse) as scope :
-        #             tens = self._linear(input=tens, params=fully_connected)
-        #             tens = self._activate(input=tens, params=fully_connected)
-        #             scopes_list.append(scope)
-        #     return tens
-        # out = tf.map_fn(fc_map, out, back_prop=True)
-        # out = tf.transpose(out, perm= [1, 2, 0])
+        def fc_map(tens):
+            for i in range(num_fc):
+                with tf.variable_scope('%s_fc_%d' %(subnet, i), reuse=self.reuse) as scope :
+                    tens = self._linear(input=tens, params=fully_connected)
+                    tens = self._activate(input=tens, params=fully_connected)
+                    scopes_list.append(scope)
+            return tens
+        out = tf.map_fn(fc_map, out, back_prop=True)
+        out = tf.transpose(out, perm= [1, 2, 0])
         dim = int(math.sqrt(self.images.shape.as_list()[1]))
         out = tf.reshape(out, [self.params['batch_size'], -1, dim, dim])
         self.print_rank('decoder reshape:', out.shape.as_list())
